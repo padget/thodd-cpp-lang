@@ -7,7 +7,7 @@
 #  include <thodd/lang/regex/regex.hpp>
 
 namespace 
-thodd::lang::regex 
+thodd::regex 
 {
     template<
         typename char_t>
@@ -38,32 +38,18 @@ thodd::lang::regex
         { std::forward<decltype(__c)>(__c) } ;
     }
 
-    namespace 
-    detail
+    namespace detail
     {
-        constexpr auto
-        is_char(
-            auto const&)
-        {
-            return false ;   
-        }
+        template<typename type_t>
+        struct is_char : std::false_type {} ;
 
-
-        constexpr auto
-        is_char(
-            char_<auto> const&)
-        {
-            return true ;   
-        }
+        template<typename type_t>
+        struct is_char<char_<type_t>> : std::true_type {} ;
     }
 
     template<
         typename ... types_t>
-    concept bool char_based(types_t && ... __t) 
-    {
-        return  
-        detail::is_char(__t) && ... ;
-    }
+    concept bool char_based = (detail::is_char<std::decay_t<types_t>>::value && ...) ;
 
 }
 

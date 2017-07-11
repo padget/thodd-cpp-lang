@@ -8,7 +8,7 @@
 #  include <thodd/lang/regex/regex.hpp>
 
 namespace 
-thodd::lang::regex
+thodd::regex
 {
     template<
         typename ... regexs_t>
@@ -34,13 +34,13 @@ thodd::lang::regex
     operator > (
         auto&& __lregex, 
         auto&& __rregex)
-    requires regex_based(__lregex, __rregex)
+    requires regex_based<decltype(__lregex), decltype(__rregex)>
     {
         return
         and_<
             std::decay_t<decltype(__lregex)>, 
             std::decay_t<decltype(__rregex)>>
-        { make_tuple(
+        { std::make_tuple(
             std::forward<decltype(__lregex)>(__lregex), 
             std::forward<decltype(__rregex)>(__rregex)) } ;
     }
@@ -52,7 +52,7 @@ thodd::lang::regex
     operator > (
         and_<regexs_t...> const& __and,
         auto&& __rregex)
-    requires regex_based(__rregex, regexs_t{}...)
+    requires regex_based<decltype(__rregex), regexs_t...>
     {
         return 
         and_<regexs_t..., std::decay_t<decltype(__rregex)>>

@@ -8,7 +8,7 @@
 #  include <thodd/lang/regex/regex.hpp>
 
 namespace 
-thodd::lang::regex
+thodd::regex
 {
     template<
         typename ... choices_t>
@@ -18,7 +18,7 @@ thodd::lang::regex
 
         constexpr or_(
             decltype(choices) && __choices):
-            choices { std::forward<decltype(__choices)>(choices) } {}
+            choices { std::forward<decltype(__choices)>(__choices) } {}
 
         constexpr or_(
             decltype(choices) const & __choices) :
@@ -35,12 +35,12 @@ thodd::lang::regex
     operator | (
         auto&& __lregex, 
         auto&& __rregex)
-    requires regex_based(__lregex, __rregex)
+    requires regex_based<decltype(__lregex), decltype(__rregex)>
     {        
         return
         or_<
-            decay_t<decltype(__lregex)>, 
-            decay_t<decltype(__rregex)>>
+            std::decay_t<decltype(__lregex)>, 
+            std::decay_t<decltype(__rregex)>>
         { std::make_tuple(
             std::forward<decltype(__lregex)>(__lregex), 
             std::forward<decltype(__rregex)>(__rregex)) } ;
@@ -53,10 +53,10 @@ thodd::lang::regex
     operator | (
         or_<lregexs_t...> const& __or,
         auto&& __rregex)
-    requires regex_based(__rregex, lregexs_t{}...)
+    requires regex_based<decltype(__rregex), lregexs_t...>
     {
         return 
-        or_<lregexs_t..., decay_t<decltype(__rregex)>>
+        or_<lregexs_t..., std::decay_t<decltype(__rregex)>>
         { std::tuple_cat(
             __or.choices, 
             std::make_tuple(std::forward<decltype(__rregex)>(__rregex))) } ;

@@ -2,12 +2,13 @@
 #  define __THODD_LANG_REGEX_BETWEEN_HPP__
 
 #  include <thodd/lang/regex/regex.hpp>
+#  include <thodd/lang/regex/char.hpp>
 
 #  include <type_traits>
 #  include <utility>
 
 namespace 
-thodd::lang::regex 
+thodd::regex 
 {
     template<
         typename min_t, 
@@ -52,7 +53,7 @@ thodd::lang::regex
     operator - (
         auto&& __min, 
         auto&& __max)
-    requires char_based(__min, __max)
+    requires char_based<decltype(__min), decltype(__max)>
     {
         return
         between<

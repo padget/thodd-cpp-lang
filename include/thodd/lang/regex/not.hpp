@@ -6,7 +6,7 @@
 #  include <type_traits> 
 
 namespace 
-thodd::lang::regex 
+thodd::regex 
 {
     template<
         typename regex_t>

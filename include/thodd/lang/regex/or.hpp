@@ -61,6 +61,37 @@ thodd::regex
             __or.choices, 
             std::make_tuple(std::forward<decltype(__rregex)>(__rregex))) } ;
     }
+
+
+    template<typename ... types_t>
+    inline auto
+    matches(
+        or_<types_t...> const& __or,
+        auto& __cursor, 
+        auto const& __end)
+    {
+        return 
+        std::apply(
+            [&](auto && ... __choices) 
+            {
+                auto __res = false ;
+
+                auto __each = [&](auto && __choice) 
+                    {
+                        auto __save = __cursor ;
+                        auto&& __res = matches(__choice, __cursor, __end) ;
+
+                        if (!__res) __cursor = __save ;
+                        
+                        return __res ;
+                    } ;
+
+                __res = ( __each(__choices) || ... ) ; 
+
+                return __res ;
+            }, 
+            __or.choices) ;
+    }
 }
 
 #endif

@@ -60,6 +60,28 @@ thodd::regex
             __and.regexs, 
             std::make_tuple(std::forward<decltype(__rregex)>(__rregex))) } ;
     }
+
+
+    template<typename ... types_t>
+    inline auto
+    matches(
+        and_<types_t...> const& __and,
+        auto& __cursor, 
+        auto const& __end)
+    {
+        return 
+        std::apply(
+            [&](auto && ... __choices) 
+            { 
+                auto __save = __cursor ;
+                auto __res = ( matches(__choices, __cursor, __end) && ... ) ;
+              
+                if (!__res) __cursor = __save ;
+                
+                return __res ;
+            }, 
+            __and.regexs) ;
+    }
 }
 
 #endif

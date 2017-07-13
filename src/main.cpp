@@ -34,5 +34,11 @@ int main()
               << matches(chr('2') > chr('3') > chr('1'), __begin, __end)
               << std::endl ;
 
+    std::string __input3 {"11111"} ;
+    __begin = __input3.begin() ;
+    __end = __input3.end() ;
 
+    std::cout << std::boolalpha
+              << matches((*chr('1'))(2, 5), __begin, __end)
+              << std::endl ;
 } 

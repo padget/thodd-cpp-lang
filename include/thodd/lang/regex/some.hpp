@@ -7,7 +7,7 @@
 #  include <thodd/lang/regex/regex.hpp>
 
 namespace 
-thodd::lang::regex
+thodd::regex
 {
     template<
         typename regex_t>
@@ -19,7 +19,7 @@ thodd::lang::regex
         mutable std::size_t max {1} ; 
         
         constexpr some(regex_based&& __reg) :
-            reg { rvalue(__reg) } {} 
+            reg { std::move(__reg) } {} 
 
         constexpr some(regex_based const& __reg) :
             reg { __reg } {}
@@ -41,10 +41,11 @@ thodd::lang::regex
     constexpr auto
     operator + (
         auto&& __regex)
+    requires regex_based<decltype(__regex)>
     {   
         return
         some<std::decay_t<decltype(__regex)>>
-        { std::forward<decltype(__regex)>(__regex) }(1, infinity) ;
+        { std::forward<decltype(__regex)>(__regex) }(1, 1000000) ;
     }
 
 
@@ -55,7 +56,7 @@ thodd::lang::regex
     {   
         return
         some<std::decay_t<decltype(__regex)>>
-        { std::forward<decltype(__regex)>(__regex) }(1, infinity) ;
+        { std::forward<decltype(__regex)>(__regex) }(1, 1000000) ;
     }
 
         
@@ -67,6 +68,27 @@ thodd::lang::regex
         return
         some<std::decay_t<decltype(__regex)>>
         { std::forward<decltype(__regex)>(__regex) } ;
+    }
+
+
+    inline auto 
+    matches(
+        some<auto> const& __some, 
+        auto& __begin, 
+        auto const& __end)
+    {
+        auto __cpt = 0u ;
+        auto __save = __begin ;
+
+        while (   __begin != __end 
+               && __cpt <= __some.max 
+               && matches(__some.reg, __begin, __end)) 
+            {++__cpt ;std::cout << "#\n" ;}
+        
+        return 
+        __some.min <= __cpt && __cpt <= __some.max ?
+        true : 
+        (__begin = __save, false) ;
     }
 }
 

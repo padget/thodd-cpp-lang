@@ -51,7 +51,7 @@ thodd::regex
         typename ... lregexs_t>
     constexpr auto
     operator | (
-        or_<lregexs_t...> const& __or,
+        or_<lregexs_t...> const & __or,
         auto&& __rregex)
     requires regex_based<decltype(__rregex), lregexs_t...>
     {

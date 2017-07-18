@@ -3,6 +3,7 @@
 
 #  include <type_traits>
 #  include <utility>
+#  include <limits>
 
 #  include <thodd/lang/regex/regex.hpp>
 
@@ -15,8 +16,8 @@ thodd::regex
     {
         regex_t reg ;
 
-        mutable std::size_t min {0} ;
-        mutable std::size_t max {1} ; 
+        std::size_t min {0} ;
+        std::size_t max {1} ; 
         
         constexpr some(regex_based&& __reg) :
             reg { std::move(__reg) } {} 
@@ -24,43 +25,34 @@ thodd::regex
         constexpr some(regex_based const& __reg) :
             reg { __reg } {}
 
+        constexpr some(
+            regex_based&& __reg, 
+            size_t const& __min, 
+            size_t const& __max) :
+            reg { std::move(__reg) }, 
+            min { __min }, 
+            max { __max } {} 
+
+        constexpr some(
+            regex_based const& __reg, 
+            size_t const& __min, 
+            size_t const& __max) :
+            reg { __reg }, 
+            min { __min }, 
+            max { __max } {}
+
         constexpr some
         operator () (
             std::size_t const& __min, 
             std::size_t const& __max) const
         {
-            min = __min ;
-            max = __max ;
-            
             return 
-            *this ;
+            { reg, __min, __max } ;
         }
     } ;
 
 
-    constexpr auto
-    operator + (
-        auto&& __regex)
-    requires regex_based<decltype(__regex)>
-    {   
-        return
-        some<std::decay_t<decltype(__regex)>>
-        { std::forward<decltype(__regex)>(__regex) }(1, 1000000) ;
-    }
-
-
-    constexpr auto
-    operator * (
-        auto&& __regex) 
-    requires regex_based<decltype(__regex)>
-    {   
-        return
-        some<std::decay_t<decltype(__regex)>>
-        { std::forward<decltype(__regex)>(__regex) }(1, 1000000) ;
-    }
-
-        
-    constexpr auto
+   constexpr auto
     operator ~ (
         auto&& __regex)
     requires regex_based<decltype(__regex)>
@@ -70,6 +62,25 @@ thodd::regex
         { std::forward<decltype(__regex)>(__regex) } ;
     }
 
+
+    constexpr auto
+    operator + (
+        auto&& __regex)
+    requires regex_based<decltype(__regex)>
+    {   
+        return
+        (~std::forward<decltype(__regex)>(__regex))(1, std::numeric_limits<size_t>::max()) ;
+    }
+
+
+    constexpr auto
+    operator * (
+        auto&& __regex) 
+    requires regex_based<decltype(__regex)>
+    {   
+        return
+        (~std::forward<decltype(__regex)>(__regex))(0, std::numeric_limits<size_t>::max()) ;
+    }
 
     inline auto 
     matches(
@@ -83,7 +94,7 @@ thodd::regex
         while (   __begin != __end 
                && __cpt <= __some.max 
                && matches(__some.reg, __begin, __end)) 
-            {++__cpt ;std::cout << "#\n" ;}
+            ++__cpt ;
         
         return 
         __some.min <= __cpt && __cpt <= __some.max ?

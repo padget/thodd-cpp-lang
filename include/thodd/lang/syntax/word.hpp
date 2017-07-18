@@ -3,25 +3,32 @@
 
 #  include <type_traits>
 #  include <utility>
+#  include <optional>
 
 #  include <thodd/lang/syntax/rule.hpp>
+#  include <thodd/lang/syntax/token.hpp>
 
 namespace 
 thodd::syntax
 {
     template<
-        typename regex_t>
+        typename reg_t, 
+        typename lang_t>
     struct word : rule
     {
-        regex_t regex ;
+        reg_t reg ;
+        lang_t id ;
 
         constexpr word(
-            decltype(regex) && __regex) :
-            regex { std::move(__regex) } {}
+            decltype(reg) && __reg, 
+            decltype(id) const & __id) :
+            reg { std::move(__reg) }, 
+            id { __id } {}
 
         constexpr word(
-            decltype(regex) const& __regex) :
-            regex { __regex } {}
+            decltype(reg) const & __reg, 
+            decltype(id) const & __id) :
+            reg { __reg }, id { __id } {}
 
         constexpr word(word const&) = default ;
         constexpr word(word&&) = default ;
@@ -31,11 +38,35 @@ thodd::syntax
 
     constexpr auto 
     wrd(
-        auto&& __regex)
+        auto&& __reg, 
+        auto&& __id)
     {
         return 
-        word<std::decay_t<decltype(__regex)>>
-        { std::forward<decltype(__regex)>(__regex) } ;
+        word<
+            std::decay_t<decltype(__reg)>, 
+            std::decay_t<decltype(__id)>>
+        { std::forward<decltype(__reg)>(__reg), std::forward<decltype(__id)>(__id) } ;
+    }
+
+    inline auto
+    matches(
+        word<auto, auto> const& __word,
+        auto & __cursor,
+        auto const & __end)
+    {
+        auto __save = __cursor ;
+
+        using token_t = decltype(make_token(__word.id, __save, __cursor)) ;
+
+        if(matches(__word.reg, __cursor, __end))
+            return 
+            std::optional<token_t> (make_token(__word.id, __save, __cursor)) ;
+        else
+        { 
+            __cursor = __save ;
+            return
+            std::optional<token_t> () ;
+        }
     }
 }
 

@@ -1,6 +1,9 @@
 #include <iostream>
 #include <string>
+#include <algorithm>
 #include <thodd/lang.hpp>
+
+enum class test { foo, bar, fii } ;
 
 int main() 
 {
@@ -46,7 +49,7 @@ int main()
     __begin = __input4.begin() ;
     __end = __input4.end() ;
 
-    constexpr auto __odod = +(chr('a') - chr('z') | chr('_')) | chr('.') ;
+    constexpr auto __odod = +(chr('a') - chr('z') | chr('_')) > chr('.') ;
     std::cout << std::boolalpha 
               << matches(
                   __odod, 
@@ -55,13 +58,21 @@ int main()
               << std::endl ;
 
 
-    namespace stx = thodd::syntax ;
+    namespace syntax = thodd::syntax ;
     
-    constexpr auto __23 = stx::wrd(chr('2') > chr('3')) ;
+    constexpr auto __23 = syntax::wrd(__odod, test::fii) ;
     constexpr auto __or = __23 | __23 | __23 ;
     constexpr auto __and = __23 > __23 > __23 ;
     constexpr auto __some = *__23 ;
     constexpr auto __comb = +__and | __and ;
+
+    __begin = __input4.begin() ;
+    __end = __input4.end() ;
+
+    auto __t = matches(__23, __begin, __end) ;
+    
+    if(__t.has_value())
+        std::for_each(__t->data.first, __t->data.second, [](auto const& __it){std::cout << __it ;}) ;
     
 
 } 

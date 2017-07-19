@@ -6,7 +6,7 @@
 #  include <type_traits>
 
 namespace 
-thodd
+thodd::syntax
 {
     template<
         typename lang_t,
@@ -15,7 +15,30 @@ thodd
     {
         lang_t tid ;
         std::pair<iterator_t, iterator_t> data ;
-        std::unique_ptr<token> next ;
+
+        inline auto 
+        begin() 
+        {
+            return data.first ;
+        }
+
+        inline auto const
+        begin() const 
+        {
+            return data.first ;
+        }
+
+        inline auto 
+        end() 
+        {
+            return data.second ;
+        }
+
+        inline auto const
+        end() const
+        {
+            return data.second ;
+        }
     } ;
 
 

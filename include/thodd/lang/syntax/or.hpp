@@ -62,6 +62,29 @@ thodd::syntax
             __or.choices,
             std::make_tuple(std::forward<decltype(__rregex)>(__rregex))) } ;
     }
+
+
+    template<
+        typename ... choices_t>
+    inline auto
+    read (
+        or_<choices_t...> const& __or,
+        auto & __cursor,
+        auto const & __end, 
+        auto & __tokens)
+    {
+        std::decay_t<decltype(__tokens)> __tmp ;
+        
+        std::apply(
+            [&] (auto&& ... __choices) 
+            { 
+                (read(__choices, __cursor, __end, __tmp),...) ; 
+            }, 
+            __or.choices) ;
+
+        if(sizeof...(choices_t) == __tmp.size())
+            __tokens.insert(__tokens.end(), __tmp.begin(), __tmp.end()) ;
+    }
 }
 
 #endif

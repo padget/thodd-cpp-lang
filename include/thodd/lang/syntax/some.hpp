@@ -7,10 +7,10 @@ namespace
 thodd::syntax
 {
     template<
-        typename regex_t>
+        typename rule_t>
     struct some : rule
     {
-        regex_t reg ;
+        rule_t reg ;
 
         std::size_t min {0} ;
         std::size_t max {1} ; 
@@ -51,34 +51,50 @@ thodd::syntax
       
     constexpr auto
     operator ~ (
-        auto&& __regex)
-    requires rule_based<decltype(__regex)>
+        auto&& __rule)
+    requires rule_based<decltype(__rule)>
     {   
         return
-        some<std::decay_t<decltype(__regex)>>
-        { std::forward<decltype(__regex)>(__regex) } ;
+        some<std::decay_t<decltype(__rule)>>
+        { std::forward<decltype(__rule)>(__rule) } ;
     }
 
 
     constexpr auto
     operator + (
-        auto&& __regex)
-    requires rule_based<decltype(__regex)>
+        auto&& __rule)
+    requires rule_based<decltype(__rule)>
     {   
         return
-        (~std::forward<decltype(__regex)>(__regex))(1, std::numeric_limits<size_t>::max()) ;
+        (~std::forward<decltype(__rule)>(__rule))(1, std::numeric_limits<size_t>::max()) ;
     }
 
 
     constexpr auto
     operator * (
-        auto&& __regex) 
-    requires rule_based<decltype(__regex)>
+        auto&& __rule) 
+    requires rule_based<decltype(__rule)>
     {   
         return
-        (~std::forward<decltype(__regex)>(__regex))(0, std::numeric_limits<size_t>::max()) ;
+        (~std::forward<decltype(__rule)>(__rule))(0, std::numeric_limits<size_t>::max()) ;
     }
 
+
+    template<
+        typename rule_t>
+    inline auto
+    read (
+        some<rule_t> const& __some,
+        auto & __cursor,
+        auto const & __end, 
+        auto & __tokens)
+    {
+        std::decay_t<decltype(__tokens)> __tmp ;
+
+        
+
+        __tokens.insert(__tokens.end(), __tmp.begin(), __tmp.end()) ;
+    }
 }
 
 #endif

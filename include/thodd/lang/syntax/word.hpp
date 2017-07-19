@@ -37,7 +37,7 @@ thodd::syntax
     } ;
 
     constexpr auto 
-    wrd(
+    wrd (
         auto&& __reg, 
         auto&& __id)
     {
@@ -48,25 +48,22 @@ thodd::syntax
         { std::forward<decltype(__reg)>(__reg), std::forward<decltype(__id)>(__id) } ;
     }
 
+
     inline auto
-    matches(
+    read (
         word<auto, auto> const& __word,
         auto & __cursor,
-        auto const & __end)
+        auto const & __end, 
+        auto & __tokens)
     {
         auto __save = __cursor ;
-
+    
         using token_t = decltype(make_token(__word.id, __save, __cursor)) ;
 
         if(matches(__word.reg, __cursor, __end))
-            return 
-            std::optional<token_t> (make_token(__word.id, __save, __cursor)) ;
+            __tokens.push_back(make_token(__word.id, __save, __cursor)) ;
         else
-        { 
             __cursor = __save ;
-            return
-            std::optional<token_t> () ;
-        }
     }
 }
 

@@ -1,6 +1,7 @@
 #include <iostream>
 #include <string>
 #include <algorithm>
+#include <list>
 #include <thodd/lang.hpp>
 
 enum class test { foo, bar, fii } ;
@@ -45,11 +46,11 @@ int main()
               << matches((*chr('1'))(2, 5), __begin, __end)
               << std::endl ;
         
-    std::string __input4 { "my_name_is_bryan." } ;
+    std::string __input4 { "my_name_is_bryan..." } ;
     __begin = __input4.begin() ;
     __end = __input4.end() ;
 
-    constexpr auto __odod = +(chr('a') - chr('z') | chr('_')) > chr('.') ;
+    constexpr auto __odod = +(chr('a') - chr('z') | chr('_')) > chr('.') > chr('.') > chr('.');
     std::cout << std::boolalpha 
               << matches(
                   __odod, 
@@ -68,11 +69,12 @@ int main()
 
     __begin = __input4.begin() ;
     __end = __input4.end() ;
-
-    auto __t = matches(__23, __begin, __end) ;
+    std::list<syntax::token<test, decltype(__begin)>> __tokens ;
     
-    if(__t.has_value())
-        std::for_each(__t->data.first, __t->data.second, [](auto const& __it){std::cout << __it ;}) ;
+    read(__23, __begin, __end, __tokens) ;
     
-
+    if (!__tokens.empty())
+        for (auto&& __token : __tokens)
+            for (auto&& __item : __token)
+                std::cout << __item ;
 } 

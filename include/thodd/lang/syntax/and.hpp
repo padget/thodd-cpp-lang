@@ -63,6 +63,12 @@ thodd::syntax
     }
 
 
+
+    namespace tuple
+    {
+        
+    }
+
     template<
         typename ... rules_t>
     inline auto
@@ -72,27 +78,11 @@ thodd::syntax
         auto const & __end, 
         auto & __tokens)
     {
-        std::decay_t<decltype(__tokens)> __tmp ;
-        
-        auto continue_ifok = [&] (auto&& __rule)
-        {
-            std::decay_t<decltype(__tokens)> __local ;
-            
-            read(__rule, __cursor, __end, __local) ;
-            
-            if (!__local.empty())
-                __tmp.insert(__tmp.end(), __local.begin(), __local.end()) ;
-            
-            return !__local.empty() ;
-        } ;
+        std::decay_t<decltype(__tokens)> __and_tokens ;
 
-        std::apply(
-            [&] (auto&& ... __rule) 
-            {   
-                return 
-                (continue_ifok(__rule) && ...) ; 
-            }, 
-            __and.rules) ;
+    
+        
+        
     }
 }
 

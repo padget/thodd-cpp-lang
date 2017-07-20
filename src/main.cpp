@@ -2,9 +2,14 @@
 #include <string>
 #include <algorithm>
 #include <list>
+#include <functional>
+
+#include <thodd/tuple/algorithm.hpp>
 #include <thodd/lang.hpp>
 
 enum class test { foo, bar, fii } ;
+
+
 
 int main() 
 {
@@ -45,7 +50,7 @@ int main()
     std::cout << std::boolalpha
               << matches((*chr('1'))(2, 5), __begin, __end)
               << std::endl ;
-        
+
     std::string __input4 { "my_name_is_bryan..." } ;
     __begin = __input4.begin() ;
     __end = __input4.end() ;
@@ -77,4 +82,12 @@ int main()
         for (auto&& __token : __tokens)
             for (auto&& __item : __token)
                 std::cout << __item ;
+
+
+    auto __tuple = std::make_tuple(1, 2, 3) ;
+    auto __accumulator = [] (auto&& __state, auto&& __step) {return __state + __step ; } ;
+    auto __func = [](auto&& __item) -> decltype(auto) { return __item ; } ;
+
+    ::thodd::tuple::iterate([] (auto&& __item) -> auto&& {return (std::cout << __item) ; }, __tuple) ;
+
 } 

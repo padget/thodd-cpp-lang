@@ -49,7 +49,7 @@ thodd::syntax
     }
 
 
-    inline auto
+    inline void
     read (
         word<auto, auto> const& __word,
         auto & __cursor,
@@ -63,7 +63,10 @@ thodd::syntax
         if(matches(__word.reg, __cursor, __end))
             __tokens.push_back(make_token(__word.id, __save, __cursor)) ;
         else
+        {
+            __tokens.push_back(make_invalid_token(__word.id, __save, __cursor)) ;
             __cursor = __save ;
+        }
     }
 }
 

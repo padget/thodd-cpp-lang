@@ -41,7 +41,7 @@ thodd::regex
         or_<
             std::decay_t<decltype(__lregex)>, 
             std::decay_t<decltype(__rregex)>>
-        { std::make_tuple(
+        { std::tuple(
             std::forward<decltype(__lregex)>(__lregex), 
             std::forward<decltype(__rregex)>(__rregex)) } ;
     }
@@ -59,7 +59,7 @@ thodd::regex
         or_<lregexs_t..., std::decay_t<decltype(__rregex)>>
         { std::tuple_cat(
             __or.choices, 
-            std::make_tuple(std::forward<decltype(__rregex)>(__rregex))) } ;
+            std::tuple(std::forward<decltype(__rregex)>(__rregex))) } ;
     }
 
 

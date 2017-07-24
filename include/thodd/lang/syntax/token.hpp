@@ -13,7 +13,7 @@ thodd::syntax
         typename iterator_t>
     struct token
     {
-        lang_t tid ;
+        std::optional<lang_t> id ;
         std::pair<iterator_t, iterator_t> data ;
 
         inline auto 
@@ -39,12 +39,19 @@ thodd::syntax
         {
             return data.second ;
         }
+
+        inline auto const
+        invalid() const
+        {
+            return 
+            !id.has_value() ;
+        }
     } ;
 
 
 
     inline auto 
-    make_token(
+    make_token (
         auto && __tid, 
         auto && __begin, 
         auto && __end)
@@ -58,10 +65,25 @@ thodd::syntax
             static_cast<decltype(__end)&&>(__end) } } ;
     }
 
+    inline auto 
+    make_invalid_token( 
+        auto && __tid,
+        auto && __begin, 
+        auto && __end) 
+    {
+        return 
+        token<
+            std::decay_t<decltype(__tid)>, 
+            std::decay_t<decltype(__begin)>>
+        { std::nullopt,  
+          { static_cast<decltype(__begin)&&>(__begin), 
+            static_cast<decltype(__end)&&>(__end) } } ;
+    }
+
 
 
     inline auto 
-    append(
+    append (
         token<auto, auto> & __token, 
         token<auto, auto> && __next)
     -> decltype(auto)

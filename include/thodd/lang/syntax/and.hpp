@@ -6,6 +6,8 @@
 #  include <type_traits>
 
 #  include <thodd/lang/syntax/rule.hpp>
+#  include <thodd/tuple/algorithm.hpp>
+#  include <thodd/container.hpp>
 
 namespace 
 thodd::syntax
@@ -41,7 +43,7 @@ thodd::syntax
         and_<
             std::decay_t<decltype(__lrule)>, 
             std::decay_t<decltype(__rrule)>>
-        { std::make_tuple(
+        { std::tuple(
             std::forward<decltype(__lrule)>(__lrule), 
             std::forward<decltype(__rrule)>(__rrule)) } ;
     }
@@ -59,15 +61,9 @@ thodd::syntax
         and_<rules_t..., std::decay_t<decltype(__rrule)>>
         { std::tuple_cat(
             __and.rules, 
-            std::make_tuple(std::forward<decltype(__rrule)>(__rrule))) } ;
+            std::tuple(std::forward<decltype(__rrule)>(__rrule))) } ;
     }
 
-
-
-    namespace tuple
-    {
-        
-    }
 
     template<
         typename ... rules_t>
@@ -80,9 +76,29 @@ thodd::syntax
     {
         std::decay_t<decltype(__tokens)> __and_tokens ;
 
-    
+        auto __read_next = 
+            [&] (auto && __rule)
+            { 
+                read(std::forward<decltype(__rule)>(__rule), __cursor, __end, __and_tokens) ; 
+            } ;
         
-        
+        auto __if_last_valid = 
+            [&__and_tokens] (auto && ... __any) 
+            { 
+                return 
+                __and_tokens.empty() 
+                || (!__and_tokens.empty() 
+                    && !__and_tokens.back().invalid()) ; 
+            } ;
+
+        ::thodd::tuple::iterate_if(__if_last_valid, __read_next, __and.rules) ;
+
+        if(!__and_tokens.empty())
+            __tokens.insert(
+                __tokens.end(),
+                __and_tokens.begin(), 
+                __and_tokens.end()) ;
+        else ;        
     }
 }
 

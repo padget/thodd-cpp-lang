@@ -40,7 +40,7 @@ thodd::regex
         and_<
             std::decay_t<decltype(__lregex)>, 
             std::decay_t<decltype(__rregex)>>
-        { std::make_tuple(
+        { std::tuple(
             std::forward<decltype(__lregex)>(__lregex), 
             std::forward<decltype(__rregex)>(__rregex)) } ;
     }
@@ -58,7 +58,7 @@ thodd::regex
         and_<regexs_t..., std::decay_t<decltype(__rregex)>>
         { std::tuple_cat(
             __and.regexs, 
-            std::make_tuple(std::forward<decltype(__rregex)>(__rregex))) } ;
+            std::tuple(std::forward<decltype(__rregex)>(__rregex))) } ;
     }
 
 

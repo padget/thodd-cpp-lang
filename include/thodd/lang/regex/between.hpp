@@ -79,6 +79,21 @@ thodd::regex
         return
         __res ;  
     }
+
+    inline auto 
+    potential (
+        between<auto, auto> const & __between)
+    {
+        std::vector<std::vector<decltype(__between.min.c)>> __potent ;
+
+        while(auto __c = __between.min.c; __c <= __between.min.c)
+        {    
+            __potent.push_back(std::vector<decltype(__between.min.c)>()) ;
+            __potent.back().push_back(__c) ;
+            ++__c ;
+        }
+        return __potent ;
+    }
 }
 
 #endif 

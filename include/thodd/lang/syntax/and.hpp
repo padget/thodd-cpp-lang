@@ -93,7 +93,11 @@ thodd::syntax
 
         ::thodd::tuple::iterate_if(__if_last_valid, __read_next, __and.rules) ;
 
-        if(!__and_tokens.empty())
+        if(!__and_tokens.empty() 
+            && std::none_of(
+                __and_tokens.cbegin(), 
+                __and_tokens.cend(), 
+                [] (auto && __t) { return __t.invalid() ; }))
             __tokens.insert(
                 __tokens.end(),
                 __and_tokens.begin(), 

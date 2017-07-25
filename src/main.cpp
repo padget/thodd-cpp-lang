@@ -9,7 +9,24 @@
 
 enum class test { foo, bar, fii } ;
 
-enum class calc { num, add, mult } ;
+enum class calc { integer, add_op, mult } ;
+
+enum class lexword {digit, point, float_, exp} ;
+
+constexpr auto 
+predict (
+    thodd::syntax::word<auto, auto> const & ... __word)
+{
+    __word.reg
+} 
+
+constexpr auto lex = 
+    [] ( auto&& __begin, 
+         auto&& __end, 
+         thodd::syntax::word<auto, auto> const & ... __word) 
+    {
+
+    } ;
 
 int main() 
 {
@@ -93,8 +110,8 @@ int main()
         __tuple) ;
 
     ::thodd::tuple::iterate_if(
-        [] (auto && __item) { return __item % 2 == 0 ; }, 
-        [] (auto && __item) { std::cout << __item ; },
+        [] (auto && __item) { return __item % 2 == 0 ; } ,  
+        [] (auto && __item) { std::cout << __item ; }    ,
         std::tuple(1, 2, 3, 4, 5, 6, 7, 8, 9)) ;
     
     std::cout << ::thodd::tuple::accumulate(__func, __accumulator, 0u, __tuple) << std::endl ;
@@ -114,6 +131,32 @@ int main()
             if (!__token.invalid())
                 for (auto&& __item : __token)
                     std::cout << __item ;
-            else std::cout << "token invalid" << std::endl;
+            else std::cout << "token invalid" << std::endl ;
     } 
+
+    std::cout << "next test" << std::endl ;
+
+    constexpr auto __and23 = __23 > __23 > __23 ;
+
+    std::string __input6 {"my_name_is_bryan...my_name_is_bryan...my_name_is_bryan.."} ;
+    __begin = __input6.begin() ;
+    __end = __input6.end() ;
+    std::list<syntax::token<test, decltype(__begin)>> __tokensgood ;
+
+    read(__and23, __begin, __end, __tokensgood) ;
+
+    for (auto&& __token : __tokensgood)
+        if (!__token.invalid())
+            for (auto&& __item : __token)
+                std::cout << __item ;
+        else std::cout << "token invalid" << std::endl ;
+
+    
+
+    lex(__begin, __end, 
+        syntax::wrd(chr('0') - chr('9')                                                  , lexword::digit), 
+        syntax::wrd(chr('.')                                                             , lexword::point), 
+        syntax::wrd(+(chr('0') - chr('9')) > (~(chr('.') > +(chr('0') - chr('9'))))(0, 1), lexword::float_)) ;
+
+    
 }

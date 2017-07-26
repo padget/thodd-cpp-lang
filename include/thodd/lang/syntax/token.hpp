@@ -2,7 +2,7 @@
 #  define __THODD_LANG_CORE_TOKEN_HPP__
 
 #  include <utility>
-#  include <memory>
+#  include <optional>
 #  include <type_traits>
 
 namespace 
@@ -78,18 +78,6 @@ thodd::syntax
         { std::nullopt,  
           { static_cast<decltype(__begin)&&>(__begin), 
             static_cast<decltype(__end)&&>(__end) } } ;
-    }
-
-
-
-    inline auto 
-    append (
-        token<auto, auto> & __token, 
-        token<auto, auto> && __next)
-    -> decltype(auto)
-    {
-        return 
-        (__token.next = std::move(std::make_unique(__next))) ;
     }
 }
 

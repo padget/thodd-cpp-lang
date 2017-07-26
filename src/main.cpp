@@ -3,66 +3,73 @@
 #include <algorithm>
 #include <list>
 #include <functional>
+#include <type_traits>
+#include <typeinfo>
 
-#include <thodd/functional.hpp>
-
-enum class test { foo, bar, fii } ;
-
-enum class calc { integer, add_op, mult } ;
-
-enum class lexword {digit, point, float_, exp} ;
+#include <thodd/lang.hpp>
+#include <cxxabi.h>
 
 
-
-
-template<typename char_t>
-struct bin_op
+template<typename T>
+std::string type_name()
 {
-    char_t left, 
-    char_t op, 
-    char_t right,
-} ;
+    int status;
+    std::string tname = typeid(T).name();
+    char *demangled_name = abi::__cxa_demangle(tname.c_str(), NULL, NULL, &status);
+    if(status == 0) {
+        tname = demangled_name;
+        std::free(demangled_name);
+    }   
+    return tname;
+}
 
 
 
 int main() 
 {
-    using namespace thodd ;
+    using namespace thodd::lang::syntax ;
 
-    auto is_between_chars = tern($0 <= *$2 && *$2 <= $1)[cout_<<*$2, ++$2][$2] ;
-    auto is_particular_char = tern($0 == *$1)[cout_<<*$1, ++$1][$1] ;
+    struct digit        : item {} ;
+    struct sub_symbol   : item {} ;
+    struct add_symbol   : item {} ;
+    struct mult_symbol  : item {} ;
+    struct div_symbol   : item {} ;
+    struct left_symbol  : item {} ;
+    struct right_symbol : item {} ;
+    struct number       : item {} ; 
+    struct parens       : item {} ; 
+    struct factor       : item {} ; 
+    struct term         : item {} ; 
+    struct expression   : item {} ;
 
-    auto is_digit = bind(is_between_chars, val('0'), val('9'), $0) ;
 
-    auto is_add  = bind(is_particular_char, val('+'), $0) ;
-    auto is_sub  = bind(is_particular_char, val('-'), $0) ;
-    auto is_mult = bind(is_particular_char, val('*'), $0) ;
-    auto is_div  = bind(is_particular_char, val('/'), $0) ;
+    constexpr auto calc = 
+        grammar(
+            number{}     <= +digit{} ,
+            parens{}     <= left_symbol{} > expression{} > right_symbol{} ,
+            factor{}     <= number{} | parens{} ,
+            term{}       <= factor{} > *((mult_symbol{} | div_symbol{}) > factor{}) ,
+            expression{} <= term{} > *((add_symbol{} | sub_symbol{}) > term{})) ;
+ 
+    std::cout << type_name<std::decay_t<decltype(calc)>>() << std::endl ;
 
-    auto is_open  = bind(is_particular_char, val('('), $0) ;
-    auto is_close = bind(is_particular_char, val(')'), $0) ;
-
+    /*
+    thodd::lang::syntax::grammar_item<
+        thodd::lang::syntax::rule<
+            main::number, 
+            thodd::lang::syntax::some<main::digit> >, 
+        thodd::lang::syntax::and_<
+            thodd::lang::syntax::rule<
+                main::parens, 
+                main::left_symbol>, 
+            main::expression, 
+            main::right_symbol>, 
+        thodd::lang::syntax::or_<
+            thodd::lang::syntax::rule<
+                main::factor, main::number>, main::parens>, thodd::lang::syntax::and_<thodd::lang::syntax::rule<main::term, main::factor>, thodd::lang::syntax::some<thodd::lang::syntax::and_<thodd::lang::syntax::or_<main::mult_symbol, main::div_symbol>, main::factor> > >, thodd::lang::syntax::and_<thodd::lang::syntax::rule<main::expression, main::term>, thodd::lang::syntax::some<thodd::lang::syntax::and_<thodd::lang::syntax::or_<main::add_symbol, main::sub_symbol>, main::term> > > >
     
-    auto is_add_operation = compose(is_digit, compose(is_add, is_digit)) ;
-    auto is_sub_operation = compose(is_digit, compose(is_sub, is_digit)) ;
-    auto is_mult_operation = compose(is_digit, compose(is_mult, is_digit)) ;
-    auto is_div_operation = compose(is_digit, compose(is_div, is_digit)) ;
-
-    auto is_expression = compose(
-                            is_add_operation, 
-                            compose(
-                                is_sub_operation, 
-                                compose(
-                                    is_mult_operation, 
-                                    is_div_operation))) ;
-
-    auto char_to_int = bind(static_cast_<int>, *$0 + val('0')) ;
-    auto on_add_operation = compose(char_to_int, ) ;
-
-    std::string __str {"1/1="}; 
-    std::cout << *is_expression(__str.begin()) ;
-
-  
-
     
+    
+    
+    */
 }

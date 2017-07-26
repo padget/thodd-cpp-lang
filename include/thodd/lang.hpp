@@ -13,9 +13,10 @@
 /// Syntax library
 #  include <thodd/lang/syntax/rule.hpp>
 #  include <thodd/lang/syntax/token.hpp>
-#  include <thodd/lang/syntax/word.hpp>
+#  include <thodd/lang/syntax/item.hpp>
 #  include <thodd/lang/syntax/and.hpp>
 #  include <thodd/lang/syntax/or.hpp>
 #  include <thodd/lang/syntax/some.hpp>
+#  include <thodd/lang/syntax/grammar.hpp>
 
 #endif

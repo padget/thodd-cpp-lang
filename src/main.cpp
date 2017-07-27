@@ -23,19 +23,29 @@ std::string type_name()
     return tname;
 }
 
-
+enum class
+calc
+{
+    digit,
+    sub_symbol,
+    add_symbol,
+    mult_symbol,
+    div_symbol,
+    left_symbol,
+    right_symbol
+};
 
 int main() 
 {
     using namespace thodd::lang::syntax ;
 
-    struct digit        : item {} ;
-    struct sub_symbol   : item {} ;
-    struct add_symbol   : item {} ;
-    struct mult_symbol  : item {} ;
-    struct div_symbol   : item {} ;
-    struct left_symbol  : item {} ;
-    struct right_symbol : item {} ;
+    struct digit        : leaf<calc::digit> {} ;
+    struct sub_symbol   : leaf<calc::sub_symbol> {} ;
+    struct add_symbol   : leaf<calc::add_symbol> {} ;
+    struct mult_symbol  : leaf<calc::mult_symbol> {} ;
+    struct div_symbol   : leaf<calc::div_symbol> {} ;
+    struct left_symbol  : leaf<calc::left_symbol> {} ;
+    struct right_symbol : leaf<calc::right_symbol> {} ;
     struct number       : item {} ; 
     struct parens       : item {} ; 
     struct factor       : item {} ; 
@@ -43,33 +53,23 @@ int main()
     struct expression   : item {} ;
 
 
-    constexpr auto calc = 
+    constexpr auto calc_grammar = 
         grammar(
-            number{}     <= +digit{} ,
-            parens{}     <= left_symbol{} > expression{} > right_symbol{} ,
-            factor{}     <= number{} | parens{} ,
-            term{}       <= factor{} > *((mult_symbol{} | div_symbol{}) > factor{}) ,
-            expression{} <= term{} > *((add_symbol{} | sub_symbol{}) > term{})) ;
+            number{}     <= (+digit{}) ,
+            parens{}     <= (left_symbol{} > expression{} > right_symbol{}) ,
+            factor{}     <= (number{} | parens{}) ,
+            term{}       <= (factor{} > *((mult_symbol{} | div_symbol{}) > factor{})) ,
+            expression{} <= (term{} > *((add_symbol{} | sub_symbol{}) > term{}))) ;
  
-    std::cout << type_name<std::decay_t<decltype(calc)>>() << std::endl ;
-
-    /*
-    thodd::lang::syntax::grammar_item<
-        thodd::lang::syntax::rule<
-            main::number, 
-            thodd::lang::syntax::some<main::digit> >, 
-        thodd::lang::syntax::and_<
-            thodd::lang::syntax::rule<
-                main::parens, 
-                main::left_symbol>, 
-            main::expression, 
-            main::right_symbol>, 
-        thodd::lang::syntax::or_<
-            thodd::lang::syntax::rule<
-                main::factor, main::number>, main::parens>, thodd::lang::syntax::and_<thodd::lang::syntax::rule<main::term, main::factor>, thodd::lang::syntax::some<thodd::lang::syntax::and_<thodd::lang::syntax::or_<main::mult_symbol, main::div_symbol>, main::factor> > >, thodd::lang::syntax::and_<thodd::lang::syntax::rule<main::expression, main::term>, thodd::lang::syntax::some<thodd::lang::syntax::and_<thodd::lang::syntax::or_<main::add_symbol, main::sub_symbol>, main::term> > > >
-    
-    
-    
-    
-    */
+    std::cout << type_name<std::decay_t<decltype(calc_grammar)>>() << std::endl ;
+    std::cout << read(calc_grammar) ;
 }
+
+/* grammar 
+    rule 
+        item 
+        some 
+            leaf 
+    rule 
+        item 
+        and leaf item leaf rule item or item item rule item and item some and or leaf leaf item rule item and item some and or leaf leaf item */

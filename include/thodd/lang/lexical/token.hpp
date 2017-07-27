@@ -1,12 +1,12 @@
-#ifndef __THODD_LANG_CORE_TOKEN_HPP__
-#  define __THODD_LANG_CORE_TOKEN_HPP__
+#ifndef __THODD_LANG_LEXICAL_TOKEN_HPP__
+#  define __THODD_LANG_LEXICAL_TOKEN_HPP__
 
 #  include <utility>
 #  include <optional>
 #  include <type_traits>
 
 namespace 
-thodd::syntax
+thodd::lang::lexical
 {
     template<
         typename lang_t,
@@ -60,9 +60,9 @@ thodd::syntax
         token<
             std::decay_t<decltype(__tid)>, 
             std::decay_t<decltype(__begin)>>
-        { static_cast<decltype(__tid)&&>(__tid), 
-          { static_cast<decltype(__begin)&&>(__begin), 
-            static_cast<decltype(__end)&&>(__end) } } ;
+        { std::forward<decltype(__tid)>(__tid), 
+          { std::forward<decltype(__begin)>(__begin), 
+            std::forward<decltype(__end)>(__end) } } ;
     }
 
     inline auto 
@@ -76,8 +76,8 @@ thodd::syntax
             std::decay_t<decltype(__tid)>, 
             std::decay_t<decltype(__begin)>>
         { std::nullopt,  
-          { static_cast<decltype(__begin)&&>(__begin), 
-            static_cast<decltype(__end)&&>(__end) } } ;
+          { std::forward<decltype(__begin)>(__begin), 
+            std::forward<decltype(__end)>(__end) } } ;
     }
 }
 

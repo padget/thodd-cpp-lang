@@ -16,7 +16,7 @@ thodd::lang::syntax
         auto&& __production) 
     requires item_based<
                 decltype(__def), 
-                decltype(__production)> 
+                decltype(__production)>
     {
         return 
         rule<

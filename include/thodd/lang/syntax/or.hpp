@@ -30,7 +30,7 @@ thodd::lang::syntax
         auto&& __after)
     requires item_based<
                 item_t..., 
-                decltype(__after)>
+                decltype(__after)>             
     {
         return 
         or_<

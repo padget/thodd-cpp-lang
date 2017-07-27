@@ -10,9 +10,13 @@
 #  include <thodd/lang/regex/char.hpp>
 #  include <thodd/lang/regex/some.hpp>
 
+/// Lexem library
+#  include <thodd/lang/lexical/token.hpp>
+#  include <thodd/lang/lexical/analyse.hpp>
+#  include <thodd/lang/lexical/word.hpp>
+
 /// Syntax library
 #  include <thodd/lang/syntax/rule.hpp>
-#  include <thodd/lang/syntax/token.hpp>
 #  include <thodd/lang/syntax/item.hpp>
 #  include <thodd/lang/syntax/and.hpp>
 #  include <thodd/lang/syntax/or.hpp>

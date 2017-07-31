@@ -52,7 +52,7 @@ thodd::regex
     } ;
 
 
-   constexpr auto
+    constexpr auto
     operator ~ (
         auto&& __regex)
     requires regex_based<decltype(__regex)>
@@ -85,21 +85,20 @@ thodd::regex
     inline auto 
     matches(
         some<auto> const& __some, 
-        auto& __begin, 
-        auto const& __end)
+        auto __cursor, 
+        auto const __end)
     {
         auto __cpt = 0u ;
-        auto __save = __begin ;
+        auto __previous = __cursor ;
+        auto __initial = __cursor ;
 
-        while (   __begin != __end 
-               && __cpt <= __some.max 
-               && matches(__some.reg, __begin, __end)) 
-            ++__cpt ;
-        
+        while (__cpt <= __some.max 
+               && (__cursor = matches(__some.reg, __cursor, __end)) != __previous)
+        { ++__cpt ; __previous = __cursor ; }
+
         return 
-        __some.min <= __cpt && __cpt <= __some.max ?
-        true : 
-        (__begin = __save, false) ;
+        __some.min <= __cpt && __cpt <= __some.max ? 
+        __cursor : __initial ; 
     }
 }
 

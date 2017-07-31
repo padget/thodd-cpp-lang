@@ -36,9 +36,9 @@ thodd::lang::lexical
         auto __end, 
         auto const & __word)
     {
-        auto __save = __begin, 
+        auto __save = __begin ;
         return 
-        matches(__begin, __end, __reg) ?
+        matches(__begin, __end, __word.reg) ?
         make_token(__word.id, __save, __begin) :
         make_invalid_token(__word.id, __save, __begin) ;
     }

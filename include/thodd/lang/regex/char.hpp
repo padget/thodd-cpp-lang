@@ -51,20 +51,18 @@ thodd::regex
         typename ... types_t>
     concept bool char_based = (detail::is_char<std::decay_t<types_t>>::value && ...) ;
 
+
+
     inline auto 
     matches(
         char_<auto> const& __char,
-        auto& __cursor, 
-        auto const& __end)
+        auto __cursor, 
+        auto const __end)
     {
-        auto&& __res = __cursor != __end && *__cursor == __char.c ;
-       
-        if(__res)
-            ++__cursor ;
-       
         return 
-        __res ;
-        
+        __cursor != __end 
+        && *__cursor == __char.c ?
+        ++__cursor : __cursor ;        
     }
 }
 

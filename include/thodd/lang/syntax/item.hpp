@@ -2,7 +2,7 @@
 #  define __THODD_LANG_SYNTAX_ITEM_HPP__
 
 namespace 
-thodd::lang::syntax
+thodd::syntax
 {
     struct item {} ;
 

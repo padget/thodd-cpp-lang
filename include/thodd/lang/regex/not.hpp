@@ -34,16 +34,13 @@ thodd::regex
     inline auto
     matches(
         not_<auto> const& __not, 
-        auto& __cursor, 
-        auto const& __end)
+        auto __cursor, 
+        auto const __end)
     {
-        auto __save = __cursor ;
-        auto&& __res = ! matches(__not.reg, __cursor, __end) ;
-         
-        if (__res) __cursor = __save ; 
-
-        return 
-        __res ; 
+        auto __res = matches(__not.reg, __cursor, __end) ;
+     
+        return
+        __res == __cursor ? __res : __cursor ;  
     }
 }
 

@@ -4,8 +4,11 @@
 #  include <utility>
 #  include <tuple>
 #  include <type_traits>
+#  include <algorithm>
+#  include <array>
 
 #  include <thodd/lang/regex/regex.hpp>
+#  include <thodd/functional.hpp>
 
 namespace 
 thodd::regex
@@ -32,8 +35,8 @@ thodd::regex
 
     constexpr auto
     operator > (
-        auto&& __lregex, 
-        auto&& __rregex)
+        auto const & __lregex, 
+        auto const & __rregex)
     requires regex_based<decltype(__lregex), decltype(__rregex)>
     {
         return
@@ -50,8 +53,8 @@ thodd::regex
         typename ... regexs_t>
     constexpr auto
     operator > (
-        and_<regexs_t...> const& __and,
-        auto&& __rregex)
+        and_<regexs_t...> const & __and,
+        auto const & __rregex)
     requires regex_based<decltype(__rregex), regexs_t...>
     {
         return 
@@ -62,25 +65,29 @@ thodd::regex
     }
 
 
-    template<typename ... types_t>
+    template<
+        typename ... types_t>
     inline auto
     matches(
         and_<types_t...> const& __and,
-        auto& __cursor, 
-        auto const& __end)
+        auto __cursor, 
+        auto const __end)
     {
-        return 
-        std::apply(
-            [&](auto && ... __choices) 
+        auto __results = std::apply(
+            [__cursor, __end] (auto && ... __regex)
             { 
-                auto __save = __cursor ;
-                auto __res = ( matches(__choices, __cursor, __end) && ... ) ;
-              
-                if (!__res) __cursor = __save ;
-                
-                return __res ;
-            }, 
+                auto __tmp = __cursor ;
+                return 
+                std::array { (__tmp = matches(std::forward<decltype(__regex)>(__regex), __tmp, __end)) ... } ; } ,
             __and.regexs) ;
+
+        auto __previous = __results.begin() ;
+
+        return 
+        std::all_of(
+            ++__previous, __results.end(), 
+            $0 != *(++ref(__previous))) ? 
+            __results.back() : __cursor ; 
     }
 }
 

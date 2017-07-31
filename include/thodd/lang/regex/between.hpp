@@ -68,16 +68,14 @@ thodd::regex
     inline auto
     matches(
         between<auto, auto> const& __between,
-        auto& __cursor, 
-        auto const& __end)
+        auto __cursor, 
+        auto const __end)
     {
-        auto&& __res = __cursor != __end && __between.min.c <= *__cursor && *__cursor <= __between.max.c ; 
-        
-        if(__res)
-            ++__cursor ;
-        
-        return
-        __res ;  
+        return 
+        __cursor != __end 
+        && __between.min.c <= *__cursor 
+        && *__cursor <= __between.max.c ? 
+        ++__cursor : __cursor ; 
     }
 }
 

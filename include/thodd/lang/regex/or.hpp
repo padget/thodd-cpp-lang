@@ -4,6 +4,8 @@
 #  include <tuple>
 #  include <type_traits>
 #  include <utility>
+#  include <array>
+#  include <algorithm>
 
 #  include <thodd/lang/regex/regex.hpp>
 
@@ -33,8 +35,8 @@ thodd::regex
 
     constexpr auto
     operator | (
-        auto&& __lregex, 
-        auto&& __rregex)
+        auto const & __lregex, 
+        auto const & __rregex)
     requires regex_based<decltype(__lregex), decltype(__rregex)>
     {        
         return
@@ -52,7 +54,7 @@ thodd::regex
     constexpr auto
     operator | (
         or_<lregexs_t...> const & __or,
-        auto&& __rregex)
+        auto const & __rregex)
     requires regex_based<decltype(__rregex), lregexs_t...>
     {
         return 
@@ -63,34 +65,24 @@ thodd::regex
     }
 
 
-    template<typename ... types_t>
+        template<
+        typename ... types_t>
     inline auto
     matches(
         or_<types_t...> const& __or,
-        auto& __cursor, 
-        auto const& __end)
+        auto __cursor, 
+        auto const __end)
     {
+        auto __results = std::apply(
+            [=] (auto && ... __choice)
+            { return std::array { matches(std::forward<decltype(__choice)>(__choice), __cursor, __end) ... } ; } ,
+             __or.choices) ;       
+
+        auto __found = std::find_if(__results.begin(), __results.end(), $0 != val(__cursor)) ;  
+   
         return 
-        std::apply(
-            [&](auto && ... __choices) 
-            {
-                auto __res = false ;
-
-                auto __each = [&](auto && __choice) 
-                    {
-                        auto __save = __cursor ;
-                        auto&& __res = matches(__choice, __cursor, __end) ;
-
-                        if (!__res) __cursor = __save ;
-                        
-                        return __res ;
-                    } ;
-
-                __res = ( __each(__choices) || ... ) ; 
-
-                return __res ;
-            }, 
-            __or.choices) ;
+        __found != __results.end() && *__found != __cursor ? 
+        *__found : __cursor ; 
     }
 }
 

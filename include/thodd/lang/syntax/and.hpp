@@ -4,7 +4,7 @@
 #  include <thodd/lang/syntax/item.hpp>
 
 namespace
-thodd::lang::syntax 
+thodd::syntax 
 {
     template<typename ...>
     struct and_ : item {} ;

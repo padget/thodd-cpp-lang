@@ -4,7 +4,7 @@
 #  include <type_traits>
 
 namespace 
-thodd::lang::syntax
+thodd::syntax
 {
     template <typename...> 
     struct grammar_item {} ;

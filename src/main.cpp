@@ -35,9 +35,25 @@ calc
     right_symbol
 };
 
+auto foo(auto i, auto const ... idx)
+{
+    return std::array { (idx, i++)... } ;
+}
+
 int main() 
 {
-    using namespace thodd::lang::syntax ;
+    using namespace thodd::regex ;
+    
+
+    constexpr auto __unpair = !(chr('1') > chr('3') > chr('5')) ;
+    std::string __input2 { "a" } ;
+    auto __last = matches(__unpair, __input2.begin(), __input2.end());
+    std::cout << std::boolalpha << (__last != __input2.begin()) << std::endl ; 
+    
+    std::cout << type_name<decltype(__unpair)>() << std::endl ;
+
+    
+    /*using namespace thodd::syntax ;
 
     struct digit        : leaf<calc::digit> {} ;
     struct sub_symbol   : leaf<calc::sub_symbol> {} ;
@@ -63,9 +79,18 @@ int main()
  
     std::cout << type_name<std::decay_t<decltype(calc_grammar)>>() << std::endl ;
     std::cout << read(calc_grammar) ;
+    */
+
+
+
+
+
+
+
+
 }
 
-/* grammar 
+/* grammar  
     rule 
         item 
         some 

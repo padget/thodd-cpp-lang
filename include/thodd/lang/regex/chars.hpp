@@ -36,7 +36,7 @@ thodd::regex
         return 
         __chrs_impl (
             __chrs, 
-            std::make_index_sequence<size_c>{}) ;
+            std::make_index_sequence<size_c - 1>{}) ;
     }
 }
 

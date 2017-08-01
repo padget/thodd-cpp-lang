@@ -63,6 +63,35 @@ thodd::regex
             __and.regexs, 
             std::tuple(std::forward<decltype(__rregex)>(__rregex))) } ;
     }
+
+    template<
+        typename ... regexs_t>
+    constexpr auto
+    operator > (
+        auto const & __rregex, 
+        and_<regexs_t...> const & __and)
+    requires regex_based<decltype(__rregex), regexs_t...>
+    {
+        return 
+        and_<std::decay_t<decltype(__rregex)>, regexs_t...>
+        { std::tuple_cat(
+            std::tuple(std::forward<decltype(__rregex)>(__rregex)),
+            __and.regexs) } ;
+    }
+
+    template<
+        typename ... regexs_t, 
+        typename ... regexs2_t>
+    constexpr auto
+    operator > (
+        and_<regexs_t...> const & __and,
+        and_<regexs2_t...> const & __and2)
+    requires regex_based<regexs2_t..., regexs_t...>
+    {
+        return 
+        and_<regexs_t..., regexs2_t...>
+        { std::tuple_cat(__and.regexs, __and2.regexs) } ;
+    }
 }
 
 #endif

@@ -6,7 +6,7 @@
 #  include <thodd/lang/lexical/token.hpp>
 
 namespace 
-thodd::lang::lexical
+thodd::lexical
 {
     inline auto
     analyse(

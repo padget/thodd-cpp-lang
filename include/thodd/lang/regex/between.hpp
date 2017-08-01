@@ -62,21 +62,6 @@ thodd::regex
         { std::forward<decltype(__min)>(__min), 
           std::forward<decltype(__max)>(__max) } ;
     }
-
-
-
-    inline auto
-    matches(
-        between<auto, auto> const& __between,
-        auto __cursor, 
-        auto const __end)
-    {
-        return 
-        __cursor != __end 
-        && __between.min.c <= *__cursor 
-        && *__cursor <= __between.max.c ? 
-        ++__cursor : __cursor ; 
-    }
 }
 
 #endif 

@@ -63,32 +63,6 @@ thodd::regex
             __and.regexs, 
             std::tuple(std::forward<decltype(__rregex)>(__rregex))) } ;
     }
-
-
-    template<
-        typename ... types_t>
-    inline auto
-    matches(
-        and_<types_t...> const& __and,
-        auto __cursor, 
-        auto const __end)
-    {
-        auto __results = std::apply(
-            [__cursor, __end] (auto && ... __regex)
-            { 
-                auto __tmp = __cursor ;
-                return 
-                std::array { (__tmp = matches(std::forward<decltype(__regex)>(__regex), __tmp, __end)) ... } ; } ,
-            __and.regexs) ;
-
-        auto __previous = __results.begin() ;
-
-        return 
-        std::all_of(
-            ++__previous, __results.end(), 
-            $0 != *(++ref(__previous))) ? 
-            __results.back() : __cursor ; 
-    }
 }
 
 #endif

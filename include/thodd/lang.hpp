@@ -8,7 +8,9 @@
 #  include <thodd/lang/regex/between.hpp>
 #  include <thodd/lang/regex/not.hpp>
 #  include <thodd/lang/regex/char.hpp>
+#  include <thodd/lang/regex/chars.hpp>
 #  include <thodd/lang/regex/some.hpp>
+#  include <thodd/lang/regex/matches.hpp>
 
 /// Lexem library
 #  include <thodd/lang/lexical/token.hpp>

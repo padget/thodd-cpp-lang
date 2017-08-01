@@ -81,25 +81,6 @@ thodd::regex
         return
         (~std::forward<decltype(__regex)>(__regex))(0, std::numeric_limits<size_t>::max()) ;
     }
-
-    inline auto 
-    matches(
-        some<auto> const& __some, 
-        auto __cursor, 
-        auto const __end)
-    {
-        auto __cpt = 0u ;
-        auto __previous = __cursor ;
-        auto __initial = __cursor ;
-
-        while (__cpt <= __some.max 
-               && (__cursor = matches(__some.reg, __cursor, __end)) != __previous)
-        { ++__cpt ; __previous = __cursor ; }
-
-        return 
-        __some.min <= __cpt && __cpt <= __some.max ? 
-        __cursor : __initial ; 
-    }
 }
 
 

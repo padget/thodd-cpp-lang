@@ -4,7 +4,7 @@
 #  include <type_traits>
 
 namespace 
-thodd::lang::lexical
+thodd::lexical
 {
     template<
         typename id_t,
@@ -18,7 +18,7 @@ thodd::lang::lexical
     template<
         typename id_t, 
         typename regex_t>
-    word(id_t, regex_t&&) -> word<id_t, std::decay_t<regex_t>> ;
+    word (id_t, regex_t&&) -> word<id_t, std::decay_t<regex_t>> ;
 }
 
 #endif

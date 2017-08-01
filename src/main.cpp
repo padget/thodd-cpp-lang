@@ -6,8 +6,11 @@
 #include <type_traits>
 #include <typeinfo>
 
-#include <thodd/lang.hpp>
+
 #include <cxxabi.h>
+
+
+#include <thodd/lang.hpp>
 
 
 template<typename T>
@@ -35,22 +38,29 @@ calc
     right_symbol
 };
 
-auto foo(auto i, auto const ... idx)
-{
-    return std::array { (idx, i++)... } ;
-}
-
 int main() 
 {
     using namespace thodd::regex ;
     
 
-    constexpr auto __unpair = !(chr('1') > chr('3') > chr('5')) ;
-    std::string __input2 { "a" } ;
-    auto __last = matches(__unpair, __input2.begin(), __input2.end());
-    std::cout << std::boolalpha << (__last != __input2.begin()) << std::endl ; 
+    constexpr auto __unpair = chr('1') | chr('3') | chr('5') | chr('7') | chr('9') ;
+    constexpr auto __pair   = chr('0') | chr('2') | chr('4') | chr('6') | chr('8') ;
     
-    std::cout << type_name<decltype(__unpair)>() << std::endl ;
+    std::string __input2 { "2" } ;
+    auto [__matched, __it] = matches(__unpair | __pair, __input2.begin(), __input2.end());
+    
+    std::cout << std::boolalpha << (__matched && __it == __input2.end()) << std::endl ;
+    std::cout << type_name<decltype(__unpair | __pair)>() << std::endl ;
+
+    constexpr auto __hello  = chrs("hello") ;
+    std::string __input3 { "hello" } ;
+    auto [__matched2, __it2] = matches(__hello, __input3.begin(), __input3.end()) ;
+    std::cout << std::boolalpha << __matched2 << std::endl ;
+    std::cout << type_name<decltype(__hello)>() << std::endl ;
+
+    using namespace thodd::lexical ;
+
+    //auto __word = word (calc::digit, __unpair | __pair) ;
 
     
     /*using namespace thodd::syntax ;

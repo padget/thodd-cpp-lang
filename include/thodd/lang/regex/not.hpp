@@ -27,20 +27,7 @@ thodd::regex
     {
         return
         not_<std::decay_t<decltype(__regex)>>
-        { static_cast<decltype(__regex)&&>(__regex) } ; 
-    }
-
-
-    inline auto
-    matches(
-        not_<auto> const& __not, 
-        auto __cursor, 
-        auto const __end)
-    {
-        auto __res = matches(__not.reg, __cursor, __end) ;
-     
-        return
-        __res == __cursor ? __res : __cursor ;  
+        { std::forward<decltype(__regex)>(__regex) } ; 
     }
 }
 

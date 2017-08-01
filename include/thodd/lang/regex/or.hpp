@@ -50,39 +50,18 @@ thodd::regex
 
 
     template<
-        typename ... lregexs_t>
+        typename ... regexs_t>
     constexpr auto
     operator | (
-        or_<lregexs_t...> const & __or,
+        or_<regexs_t...> const & __or,
         auto const & __rregex)
-    requires regex_based<decltype(__rregex), lregexs_t...>
+    requires regex_based<decltype(__rregex), regexs_t...>
     {
         return 
         or_<lregexs_t..., std::decay_t<decltype(__rregex)>>
         { std::tuple_cat(
             __or.choices, 
             std::tuple(std::forward<decltype(__rregex)>(__rregex))) } ;
-    }
-
-
-        template<
-        typename ... types_t>
-    inline auto
-    matches(
-        or_<types_t...> const& __or,
-        auto __cursor, 
-        auto const __end)
-    {
-        auto __results = std::apply(
-            [=] (auto && ... __choice)
-            { return std::array { matches(std::forward<decltype(__choice)>(__choice), __cursor, __end) ... } ; } ,
-             __or.choices) ;       
-
-        auto __found = std::find_if(__results.begin(), __results.end(), $0 != val(__cursor)) ;  
-   
-        return 
-        __found != __results.end() && *__found != __cursor ? 
-        *__found : __cursor ; 
     }
 }
 

@@ -38,11 +38,9 @@ thodd::regex
         auto __cursor, 
         auto const __end)
     {
-        auto const& [__min, __max] = __between ;
-
         return 
         __cursor != __end && 
-        (__min.c <= *__cursor && *__cursor <= __max.c) ? 
+        (__between.min.c <= *__cursor && *__cursor <= __between.max.c) ? 
         std::tuple { true, ++__cursor } : 
         std::tuple { false, __cursor } ; 
     }
@@ -89,12 +87,10 @@ thodd::regex
             }
         }
 
-        auto const & [__min, __max] = __some ;
-
         return 
-        __min <= __cpt && __cpt <= __max ? 
-        std::tuple { __previous, true } : 
-        std::tuple { __cursor, false } ; 
+        __some.min <= __cpt && __cpt <= __some.max ? 
+        std::tuple { true, __previous } : 
+        std::tuple { false, __cursor } ; 
     }
 
 

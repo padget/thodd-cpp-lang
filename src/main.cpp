@@ -27,9 +27,11 @@ std::string type_name()
 }
 
 enum class
-calc
+calc : int
 {
-    digit,
+    digit = 0,
+    pair, 
+    unpair,
     sub_symbol,
     add_symbol,
     mult_symbol,
@@ -37,6 +39,7 @@ calc
     left_symbol,
     right_symbol
 };
+
 
 int main() 
 {
@@ -58,11 +61,23 @@ int main()
     std::cout << std::boolalpha << __matched2 << std::endl ;
     std::cout << type_name<decltype(__hello)>() << std::endl ;
 
+
+
     using namespace thodd::lexical ;
 
-    //auto __word = word (calc::digit, __unpair | __pair) ;
-
+    auto __pair_w = word { calc::pair, __pair } ;
+    auto __unpair_w = word { calc::unpair, __unpair } ;
     
+    std::string __input4 { "123456789" } ;
+    
+    auto&& __res = analyse (__input4.begin(), __input4.end(), __unpair_w, __pair_w) ;
+    std::cout << type_name<decltype(__res)>() << std::endl ;
+    
+    for(auto const& __r : __res)
+    {    
+        std::cout << std::boolalpha << !__r.invalid() << " size " << __r.size() << std::endl ;
+        std::cout << (int) __r.id << std::endl ;
+    }
     /*using namespace thodd::syntax ;
 
     struct digit        : leaf<calc::digit> {} ;

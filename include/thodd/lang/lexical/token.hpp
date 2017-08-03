@@ -2,19 +2,19 @@
 #  define __THODD_LANG_LEXICAL_TOKEN_HPP__
 
 #  include <utility>
-#  include <optional>
+#  include <algorithm>
 #  include <type_traits>
 
 namespace 
 thodd::lexical
 {
-    template<
+    template <
         typename lang_t,
         typename iterator_t>
     struct token
     {
         std::pair<iterator_t, iterator_t> data ;
-        std::optional<lang_t> id ;
+        lang_t id ;
 
         inline auto 
         begin () 
@@ -41,12 +41,25 @@ thodd::lexical
         }
 
         inline auto const
+        size() const 
+        {
+            return 
+            std::distance(begin(), end()) ;
+        }
+
+        inline auto const
         invalid () const
         {
             return 
-            !id.has_value() ;
+            size() == 0 ;
         }
     } ;
+
+
+    template<
+        typename lang_t, 
+        typename iterator_t>
+    token (std::pair<iterator_t, iterator_t> const &, lang_t) -> token<lang_t, iterator_t> ;
 }
 
 #endif

@@ -31,7 +31,11 @@ thodd::lexical
         
         while (__cursor != __end)
         {
-            auto&& __each_tokens = std::array { __each(__cursor, __end, __first), __each(__cursor, __end, __word)... } ;
+            auto&& __each_tokens = 
+                    std::array 
+                    { std::move(__each(__cursor, __end, __first)), 
+                      std::move(__each(__cursor, __end, __word))... } ;
+                      
             auto&& __greater = std::max_element(
                                 __each_tokens.begin(), 
                                 __each_tokens.end(), 

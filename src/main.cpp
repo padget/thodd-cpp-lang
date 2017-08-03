@@ -30,8 +30,6 @@ enum class
 calc : int
 {
     digit = 0,
-    pair, 
-    unpair,
     sub_symbol,
     add_symbol,
     mult_symbol,
@@ -78,7 +76,10 @@ int main()
         std::cout << std::boolalpha << !__r.invalid() << " size " << __r.size() << std::endl ;
         std::cout << (int) __r.id << std::endl ;
     }
-    /*using namespace thodd::syntax ;
+
+
+
+    using namespace thodd::syntax ;
 
     struct digit        : leaf<calc::digit> {} ;
     struct sub_symbol   : leaf<calc::sub_symbol> {} ;
@@ -104,7 +105,7 @@ int main()
  
     std::cout << type_name<std::decay_t<decltype(calc_grammar)>>() << std::endl ;
     std::cout << read(calc_grammar) ;
-    */
+    
 
 
 

@@ -7,13 +7,16 @@ namespace
 thodd::syntax 
 {
     template<typename ...>
-    struct and_ : item {} ;
+    struct and_ 
+    {
+        using syntax_node = and_ ;
+    } ;
 
     constexpr auto
     operator > (
         auto&& __before, 
         auto&& __after)
-    requires item_based<
+    requires is_syntax_node<
                 decltype(__before), 
                 decltype(__after)>
     {
@@ -28,7 +31,7 @@ thodd::syntax
     operator > (
         and_<item_t...>&& __before, 
         auto&& __after)
-    requires item_based<
+    requires is_syntax_node<
                 item_t..., 
                 decltype(__after)>
     {

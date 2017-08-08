@@ -7,13 +7,16 @@ namespace
 thodd::syntax 
 {
     template<typename ...>
-    struct or_ : item {} ;
+    struct or_ 
+    {
+        using syntax_node = or_ ;
+    } ;
 
     constexpr auto
     operator | (
         auto&& __before, 
         auto&& __after)
-    requires item_based<
+    requires is_syntax_node<
                 decltype(__before), 
                 decltype(__after)>
     {
@@ -28,7 +31,7 @@ thodd::syntax
     operator | (
         or_<item_t...>&& __before, 
         auto&& __after)
-    requires item_based<
+    requires is_syntax_node<
                 item_t..., 
                 decltype(__after)>             
     {

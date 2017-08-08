@@ -6,21 +6,23 @@
 namespace 
 thodd::syntax
 {
-    template <typename, typename>
-    struct rule : item {} ; 
+    template <
+        typename declaration_t, 
+        typename definition_t>
+    struct rule  {} ; 
 
 
     constexpr auto
     operator <= (
-        auto&& __def, 
+        auto&& __decl, 
         auto&& __production) 
-    requires item_based<
-                decltype(__def), 
+    requires is_syntax_node<
+                decltype(__decl), 
                 decltype(__production)>
     {
         return 
         rule<
-            std::decay_t<decltype(__def)>, 
+            std::decay_t<decltype(__decl)>, 
             std::decay_t<decltype(__production)>> {} ;
     }
 }

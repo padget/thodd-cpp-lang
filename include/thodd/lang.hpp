@@ -24,5 +24,6 @@
 #  include <thodd/lang/syntax/or.hpp>
 #  include <thodd/lang/syntax/some.hpp>
 #  include <thodd/lang/syntax/grammar.hpp>
+#  include <thodd/lang/syntax/check.hpp>
 
 #endif

@@ -11,6 +11,7 @@
 
 
 #include <thodd/lang.hpp>
+#include <thodd/tuple/indexof.hpp>
 
 
 template<typename T>
@@ -30,6 +31,8 @@ enum class
 calc : int
 {
     digit = 0,
+    pair, 
+    unpair,
     sub_symbol,
     add_symbol,
     mult_symbol,
@@ -37,7 +40,6 @@ calc : int
     left_symbol,
     right_symbol
 };
-
 
 int main() 
 {
@@ -88,15 +90,16 @@ int main()
     struct div_symbol   : leaf<calc::div_symbol> {} ;
     struct left_symbol  : leaf<calc::left_symbol> {} ;
     struct right_symbol : leaf<calc::right_symbol> {} ;
-    struct number       : item {} ; 
-    struct parens       : item {} ; 
-    struct factor       : item {} ; 
-    struct term         : item {} ; 
-    struct expression   : item {} ;
+    struct number       : node<number> {} ; 
+    struct parens       : node<parens> {} ; 
+    struct factor       : node<factor> {} ; 
+    struct term         : node<term> {} ; 
+    struct expression   : node<expression> {} ;
 
 
     constexpr auto calc_grammar = 
-        grammar(
+        grammar (
+            expression{}, 
             number{}     <= (+digit{}) ,
             parens{}     <= (left_symbol{} > expression{} > right_symbol{}) ,
             factor{}     <= (number{} | parens{}) ,
@@ -104,23 +107,6 @@ int main()
             expression{} <= (term{} > *((add_symbol{} | sub_symbol{}) > term{}))) ;
  
     std::cout << type_name<std::decay_t<decltype(calc_grammar)>>() << std::endl ;
-    std::cout << read(calc_grammar) ;
-    
-
-
-
-
-
-
-
+    get_definition(calc_grammar, expression{}) ; 
 
 }
-
-/* grammar  
-    rule 
-        item 
-        some 
-            leaf 
-    rule 
-        item 
-        and leaf item leaf rule item or item item rule item and item some and or leaf leaf item rule item and item some and or leaf leaf item */

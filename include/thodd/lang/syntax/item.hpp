@@ -1,33 +1,33 @@
 #ifndef __THODD_LANG_SYNTAX_ITEM_HPP__
 #  define __THODD_LANG_SYNTAX_ITEM_HPP__
 
+#  include <type_traits>
+
 namespace 
 thodd::syntax
 {
-    struct item {} ;
-
-    template <typename ... type_t>
-    concept bool item_based = 
-        std::conjunction_v<std::is_base_of<item, std::decay_t<type_t>>...> ;
-
-
-
-
+    template<
+        typename type_t>
+    concept bool is_syntax_node_one = requires { typename type_t::syntax_node; } ;
 
     template<
         auto id_c>
-    struct leaf : item
+    struct leaf 
+    { 
+        using syntax_node = leaf ;
+        static const decltype(id_c) id { id_c } ; 
+    } ;    
+
+    template<
+        typename declaration_t>
+    struct node
     {
-        static const decltype(id_c) id { id_c } ;
+        using syntax_node = node ;
     } ;
+ 
+    template <typename ... type_t>
+    concept bool is_syntax_node = (is_syntax_node_one<std::decay_t<type_t>> && ...) ;
 
-
-
-
-    template <typename type_t>
-    concept bool has_static_id = 
-        requires (type_t const& __t){ std::decay_t<type_t>::id ; } ;
-    
 } 
 
 

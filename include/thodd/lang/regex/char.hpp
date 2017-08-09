@@ -11,22 +11,11 @@ thodd::regex
 {
     template<
         typename char_t>
-    struct char_ : regex
+    struct char_
     {
+        using regex_marker = char_ ;
+        
         char_t c ;
-
-        constexpr char_(
-            decltype(c) && __c) :
-            c { std::move(__c) } {}
-
-        constexpr char_(
-            decltype(c) const& __c) :
-            c { __c } {}
-
-        constexpr char_(char_ const&) = default ;
-        constexpr char_(char_&&) = default ;
-        constexpr char_& operator = (char_ const&) = default ;
-        constexpr char_& operator = (char_&&) = default ;
     } ;
 
 

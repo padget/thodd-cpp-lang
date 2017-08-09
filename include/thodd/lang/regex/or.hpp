@@ -14,22 +14,11 @@ thodd::regex
 {
     template<
         typename ... choices_t>
-    struct or_ : regex
+    struct or_
     {
+        using regex_marker = or_ ;
+     
         std::tuple<choices_t...> choices ;
-
-        constexpr or_(
-            decltype(choices) && __choices):
-            choices { std::forward<decltype(__choices)>(__choices) } {}
-
-        constexpr or_(
-            decltype(choices) const & __choices) :
-            choices { std::move(__choices) } {}
-
-        constexpr or_(or_ const&) = default ;
-        constexpr or_(or_&&) = default ;
-        constexpr or_& operator = (or_ const &) = default ;
-        constexpr or_& operator = (or_ &&) = default ;
     } ;
 
 

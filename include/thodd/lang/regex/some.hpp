@@ -12,34 +12,14 @@ thodd::regex
 {
     template<
         typename regex_t>
-    struct some : regex
+    struct some
     {
+        using regex_marker = some ;
+        
         regex_t reg ;
 
-        std::size_t min {0} ;
-        std::size_t max {1} ; 
-        
-        constexpr some(regex_based&& __reg) :
-            reg { std::move(__reg) } {} 
-
-        constexpr some(regex_based const& __reg) :
-            reg { __reg } {}
-
-        constexpr some(
-            regex_based&& __reg, 
-            size_t const& __min, 
-            size_t const& __max) :
-            reg { std::move(__reg) }, 
-            min { __min }, 
-            max { __max } {} 
-
-        constexpr some(
-            regex_based const& __reg, 
-            size_t const& __min, 
-            size_t const& __max) :
-            reg { __reg }, 
-            min { __min }, 
-            max { __max } {}
+        std::size_t min { 0 } ;
+        std::size_t max { 1 } ; 
 
         constexpr some
         operator () (

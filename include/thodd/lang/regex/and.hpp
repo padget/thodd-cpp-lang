@@ -15,22 +15,11 @@ thodd::regex
 {
     template<
         typename ... regexs_t>
-    struct and_ : regex
+    struct and_
     {
+        using regex_marker = and_;
+
         std::tuple<regexs_t...> regexs ;
-
-        constexpr and_(
-            decltype(regexs) && __regexs):
-            regexs { std::forward<decltype(__regexs)>(__regexs) } {}
-
-        constexpr and_(
-            decltype(regexs) const & __regexs) :
-            regexs { std::move(__regexs) } {}
-
-        constexpr and_(and_ const&) = default ;
-        constexpr and_(and_&&) = default ;
-        constexpr and_& operator = (and_ const &) = default ;
-        constexpr and_& operator = (and_ &&) = default ;
     } ;
 
     constexpr auto

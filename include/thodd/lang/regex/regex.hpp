@@ -6,12 +6,15 @@
 namespace 
 thodd::regex
 {
-    struct regex {} ;
+    template<
+        typename type_t>
+    concept bool regex_based_one = 
+    requires { typename type_t::regex_marker ; } ;
 
     template<
         typename ... types_t>
     concept bool 
-    regex_based = std::conjunction_v<std::is_base_of<regex, std::decay_t<types_t>>...> ;
+    regex_based = (regex_based_one<std::decay_t<types_t>> && ...) ;
 }
 
 #endif

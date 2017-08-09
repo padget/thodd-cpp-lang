@@ -10,13 +10,11 @@ thodd::regex
 {
     template<
         typename regex_t>
-    struct not_ : regex
+    struct not_
     {
+        using regex_marker = not_ ;
+        
         regex_t reg ;
-
-        constexpr not_(
-            decltype(reg) const & __reg) : 
-            reg { std::move(__reg) } {}
     } ;
 
     

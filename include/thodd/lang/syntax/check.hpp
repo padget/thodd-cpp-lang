@@ -2,7 +2,9 @@
 #  define __THODD_LANG_SYNTAX_CHECK_HPP__
 
 #  include <tuple>
+#  include <array>
 #  include <type_traits>
+#  include <algorithm>
 
 #  include <thodd/lang/syntax/grammar.hpp>
 #  include <thodd/lang/syntax/item.hpp>
@@ -10,7 +12,7 @@
 #  include <thodd/lang/syntax/and.hpp>
 #  include <thodd/lang/syntax/or.hpp>
 
-namespace 
+namespace  
 thodd::syntax 
 {
     template <
@@ -18,32 +20,30 @@ thodd::syntax
         typename ... rules_t>
     constexpr auto
     check (
-        grammar_rules<start_t, rules_t...> const & __grammar, 
         auto __begin, 
-        auto const __end)
+        auto const __end, 
+        grammar_rules<start_t, rules_t...> const & __grammar)
     {
         return 
         check (
+            __begin, __end, 
             __grammar, 
-            __grammar.start, 
-            __begin, __end) ;
+            __grammar.start) ;
     }
 
 
     /// LEAF
     template <
-        typename start_t, 
-        typename ... rules_t,
         auto id_c>
     constexpr auto
     check (
-        auto && __grammar,
-        leaf<id_c> const & __leaf,
         auto __begin, 
-        auto const __end)
+        auto const __end,
+        auto && __grammar,
+        leaf<id_c> const & __leaf)
     {
         return 
-        __begin != __end && *__begin.id == id_c ? 
+        __begin != __end && (*__begin).id == id_c ? 
         std::tuple (true, ++__begin) : 
         std::tuple (false, __begin) ;
     }
@@ -54,15 +54,15 @@ thodd::syntax
         typename declaration_t>
     constexpr auto 
     check (
-        auto && __grammar, 
-        node<declaration_t> && __node,
         auto __begin, 
-        auto const __end)
+        auto const __end,
+        auto && __grammar, 
+        node<declaration_t> const & __node)
     {
-        constexpr auto __def = get_definition(__grammar, __node) ;
+        constexpr auto __def = get_definition(__grammar, declaration_t{}) ;
 
         return 
-        check (__grammar, __def, __begin, __end) ;
+        check (__begin, __end, __grammar, __def) ;
     }
 
     /// SOME
@@ -70,19 +70,18 @@ thodd::syntax
         typename item_t>
     constexpr auto 
     check (
-        auto && __grammar,
-        some<item_t> const & __some, 
         auto __begin, 
-        auto const __end)
+        auto const __end,
+        auto && __grammar,
+        some<item_t> const & __some)
     {
-        constexpr auto __item = item_t {} ;
         auto __cpt = 0u ;
         auto __previous = __begin ;
         bool __continue = true ;
         
         while (__continue)
         { 
-            auto&& [__matched, __it] = check (__grammar, __item, __previous, __end) ;
+            auto&& [__matched, __it] = check (__previous, __end, __grammar, __some.node) ;
             __continue = __matched ;
 
             if(__matched) 
@@ -101,44 +100,39 @@ thodd::syntax
 
     /// AND 
     template <
-        typename item_t>
+        typename ... nodes_t>
     constexpr auto 
     check (
-        auto && __grammar,
-        and_<item_t> const & __some, 
         auto __begin, 
-        auto const __end)
-    {
-        constexpr item_t item {} ;
-        
-        return
-        check(
-            __grammar, 
-            check (__grammar, item), 
-            __begin, __end) ; 
-
+        auto const __end,
+        auto && __grammar,
+        and_<nodes_t...> const & __and)
+    {       
+        auto&& __res = 
+            std::apply(
+                [&] (auto const & ... __node) 
+                { return std::tuple(check(__begin, __end, __grammar, __node)...) ; }, 
+                __and.nodes) ;
     }
 
     /// OR
     template <
-        typename start_t, 
-        typename ... rules_t, 
-        typename item_t>
+        typename ... nodes_t>
     constexpr auto 
-    check (
-        auto && __grammar,
-        or_<item_t> const & __some, 
+    check ( 
         auto __begin, 
-        auto const __end)
+        auto const __end,
+        auto && __grammar,
+        or_<nodes_t...> const & __or)
     {
-        constexpr item_t item {} ;
-        
-        return
-        check(
-            __grammar, 
-            check (__grammar, item), 
-            __begin, __end) ; 
+        auto && __res = 
+            std::apply (
+                [&] (auto const & ... __node) 
+                { return std::array(check(__begin, __end, __grammar, __node)...) ; }, 
+                __or.nodes) ;
 
+        return
+        std::tuple(true, __begin) ;
     }
 } 
 

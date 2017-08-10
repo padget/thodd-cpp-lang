@@ -1,16 +1,22 @@
 #ifndef __THODD_LANG_SYNTAX_OR_HPP__
 #  define __THODD_LANG_SYNTAX_OR_HPP__
 
+#  include <tuple>
+
 #  include <thodd/lang/syntax/item.hpp>
 
 namespace
 thodd::syntax 
 {
-    template<typename ...>
+    template<
+        typename ... nodes_t>
     struct or_ 
     {
         using syntax_node = or_ ;
+
+        std::tuple<nodes_t...> nodes ;
     } ;
+
 
     constexpr auto
     operator | (
@@ -23,7 +29,8 @@ thodd::syntax
         return 
         or_<
             std::decay_t<decltype(__before)>, 
-            std::decay_t<decltype(__after)>> {} ;
+            std::decay_t<decltype(__after)>> 
+        { std::tuple(__before, __after) } ;
     }
 
     template<typename ... item_t>
@@ -38,7 +45,8 @@ thodd::syntax
         return 
         or_<
             item_t..., 
-            std::decay_t<decltype(__after)>> {} ;
+            std::decay_t<decltype(__after)>> 
+        { std::tuple_cat(__before, std::tuple(__after)) } ;
     } 
 }
 

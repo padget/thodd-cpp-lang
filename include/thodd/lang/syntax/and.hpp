@@ -1,15 +1,20 @@
 #ifndef __THODD_LANG_SYNTAX_AND_HPP__
 #  define __THODD_LANG_SYNTAX_AND_HPP__
 
+#  include <tuple>
+
 #  include <thodd/lang/syntax/item.hpp>
 
 namespace
 thodd::syntax 
 {
-    template<typename ...>
+    template<
+        typename ... node_t>
     struct and_ 
     {
         using syntax_node = and_ ;
+
+        std::tuple<node_t...> nodes ; 
     } ;
 
     constexpr auto
@@ -23,7 +28,8 @@ thodd::syntax
         return 
         and_<
             std::decay_t<decltype(__before)>, 
-            std::decay_t<decltype(__after)>> {} ;
+            std::decay_t<decltype(__after)>> 
+        { std::tuple(__before, __after) } ;
     }
 
     template<typename ... item_t>
@@ -38,7 +44,8 @@ thodd::syntax
         return 
         and_<
             item_t..., 
-            std::decay_t<decltype(__after)>> {} ;
+            std::decay_t<decltype(__after)>> 
+        { std::tuple_cat(__before.nodes, std::tuple(__after)) } ;
     } 
 }
 

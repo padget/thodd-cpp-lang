@@ -41,6 +41,7 @@ calc : int
     right_symbol
 };
 
+
 int main() 
 {
     using namespace thodd::regex ;
@@ -70,7 +71,7 @@ int main()
     
     std::string __input4 { "123456789" } ;
     
-    auto&& __res = analyse (__input4.begin(), __input4.end(), __unpair_w, __pair_w) ;
+    auto && __res = analyse (__input4.begin(), __input4.end(), __unpair_w, __pair_w) ;
     std::cout << type_name<decltype(__res)>() << std::endl ;
     
     for(auto const& __r : __res)
@@ -78,7 +79,7 @@ int main()
         std::cout << std::boolalpha << !__r.invalid() << " size " << __r.size() << std::endl ;
         std::cout << (int) __r.id << std::endl ;
     }
-
+ 
 
 
     using namespace thodd::syntax ;
@@ -96,7 +97,7 @@ int main()
     struct term         : node<term> {} ; 
     struct expression   : node<expression> {} ;
 
-
+/*
     constexpr auto calc_grammar = 
         grammar (
             expression{}, 
@@ -105,8 +106,42 @@ int main()
             factor{}     <= (number{} | parens{}) ,
             term{}       <= (factor{} > *((mult_symbol{} | div_symbol{}) > factor{})) ,
             expression{} <= (term{} > *((add_symbol{} | sub_symbol{}) > term{}))) ;
- 
+*/ 
+    constexpr auto calc_grammar = 
+    grammar (
+        expression{}, 
+        (number{} <= (+digit{})), 
+        (expression{} <= (number{} | number{})))  ;
+
+    std::string __expression = "1" ;
+    auto && __tokens = analyse (
+                        __expression.begin(), 
+                        __expression.end(), 
+                        word { calc::digit, chr('0') - chr('9') }, 
+                        word { calc::add_symbol, chr('+') }, 
+                        word { calc::sub_symbol, chr('-') }, 
+                        word { calc::mult_symbol, chr('*') }, 
+                        word { calc::div_symbol, chr('/') }, 
+                        word { calc::right_symbol, chr(')') }, 
+                        word { calc::left_symbol, chr('(') } ) ;
+
+    check (
+        __tokens.begin(), 
+        __tokens.end(), 
+        calc_grammar) ;
+
     std::cout << type_name<std::decay_t<decltype(calc_grammar)>>() << std::endl ;
-    get_definition(calc_grammar, expression{}) ; 
+    //get_definition(calc_grammar, number{}) ; 
 
 }
+
+
+
+
+
+
+
+
+
+/*
+ no matching function for call to ‘check(std::_List_iterator<thodd::lexical::token<calc, __gnu_cxx::__normal_iterator<char*, std::__cxx11::basic_string<char> > > >&, const std::_List_iterator<thodd::lexical::token<calc, __gnu_cxx::__normal_iterator<char*, std::__cxx11::basic_string<char> > > >&, const thodd::syntax::grammar_rules<main()::expression, thodd::syntax::rule<main()::number, thodd::syntax::some<main()::digit> >, thodd::syntax::rule<main()::expression, thodd::syntax::or_<main()::number, main()::number> > >&, const thodd::syntax::or_<main()::number, main()::number>&)*/

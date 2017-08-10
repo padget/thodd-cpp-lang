@@ -12,7 +12,10 @@ thodd::syntax
     template <
         typename start_t, 
         typename ... rules_t> 
-    struct grammar_rules {} ;
+    struct grammar_rules 
+    {
+        start_t start;
+    } ;
 
     
     template <
@@ -25,7 +28,8 @@ thodd::syntax
         return 
         grammar_rules<
             std::decay_t<decltype(__start)>,
-            std::decay_t<decltype(__rules)>...> {} ;
+            std::decay_t<decltype(__rules)>...> 
+            { __start } ;
     } 
     
 

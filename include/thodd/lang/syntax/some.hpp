@@ -16,9 +16,8 @@ thodd::syntax
 
         size_t min { 0 } ; 
         size_t max { 1 } ; 
-        
-        constexpr some() = default ; 
-        constexpr some(size_t __min, size_t __max) : min { __min }, max { __max } {}
+
+        node_t node ;
     } ;
 
 

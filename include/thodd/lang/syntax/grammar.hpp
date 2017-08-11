@@ -15,6 +15,7 @@ thodd::syntax
     struct grammar_rules 
     {
         start_t start;
+        std::tuple<rules_t...> rules ;
     } ;
 
     

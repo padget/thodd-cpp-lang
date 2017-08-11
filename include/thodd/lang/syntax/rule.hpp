@@ -9,7 +9,11 @@ thodd::syntax
     template <
         typename declaration_t, 
         typename definition_t>
-    struct rule  {} ; 
+    struct rule  
+    {
+        declaration_t declaration ;
+        definition_t definition ;
+    } ; 
 
 
     constexpr auto

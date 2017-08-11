@@ -18,15 +18,7 @@ thodd::regex
     } ;
 
     
-    constexpr auto
-    operator ! (
-        auto&& __regex)
-    requires regex_based<decltype(__regex)>
-    {
-        return
-        not_<std::decay_t<decltype(__regex)>>
-        { std::forward<decltype(__regex)>(__regex) } ; 
-    }
+   
 }
 
 #endif

@@ -85,10 +85,7 @@ thodd::syntax
             __continue = __matched ;
 
             if(__matched) 
-            {    
-                ++__cpt ;            
-                __previous = __it ;
-            }
+            { ++__cpt ; __previous = __it ; }
         }
 
         return 

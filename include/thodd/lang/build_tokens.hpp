@@ -22,7 +22,7 @@ thodd::lang
         constexpr auto __each = 
         [](auto __begin, auto const & __end, auto const & __word)
         {
-            auto&& [__matched, __it] = matches (__word.reg, __begin, __end) ;
+            auto&& [__matched, __it] = matches (__word.item, __begin, __end) ;
             return 
             token { std::pair { __begin, __it }, __word.id } ;
         } ;

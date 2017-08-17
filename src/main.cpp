@@ -47,78 +47,52 @@ int main()
     using namespace thodd::lang ;
     
 
-    constexpr auto __unpair = chr('1') | chr('3') | chr('5') | chr('7') | chr('9') ;
-    constexpr auto __pair   = chr('0') | chr('2') | chr('4') | chr('6') | chr('8') ;
- 
+    constexpr auto __digit = word{calc::digit, chr('0') - chr('9')} ;
+    constexpr auto __add = word{calc::add_symbol, chr('+')} ;
+    constexpr auto __sub = word{calc::sub_symbol, chr('-')} ;
+    constexpr auto __mlt = word{calc::mult_symbol, chr('*')} ;
+    constexpr auto __div = word{calc::div_symbol, chr('/')} ;
+    constexpr auto __left = word{calc::left_symbol, chr('(')} ;
+    constexpr auto __right = word{calc::right_symbol, chr(')')} ;
+
 
    
-    std::cout << "coucou" << std::endl ;
-    std::cout << std::string("yep") << std::endl ; 
-    std::string __input2 { "2" } ;
-    auto&& [__matched, __it] = matches(__unpair | __pair, __input2.begin(), __input2.end());
-    std::cout << "coucou" << std::endl ; 
-    std::cout << std::boolalpha << (__matched && __it == __input2.end()) << std::endl ;
-    std::cout << type_name<decltype(__unpair | __pair)>() << std::endl ;
     
-    // constexpr auto __hello  = chrs("hello") ;
-    // std::string __input3 { "hello" } ;
-    // auto&& [__matched2, __it2] = matches(__hello, __input3.begin(), __input3.end()) ;
-    // std::cout << std::boolalpha << __matched2 << std::endl ;
-    // std::cout << type_name<decltype(__hello)>() << std::endl ;
 
-
-
-    // auto __pair_w = word { calc::pair, __pair } ;
-    // auto __unpair_w = word { calc::unpair, __unpair } ;
-    
-    // std::string __input4 { "123456789" } ;
-    
-    // auto && __res = build_tokens (__input4.begin(), __input4.end(), __unpair_w, __pair_w) ;
-    // std::cout << type_name<decltype(__res)>() << std::endl ;
-    
-    // for (auto const& __r : __res)
-    // {    
-    //     std::cout << std::boolalpha << !__r.invalid() << " size " << __r.size() << std::endl ;
-    //     std::cout << (int) __r.id << std::endl ;
-    // }
- 
-
-    // struct digit        : leaf<calc::digit> {} ;
-    // struct sub_symbol   : leaf<calc::sub_symbol> {} ;
-    // struct add_symbol   : leaf<calc::add_symbol> {} ;
-    // struct mult_symbol  : leaf<calc::mult_symbol> {} ;
-    // struct div_symbol   : leaf<calc::div_symbol> {} ;
-    // struct left_symbol  : leaf<calc::left_symbol> {} ;
-    // struct right_symbol : leaf<calc::right_symbol> {} ;
-    // struct number       : node<number> {} ; 
-    // struct parens       : node<parens> {} ; 
-    // struct factor       : node<factor> {} ; 
-    // struct term         : node<term> {} ; 
-    // struct expression   : node<expression> {} ;
+    struct digit        : leaf<calc::digit> {} ;
+    struct sub_symbol   : leaf<calc::sub_symbol> {} ;
+    struct add_symbol   : leaf<calc::add_symbol> {} ;
+    struct mult_symbol  : leaf<calc::mult_symbol> {} ;
+    struct div_symbol   : leaf<calc::div_symbol> {} ;
+    struct left_symbol  : leaf<calc::left_symbol> {} ;
+    struct right_symbol : leaf<calc::right_symbol> {} ;
+    struct number       : node<number> {} ; 
+    struct parens       : node<parens> {} ; 
+    struct factor       : node<factor> {} ; 
+    struct term         : node<term> {} ; 
+    struct expression   : node<expression> {} ;
 
     // //constexpr auto __test = digit{} | digit{} ;
 
-    // constexpr auto calc_grammar = 
-    //     grammar (
-    //         expression{}, 
-    //         number{}     <= (+digit{}) ,
-    //         parens{}     <= (left_symbol{} > expression{} > right_symbol{}) ,
-    //         factor{}     <= (number{} | parens{}) ,
-    //         term{}       <= (factor{} > *((mult_symbol{} | div_symbol{}) > factor{})) ,
-    //         expression{} <= (term{} > *((add_symbol{} | sub_symbol{}) > term{}))) ;
+    constexpr auto calc_grammar = 
+        grammar (
+            expression{}, 
+            number{}     <= (+digit{}) ,
+            parens{}     <= (left_symbol{} > expression{} > right_symbol{}) ,
+            factor{}     <= (number{} | parens{}) ,
+            term{}       <= (factor{} > *((mult_symbol{} | div_symbol{}) > factor{})) ,
+            expression{} <= (term{} > *((add_symbol{} | sub_symbol{}) > term{}))) ;
  
 
-    // // std::string __expression = "1" ;
-    // // auto && __tokens = build_tokens (
-    // //                     __expression.begin(), 
-    // //                     __expression.end(), 
-    // //                     word { calc::digit, chr('0') - chr('9') }, 
-    // //                     word { calc::add_symbol, chr('+') }, 
-    // //                     word { calc::sub_symbol, chr('-') }, 
-    // //                     word { calc::mult_symbol, chr('*') }, 
-    // //                     word { calc::div_symbol, chr('/') }, 
-    // //                     word { calc::right_symbol, chr(')') }, 
-    // //                     word { calc::left_symbol, chr('(') } ) ;
+    std::string __expression = "1-1-(12)" ;
+    auto && __tokens = build_tokens (
+                        __expression.begin(), 
+                        __expression.end(), 
+                        __digit, __add, __sub, __mlt, __div, __left, __right) ;
+
+    for(auto const & __t : __tokens)
+        std::cout << (int)__t.id << std::endl ;
+
 
     // /*check (
     //     __tokens.begin(), 

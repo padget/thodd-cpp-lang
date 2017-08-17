@@ -368,17 +368,17 @@ thodd::lang
 
     template<
         typename id_t,
-        typename regex_t>
+        typename item_t>
     struct word
     {
         id_t id ;
-        regex_t reg ;
+        item_t item ;
     } ;
 
     template<
         typename id_t, 
-        typename regex_t>
-    word (id_t, regex_t&&) -> word<id_t, std::decay_t<regex_t>> ;
+        typename item_t>
+    word (id_t, item_t const &) -> word<id_t, std::decay_t<item_t>> ;
 
 
 

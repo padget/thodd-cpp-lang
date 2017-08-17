@@ -1,20 +1,16 @@
-#ifndef __THODD_LANG_REGEX_MATCHES_HPP__
-#  define __THODD_LANG_REGEX_MATCHES_HPP__
+#ifndef __THODD_LANG_MATCHES_HPP__
+#  define __THODD_LANG_MATCHES_HPP__
 
 #  include <utility>
 #  include <type_traits>
 #  include <tuple>
 
-#  include <thodd/lang/regex/regex.hpp>
-#  include <thodd/lang/regex/char.hpp>
-#  include <thodd/lang/regex/between.hpp>
-#  include <thodd/lang/regex/not.hpp>
-#  include <thodd/lang/regex/some.hpp>
-#  include <thodd/lang/regex/and.hpp>
-#  include <thodd/lang/regex/or.hpp>
+#  include <thodd/lang/pod.hpp>
+#  include <thodd/functional.hpp>
+
 
 namespace 
-thodd::regex 
+thodd::lang
 {
     /// CHAR_
     inline auto 
@@ -54,7 +50,7 @@ thodd::regex
         auto __cursor, 
         auto const __end)
     {
-        auto&& [__matched, __it] = matches (__not.reg, __cursor, __end) ;
+        auto&& [__matched, __it] = matches (__not.item, __cursor, __end) ;
      
         return 
         !__matched ?
@@ -77,7 +73,7 @@ thodd::regex
         
         while (__cpt <= __some.max && __previous != __end && __continue)
         { 
-            auto&& [__matched, __it] = matches (__some.reg, __previous, __end) ;
+            auto&& [__matched, __it] = matches (__some.item, __previous, __end) ;
             __continue = __matched ;
 
             if(__matched) 
@@ -125,7 +121,7 @@ thodd::regex
         auto __matcheds = std::apply( 
                             [__each, &__tmp_it, &__tmp_matched, __end] (auto const & ... __regex)
                             { return std::array { __each (__tmp_matched, __regex, __tmp_it, __end) ... } ; },
-                            __and.regexs) ;
+                            __and.items) ;
 
         return 
         std::all_of(__matcheds.begin(), __matcheds.end(), $0) ? 
@@ -168,7 +164,7 @@ thodd::regex
              __or.choices) ;       
 
         return 
-        std::any_of(__matcheds.begin(), __matcheds.end(), $0)  ? 
+        std::any_of (__matcheds.begin(), __matcheds.end(), $0)  ? 
         std::tuple { true, __tmp_it } : 
         std::tuple { false, __cursor } ; 
     }

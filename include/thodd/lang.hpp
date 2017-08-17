@@ -28,5 +28,7 @@
 
 
 #  include <thodd/lang/pod.hpp>
+#  include <thodd/lang/matches.hpp>
+#  include <thodd/lang/build_tokens.hpp>
 
 #endif

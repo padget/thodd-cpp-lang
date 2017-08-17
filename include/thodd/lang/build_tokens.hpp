@@ -5,13 +5,13 @@
 #  include <list>
 #  include <utility>
 
-#  include <thodd/lang/lexical/token.hpp>
+#  include <thodd/lang/pod.hpp>
 
 namespace 
-thodd::lexical
+thodd::lang
 {
     inline auto
-    analyse (
+    build_tokens (
         auto __begin, 
         auto const __end, 
         auto const & __first,
@@ -36,11 +36,11 @@ thodd::lexical
                     { std::move(__each(__cursor, __end, __first)), 
                       std::move(__each(__cursor, __end, __word))... } ;
                       
-            auto&& __greater = std::max_element(
-                                __each_tokens.begin(), 
-                                __each_tokens.end(), 
-                                [] (auto const & __l, auto const & __r) 
-                                { return __l.size() < __r.size() ; }) ;
+            auto&& __greater = 
+                std::max_element(
+                    __each_tokens.begin(), __each_tokens.end(), 
+                    [] (auto const & __l, auto const & __r) 
+                    { return __l.size() < __r.size() ; }) ;
 
             __cursor = (*__greater).end() ;
             __tokens.push_back(std::move(*__greater)) ;

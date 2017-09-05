@@ -348,37 +348,60 @@ thodd::lang
     
     
     template <
-        auto id_c>
-    struct leaf 
+        typename id_t, 
+        typename regex_t>
+    struct terminal 
     { 
         using syntax_marker = void ;
         using regex_marker = void ;
 
-        decltype(id_c) id { id_c } ; 
+        id_t id ; 
+        regex_t reg ; 
     } ;   
+
+    template <typename id_t, typename regex_t> 
+    terminal (id_t, regex_t) -> terminal<std::decay_t<id_t>, std::decay_t<regex_t>> ;
+
+    template <
+        typename id_t, 
+        typename regex_t>
+    struct ignored_terminal 
+    { 
+        using syntax_marker = void ;
+        using regex_marker = void ;
+
+        id_t id ; 
+        regex_t reg ; 
+    } ;   
+
+    template <typename id_t, typename regex_t> 
+    ignored_terminal (id_t, regex_t) -> ignored_terminal<std::decay_t<id_t>, std::decay_t<regex_t>> ;
+
+    template <
+        typename id_t>
+    struct error_terminal 
+    { 
+        using syntax_marker = void ;
+        using regex_marker = void ;
+
+        id_t id ; 
+    } ;   
+
+    template <typename id_t> 
+    error_terminal (id_t) -> error_terminal<std::decay_t<id_t>> ;
+
+    
 
     template<
         typename declaration_t>
-    struct node
+    struct non_terminal
     {
         using regex_marker = void ;
         using syntax_marker = void ;
     } ;
 
 
-    template<
-        typename id_t,
-        typename regex_t>
-    struct word
-    {
-        id_t id ;
-        regex_t reg ;
-    } ;
-
-    template<
-        typename id_t, 
-        typename regex_t>
-    word (id_t, regex_t&&) -> word<id_t, std::decay_t<regex_t>> ;
+    
 
 
 
@@ -434,6 +457,10 @@ thodd::lang
         typename lang_t, 
         typename iterator_t>
     token (std::pair<iterator_t, iterator_t> const &, lang_t) -> token<lang_t, iterator_t> ;
+
+
+
+
 }
 
 

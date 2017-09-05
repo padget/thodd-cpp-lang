@@ -13,7 +13,9 @@ thodd::lang
     inline auto
     build_tokens (
         auto __begin, 
-        auto const __end, 
+        auto const __end,
+        auto const & __error,
+        auto const & __ignored, 
         auto const & __first,
         auto const & ... __word)
     {
@@ -33,17 +35,25 @@ thodd::lang
         {
             auto&& __each_tokens = 
                     std::array 
-                    { std::move(__each(__cursor, __end, __first)), 
+                    { std::move(__each(__cursor, __end, __ignored)),   
+                      std::move(__each(__cursor, __end, __first)), 
                       std::move(__each(__cursor, __end, __word))... } ;
-                      
+      
             auto&& __greater = 
                 std::max_element(
                     __each_tokens.begin(), __each_tokens.end(), 
                     [] (auto const & __l, auto const & __r) 
                     { return __l.size() < __r.size() ; }) ;
 
-            __cursor = (*__greater).end() ;
-            __tokens.push_back(std::move(*__greater)) ;
+            if (__cursor == (*__greater).end())
+               __tokens.push_back(token { std::pair { __cursor, ++__cursor }, __error.id }) ;  
+            else 
+            {
+                __cursor = (*__greater).end() ;
+                
+                if ((*__greater).id != __ignored.id) 
+                    __tokens.push_back(std::move(*__greater)) ;
+            }
         }
 
         return __tokens ;

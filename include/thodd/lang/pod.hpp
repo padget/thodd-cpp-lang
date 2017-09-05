@@ -325,7 +325,99 @@ thodd::lang
     }
 
 
+    
     template <
+        auto id_t, 
+        typename regex_t>
+    struct terminal 
+    { 
+        using syntax_marker = void ;
+        using regex_marker = void ;
+
+        static constexpr decltype(id_t) id { id_t } ; 
+        regex_t reg ; 
+    } ;   
+
+    template <
+        auto id_c>
+    constexpr auto
+    term (
+        auto const & __reg)
+    {
+        return 
+        terminal<id_c, std::decay_t<decltype(__reg)>> { __reg } ;
+    }
+
+
+    template <
+        auto id_t, 
+        typename regex_t>
+    struct ignored_terminal 
+    { 
+        using syntax_marker = void ;
+        using regex_marker = void ;
+
+        static constexpr decltype(id_t) id { id_t } ;
+        regex_t reg ; 
+    } ;   
+
+
+    template <
+        auto id_c>
+    constexpr auto
+    ignored_term (
+        auto const & __reg)
+    {
+        return 
+        ignored_terminal<id_c, std::decay_t<decltype(__reg)>> { __reg } ;
+    }
+
+
+    template <
+        auto id_t>
+    struct error_terminal 
+    { 
+        using syntax_marker = void ;
+        using regex_marker = void ;
+
+        static constexpr decltype(id_t) id { id_t } ; 
+    } ;   
+
+
+    template <
+        auto id_c>
+    constexpr auto
+    error_term ()
+    {
+        return 
+        error_terminal<id_c> {} ;
+    }
+    
+
+    template<
+        auto id_t>
+    struct non_terminal
+    {
+        using regex_marker = void ;
+        using syntax_marker = void ;
+
+        static constexpr decltype(id_t) id { id_t } ;
+    } ;
+
+
+    template <
+        auto id_c>
+    constexpr auto
+    non_term ()
+    {
+        return 
+        non_terminal<id_c> {} ;
+    }
+
+
+
+
+   template <
         typename start_t, 
         typename ... rule_t> 
     struct grammar_rules 
@@ -345,62 +437,16 @@ thodd::lang
         return 
         grammar_rules { __start, std::tuple { __rules... } } ;
     }
-    
-    
-    template <
-        typename id_t, 
-        typename regex_t>
-    struct terminal 
-    { 
-        using syntax_marker = void ;
-        using regex_marker = void ;
-
-        id_t id ; 
-        regex_t reg ; 
-    } ;   
-
-    template <typename id_t, typename regex_t> 
-    terminal (id_t, regex_t) -> terminal<std::decay_t<id_t>, std::decay_t<regex_t>> ;
-
-    template <
-        typename id_t, 
-        typename regex_t>
-    struct ignored_terminal 
-    { 
-        using syntax_marker = void ;
-        using regex_marker = void ;
-
-        id_t id ; 
-        regex_t reg ; 
-    } ;   
-
-    template <typename id_t, typename regex_t> 
-    ignored_terminal (id_t, regex_t) -> ignored_terminal<std::decay_t<id_t>, std::decay_t<regex_t>> ;
-
-    template <
-        typename id_t>
-    struct error_terminal 
-    { 
-        using syntax_marker = void ;
-        using regex_marker = void ;
-
-        id_t id ; 
-    } ;   
-
-    template <typename id_t> 
-    error_terminal (id_t) -> error_terminal<std::decay_t<id_t>> ;
 
     
-
-    template<
-        typename declaration_t>
-    struct non_terminal
+    constexpr auto 
+    extract_definition (
+        auto const & __declaration, 
+        auto const & __grammar)
     {
-        using regex_marker = void ;
-        using syntax_marker = void ;
-    } ;
-
-
+        
+    }
+    
     
 
 
@@ -457,10 +503,6 @@ thodd::lang
         typename lang_t, 
         typename iterator_t>
     token (std::pair<iterator_t, iterator_t> const &, lang_t) -> token<lang_t, iterator_t> ;
-
-
-
-
 }
 
 

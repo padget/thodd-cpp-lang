@@ -405,6 +405,7 @@ thodd::lang
     } ;
 
 
+
     template <
         auto id_c>
     constexpr auto
@@ -446,7 +447,6 @@ thodd::lang
     {
         
     }
-    
     
 
 

@@ -92,7 +92,5 @@ int main()
         term       <= (factor > *((mult_symbol | div_symbol) > factor)) ,
         expression <= (term > *((add_symbol | sub_symbol) > term))) ;
 
-
-    
-    
+    // //constexpr auto __test = digit{} | digit{} ;
 }

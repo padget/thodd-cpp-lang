@@ -20,10 +20,12 @@ std::string type_name()
     int status;
     std::string tname = typeid(T).name();
     char *demangled_name = abi::__cxa_demangle(tname.c_str(), NULL, NULL, &status);
+    
     if(status == 0) {
         tname = demangled_name;
         std::free(demangled_name);
-    }   
+    } 
+
     return tname;
 }
 
@@ -54,7 +56,7 @@ int main()
 {
     using namespace thodd::lang ;
 
-    constexpr auto digit        = term< calc::digit> ( chr('0') - chr('9') ) ;
+    constexpr auto digit        = term <calc::digit> ( chr('0') - chr('9') ) ;
     constexpr auto sub_symbol   = term <calc::sub_symbol> ( chr('-') ) ;
     constexpr auto add_symbol   = term <calc::add_symbol> ( chr('+') ) ;
     constexpr auto mult_symbol  = term <calc::mult_symbol> (  chr('*') ) ;
@@ -91,6 +93,4 @@ int main()
         factor     <= (number | parens) ,
         term       <= (factor > *((mult_symbol | div_symbol) > factor)) ,
         expression <= (term > *((add_symbol | sub_symbol) > term))) ;
-
-    // //constexpr auto __test = digit{} | digit{} ;
 }

@@ -7,6 +7,8 @@
 #  include <type_traits>
 #  include <algorithm>
 
+#  include <thodd/tuple/indexof.hpp>
+
 
 namespace
 thodd::lang
@@ -335,17 +337,17 @@ thodd::lang
         using regex_marker = void ;
 
         static constexpr decltype(id_t) id { id_t } ; 
-        regex_t reg ; 
+        regex_t item ; 
     } ;   
 
     template <
         auto id_c>
     constexpr auto
     term (
-        auto const & __reg)
+        auto const & __item)
     {
         return 
-        terminal<id_c, std::decay_t<decltype(__reg)>> { __reg } ;
+        terminal<id_c, std::decay_t<decltype(__item)>> { __item } ;
     }
 
 
@@ -358,7 +360,7 @@ thodd::lang
         using regex_marker = void ;
 
         static constexpr decltype(id_t) id { id_t } ;
-        regex_t reg ; 
+        regex_t item ; 
     } ;   
 
 
@@ -366,10 +368,10 @@ thodd::lang
         auto id_c>
     constexpr auto
     ignored_term (
-        auto const & __reg)
+        auto const & __item)
     {
         return 
-        ignored_terminal<id_c, std::decay_t<decltype(__reg)>> { __reg } ;
+        ignored_terminal<id_c, std::decay_t<decltype(__item)>> { __item } ;
     }
 
 
@@ -421,14 +423,8 @@ thodd::lang
    template <
         typename start_t, 
         typename ... rule_t> 
-    struct grammar_rules 
-    {
-        start_t start;
-        std::tuple<rule_t...> rules ;
-    } ;
+    struct grammar_rules {} ;
 
-    template <typename start_t, typename ... rule_t> 
-    grammar_rules (start_t const &, std::tuple<rule_t...> const &) -> grammar_rules<std::decay_t<start_t>, rule_t...> ;
 
     constexpr auto 
     grammar (
@@ -436,16 +432,26 @@ thodd::lang
         rule<auto, auto> const & ... __rules)
     {
         return 
-        grammar_rules { __start, std::tuple { __rules... } } ;
+        grammar_rules <
+            std::decay_t <decltype(__start)>, 
+            std::decay_t <decltype(__rules)> ... > {} ;
     }
-
     
+
+    template <
+        typename ... declaration_t, 
+        typename ... definition_t>
     constexpr auto 
     extract_definition (
-        auto const & __declaration, 
-        auto const & __grammar)
-    {
+        auto const & __declaration,
+        grammar_rules<auto, rule<declaration_t, definition_t>...> const & __grammar)
+    { 
+        using namespace ::thodd::tuple ;
+
+        constexpr auto __index = index_of<std::decay_t<decltype(__declaration)>>(std::tuple(declaration_t{}...)) ;
         
+        return 
+        std::get<__index>(std::tuple(definition_t{}...)) ;
     }
     
 

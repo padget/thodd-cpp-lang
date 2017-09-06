@@ -15,21 +15,12 @@ thodd::lang
 {
     /// CHAR_
     template <
-        typename char_t >
-    struct char_
+        auto char_c>
+    struct chr
     {
         using regex_marker = void ;
-        using char_marker = void ;
-        
-        char_t c ;
     } ;
-
-    template <typename type_t>
-    concept bool char_marked = requires { typename std::decay_t<type_t>::char_marker ; } ;
-
-    template<typename char_t>
-    char_(char_t const&) -> char_<std::decay_t<char_t>> ;
-
+    
 
     /// NOT_
     template<
@@ -37,36 +28,19 @@ thodd::lang
     struct not_
     {
         using regex_marker = void ;
-        using not_marker = void ;
-
-        item_t item ;
     } ;
 
-    template <typename type_t>
-    concept bool not_marked = requires { typename std::decay_t<type_t>::not_marker ; } ;
-
-    template<typename item_t>
-    not_(item_t const&) -> not_<item_t> ;
 
 
     /// BETWEEN
     template<
-        typename min_t, 
-        typename max_t>
+        auto min_c, 
+        auto max_c>
     struct between
     {
         using regex_marker = void ;
-        using between_marker = void ;
-
-        char_<min_t> min ;  
-        char_<max_t> max ;
     } ;
 
-    template<typename min_t, typename max_t>
-    between (char_<min_t> const &, char_<max_t> const &) -> between<min_t, max_t> ;
-
-    template <typename type_t>
-    concept bool between_marked = requires { typename std::decay_t<type_t>::between_marker ; } ;
 
     
     /// OR_
@@ -77,15 +51,8 @@ thodd::lang
         using regex_marker = void ;
         using syntax_marker = void ;
         using or_marker = void ;
-
-        std::tuple<choice_t...> choices ;        
     } ;
-
-    template<typename ... choice_t>
-    or_ (std::tuple<choice_t...> const &) -> or_<choice_t...> ;
-
-    template <typename type_t>
-    concept bool or_marked = requires { typename std::decay_t<type_t>::or_marker ; } ;
+    
 
 
     // AND_
@@ -96,49 +63,36 @@ thodd::lang
         using regex_marker = void ;
         using syntax_marker = void ;
         using and_marker = void ;
-
-        std::tuple<item_t...> items ;
     } ;
 
-    template<typename ... item_t>
-    and_ (std::tuple<item_t...> const &) -> and_<item_t...> ;
-
-    template <typename type_t>
-    concept bool and_marked = requires { typename std::decay_t<type_t>::and_marker ; } ;
 
 
     /// SOME
     template <
-        typename item_t>
+        typename item_t, 
+        auto min_c = 0, 
+        auto max_c = std::numeric_limits<size_t>::max()>
     struct some 
     {
         using regex_marker = void ;
         using syntax_marker = void ;
-        using some_marker = void ;
-
-        item_t item ;
-
-        std::size_t min { 0 } ; 
-        std::size_t max { std::numeric_limits<size_t>::max() } ;
     
-        constexpr some
+       /* constexpr some
         operator () (
             std::size_t const& __min, 
             std::size_t const& __max) const
         {
             return 
             { item, __min, __max } ;
-        }
+        }*/
     } ;
 
-    template <typename type_t>
-    concept bool some_marked = requires { typename std::decay_t<type_t>::some_marker ; } ;
 
-    template<typename item_t>
-    some(item_t const&) -> some<std::decay_t<item_t>> ;
+    template <typename regex_t>
+    concept bool or_marked = requires { typename std::decay_t<regex_t>::or_marker ; } ;
 
-
-
+    template <typename regex_t>
+    concept bool and_marked = requires { typename std::decay_t<regex_t>::and_marker ; } ;
 
     template <typename regex_t>
     concept bool regex_marked = requires { typename std::decay_t<regex_t>::regex_marker ; } ;
@@ -155,25 +109,56 @@ thodd::lang
     concept bool all_syntax_marked = (syntax_marked<syntax_t> && ...) ;
 
 
+    template<typename type_t>
+    concept bool regex_or_syntax_marked =
+        regex_marked<type_t> or syntax_marked<type_t> ; 
 
 
+    template<auto min_c, auto max_c>
     constexpr auto
     operator - (
-        char_<auto> const & __min, 
-        char_<auto> const & __max)
-    {
-        return
-        between { __min, __max } ;
-    }
+        chr<min_c> const & __min, 
+        chr<max_c> const & __max)
+    -> between<min_c, max_c>
+    { return {} ; }
 
     
     constexpr auto
     operator ! (
         auto const & __right)
+    -> not_<std::decay_t<decltype(__right)>>
     requires regex_marked<decltype(__right)>
+    
+    { return {} ; }
+
+    
+    namespace 
+    meta 
     {
-        return
-        not_ { __right } ; 
+        template<
+            typename added_t,
+            template <typename ... > typename pack_t,
+            typename ... type_t>
+        constexpr pack_t <type_t..., added_t>
+        push_back (pack_t<type_t...> const &)
+        { return {} ; } 
+
+
+        template<
+            typename added_t,
+            template <typename ... > typename pack_t, 
+            typename ... type_t>
+        constexpr pack_t <added_t, type_t...>
+        push_front (pack_t<type_t...> const &)
+        { return {} ; } 
+
+        template<
+            template <typename ... > typename pack_t, 
+            typename ... left_t, 
+            typename ... right_t>
+        constexpr pack_t <left_t..., right_t...>
+        concat (pack_t<left_t...> const &, pack_t<right_t...> const &)
+        { return {} ; } 
     }
 
 
@@ -185,17 +170,19 @@ thodd::lang
         all_regex_marked<decltype(__left), decltype(__right)>
      or all_syntax_marked<decltype(__left), decltype(__right)>
     {        
-        if constexpr (!or_marked<decltype(__left)> && !or_marked<decltype(__right)>)
-            return or_ { std::tuple { __left, __right } } ;
-        else 
-        if constexpr (or_marked<decltype(__left)> && !or_marked<decltype(__right)>)
-            return  or_ { std::tuple_cat(__left.choices, std::tuple { __right }) } ;
-        else 
-        if constexpr (!or_marked<decltype(__left)> && or_marked<decltype(__right)>)
-            return  or_ { std::tuple_cat(std::tuple { __left }, __right.choices) } ;    
-        else 
-        if constexpr (or_marked<decltype(__left)> && or_marked<decltype(__right)>)
-            return  or_ { std::tuple_cat(__left.choices, __right.choices) } ;
+        using left_t = decltype(__left) ;
+        using right_t = decltype(__right) ;
+
+        if constexpr (!or_marked<left_t> && !or_marked<right_t>)
+            return or_ <
+                    std::decay_t<decltype(__left)>, 
+                    std::decay_t<right_t>> {} ;
+        else if constexpr (or_marked<decltype(__left)> && !or_marked<right_t>)
+            return meta::push_back <std::decay_t<right_t>> (__left) ;
+        else if constexpr (!or_marked<decltype(__left)> && or_marked<right_t>)
+            return meta::push_front <std::decay_t<decltype(__left)>> (__right) ;
+        else if constexpr (or_marked<decltype(__left)> && or_marked<right_t>)
+            return meta::concat (__left, __right) ;
     }
 
     
@@ -207,24 +194,24 @@ thodd::lang
         all_regex_marked<decltype(__left), decltype(__right)>
      or all_syntax_marked<decltype(__left), decltype(__right)>
     {        
-        if constexpr (!and_marked<decltype(__left)> && !and_marked<decltype(__right)>)
-            return and_ { std::tuple { __left, __right } } ;
-        else 
-        if constexpr (and_marked<decltype(__left)> && !and_marked<decltype(__right)>)
-            return  and_ { std::tuple_cat(__left.items, std::tuple { __right }) } ;
-        else 
-        if constexpr (!and_marked<decltype(__left)> && and_marked<decltype(__right)>)
-            return  and_ { std::tuple_cat(std::tuple { __left }, __right.items) } ;    
-        else 
-        if constexpr (and_marked<decltype(__left)> && and_marked<decltype(__right)>)
-            return  and_ { std::tuple_cat(__left.items, __right.items) } ;
+        using left_t = decltype(__left) ;
+        using right_t = decltype(__right) ;
+
+        if constexpr (!and_marked<left_t> && !and_marked<right_t>)
+            return and_ <
+                    std::decay_t<decltype(__left)>, 
+                    std::decay_t<right_t>> {} ;
+        else if constexpr (and_marked<decltype(__left)> && !and_marked<right_t>)
+            return meta::push_back <std::decay_t<right_t>> (__left) ;
+        else if constexpr (!and_marked<decltype(__left)> && and_marked<right_t>)
+            return meta::push_front <std::decay_t<decltype(__left)>> (__right) ;
+        else if constexpr (and_marked<decltype(__left)> && and_marked<right_t>)
+            return meta::concat (__left, __right) ;
     }
 
 
 
-    template<typename type_t>
-    concept bool regex_or_syntax_marked =
-        regex_marked<type_t> or syntax_marked<type_t> ; 
+    
 
 
 
@@ -232,41 +219,25 @@ thodd::lang
     constexpr auto
     operator ~ (
         auto const & __right)
+    -> some<std::decay_t<decltype(__right)>>
     requires regex_or_syntax_marked<std::decay_t<decltype(__right)>>
-    {   
-        return
-        some { __right } ;
-    }
-
-
-    constexpr auto
-    operator + (
-        auto const & __right)
-    requires regex_or_syntax_marked<std::decay_t<decltype(__right)>>
-    {   
-        return
-        (~ __right)(1, std::numeric_limits<size_t>::max()) ;
-    }
+    { return {} ; }
 
 
     constexpr auto
     operator * (
         auto const & __right)
+    -> some<std::decay_t<decltype(__right)>, 0, std::numeric_limits<size_t>::max()>
     requires regex_or_syntax_marked<std::decay_t<decltype(__right)>>
-    {   
-        return
-        (~ __right)(0, std::numeric_limits<size_t>::max()) ;
-    }
+    { return {} ; }
 
-
-
+    
     constexpr auto
-    chr (
-        auto const & __c)
-    {        
-        return 
-        char_ { __c } ;
-    }
+    operator + (
+        auto const & __right)
+    -> some<std::decay_t<decltype(__right)>, 1, std::numeric_limits<size_t>::max()>
+    requires regex_or_syntax_marked<std::decay_t<decltype(__right)>>
+    { return {} ; }
 
 
     template <
@@ -305,26 +276,16 @@ thodd::lang
     template <
         typename declaration_t, 
         typename definition_t>
-    struct rule  
-    {
-        declaration_t declaration ;
-        definition_t definition ;
-    } ; 
-
-    template <typename declaration_t, typename definition_t>
-    rule (declaration_t const&, definition_t const&) -> rule<std::decay_t<declaration_t>, std::decay_t<definition_t>> ;  
-
+    struct rule { } ; 
 
 
     constexpr auto
     operator <= (
         auto const & __declaration, 
-        auto const & __production) 
-    requires all_syntax_marked<decltype(__declaration), decltype(__production)>
-    {
-        return 
-        rule { __declaration, __production } ;
-    }
+        auto const & __definition) 
+    -> rule<std::decay_t<decltype(__declaration)>, std::decay_t<decltype(__definition)>>
+    requires all_syntax_marked<decltype(__declaration), decltype(__definition)>
+    { return {} ; }
 
 
     
@@ -335,9 +296,6 @@ thodd::lang
     { 
         using syntax_marker = void ;
         using regex_marker = void ;
-
-        static constexpr decltype(id_t) id { id_t } ; 
-        regex_t item ; 
     } ;   
 
     template <
@@ -345,10 +303,8 @@ thodd::lang
     constexpr auto
     term (
         auto const & __item)
-    {
-        return 
-        terminal<id_c, std::decay_t<decltype(__item)>> { __item } ;
-    }
+    -> terminal<id_c, std::decay_t<decltype(__item)>>
+    { return {} ; }
 
 
     template <
@@ -357,10 +313,7 @@ thodd::lang
     struct ignored_terminal 
     { 
         using syntax_marker = void ;
-        using regex_marker = void ;
-
-        static constexpr decltype(id_t) id { id_t } ;
-        regex_t item ; 
+        using regex_marker = void ; 
     } ;   
 
 
@@ -369,10 +322,8 @@ thodd::lang
     constexpr auto
     ignored_term (
         auto const & __item)
-    {
-        return 
-        ignored_terminal<id_c, std::decay_t<decltype(__item)>> { __item } ;
-    }
+    -> ignored_terminal<id_c, std::decay_t<decltype(__item)>>
+    { return {} ; }
 
 
     template <
@@ -380,9 +331,7 @@ thodd::lang
     struct error_terminal 
     { 
         using syntax_marker = void ;
-        using regex_marker = void ;
-
-        static constexpr decltype(id_t) id { id_t } ; 
+        using regex_marker = void ; 
     } ;   
 
 
@@ -390,10 +339,8 @@ thodd::lang
         auto id_c>
     constexpr auto
     error_term ()
-    {
-        return 
-        error_terminal<id_c> {} ;
-    }
+    -> error_terminal<id_c>
+    { return {} ; }
     
 
     template<

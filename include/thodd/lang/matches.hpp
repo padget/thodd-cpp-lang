@@ -13,14 +13,15 @@ namespace
 thodd::lang
 {
     /// CHAR_
+    template<auto c>
     inline auto 
     matches (
-        char_<auto> const& __char,
+        chr<c> const& __char,
         auto __cursor, 
         auto const __end)
     {
         return 
-        __cursor != __end && *__cursor == __char.c ?
+        __cursor != __end && *__cursor == c ?
         std::tuple { true, ++__cursor } : 
         std::tuple { false, __cursor } ;        
     }
@@ -28,15 +29,16 @@ thodd::lang
 
 
     /// BETWEEN
+    template<auto min_c, auto max_c>
     inline auto
     matches (
-        between<auto, auto> const& __between,
+        between<min_c, max_c> const& __between,
         auto __cursor, 
         auto const __end)
     {
         return 
         __cursor != __end && 
-        (__between.min.c <= *__cursor && *__cursor <= __between.max.c) ? 
+        (min_c <= *__cursor && *__cursor <= max_c) ? 
         std::tuple { true, ++__cursor } : 
         std::tuple { false, __cursor } ; 
     }

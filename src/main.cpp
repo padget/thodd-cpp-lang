@@ -56,16 +56,16 @@ int main()
 {
     using namespace thodd::lang ;
 
-    constexpr auto digit        = term <calc::digit> ( chr('0') - chr('9') ) ;
-    constexpr auto sub_symbol   = term <calc::sub_symbol> ( chr('-') ) ;
-    constexpr auto add_symbol   = term <calc::add_symbol> ( chr('+') ) ;
-    constexpr auto mult_symbol  = term <calc::mult_symbol> (  chr('*') ) ;
-    constexpr auto div_symbol   = term <calc::div_symbol> ( chr('/') ) ;
-    constexpr auto left_symbol  = term <calc::left_symbol> ( chr('(') ) ;
-    constexpr auto right_symbol = term <calc::right_symbol> ( chr(')') ) ;
+    constexpr auto digit        = term <calc::digit> ( chr<'0'>{} - chr<'9'>{} ) ;
+    constexpr auto sub_symbol   = term <calc::sub_symbol> ( chr<'-'>{} ) ;
+    constexpr auto add_symbol   = term <calc::add_symbol> ( chr<'+'>{} ) ;
+    constexpr auto mult_symbol  = term <calc::mult_symbol> (  chr<'*'>{} ) ;
+    constexpr auto div_symbol   = term <calc::div_symbol> ( chr<'/'>{} ) ;
+    constexpr auto left_symbol  = term <calc::left_symbol> ( chr<'('>{} ) ;
+    constexpr auto right_symbol = term <calc::right_symbol> ( chr<')'>{} ) ;
 
     constexpr auto error = error_term <calc::error> () ;
-    constexpr auto ignored = ignored_term <calc::ignored> ( chr(' ') ) ;
+    constexpr auto ignored = ignored_term <calc::ignored> ( chr<' '>{} ) ;
 
     std::string_view __expression = "*    45" ;
     auto && __tokens = build_tokens (

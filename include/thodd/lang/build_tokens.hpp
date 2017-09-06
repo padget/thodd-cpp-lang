@@ -10,43 +10,6 @@
 namespace 
 thodd::lang
 {
-
-    namespace
-    meta
-    {
-        template <   
-            auto id_c>
-        constexpr auto 
-        id (terminal<id_c, auto> const &) 
-        { return id_c ; }
-
-        template <auto id_c, typename regex_t>
-        constexpr auto
-        item (terminal<id_c, regex_t> const &)
-        -> regex_t
-        { return {} ; }
-
-
-        template <   
-            auto id_c>
-        constexpr auto 
-        id (ignored_terminal<id_c, auto> const &) 
-        { return id_c ; }
-
-        template <auto id_c, typename regex_t>
-        constexpr auto
-        item (ignored_terminal<id_c, regex_t> const &)
-        -> regex_t
-        { return {} ; }
-
-
-        template <   
-            auto id_c>
-        constexpr auto 
-        id (error_terminal<id_c> const &) 
-        { return id_c ; }
-    }
-
     inline auto
     build_tokens (
         auto __begin, 

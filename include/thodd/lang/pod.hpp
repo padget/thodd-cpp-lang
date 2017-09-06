@@ -349,22 +349,15 @@ thodd::lang
     {
         using regex_marker = void ;
         using syntax_marker = void ;
-
-        static constexpr decltype(id_t) id { id_t } ;
     } ;
-
 
 
     template <
         auto id_c>
     constexpr auto
     non_term ()
-    {
-        return 
-        non_terminal<id_c> {} ;
-    }
-
-
+    -> non_terminal<id_c>
+    { return {} ; }
 
 
    template <
@@ -382,6 +375,75 @@ thodd::lang
         grammar_rules <
             std::decay_t <decltype(__start)>, 
             std::decay_t <decltype(__rules)> ... > {} ;
+        }
+        
+    
+
+    namespace 
+    meta
+    {
+        template <   
+            auto id_c>
+        constexpr auto 
+        id (terminal<id_c, auto> const &) 
+        { return id_c ; }
+
+        template <auto id_c, typename regex_t>
+        constexpr auto
+        item (terminal<id_c, regex_t> const &)
+        -> regex_t
+        { return {} ; }
+
+
+        template <   
+            auto id_c>
+        constexpr auto 
+        id (ignored_terminal<id_c, auto> const &) 
+        { return id_c ; }
+
+        template <auto id_c, typename regex_t>
+        constexpr auto
+        item (ignored_terminal<id_c, regex_t> const &)
+        -> regex_t
+        { return {} ; }
+
+
+        template <   
+            auto id_c>
+        constexpr auto 
+        id (error_terminal<id_c> const &) 
+        { return id_c ; }
+
+        template <   
+            auto id_c>
+        constexpr auto 
+        id (non_terminal<id_c> const &) 
+        { return id_c ; }
+
+        template < 
+            typename declaration_t>
+        constexpr declaration_t 
+        declaration (rule<declaration_t, auto> const &)
+        { return {} ; }
+
+        template < 
+            typename definition_t>
+        constexpr definition_t 
+        definition (rule<auto, definition_t> const &)
+        { return {} ; }
+    
+
+        constexpr auto
+        extract_if (
+            auto const & __predicate,
+            auto const & __first,
+            auto const & ... __next)
+        {
+            if constexpr (__predicate (__first))
+                return __first ;
+            else 
+                return extract_if (__predicate, __next...) ;
+        }
     }
     
 
@@ -393,12 +455,12 @@ thodd::lang
         auto const & __declaration,
         grammar_rules<auto, rule<declaration_t, definition_t>...> const & __grammar)
     { 
-        using namespace ::thodd::tuple ;
-
-        constexpr auto __index = index_of<std::decay_t<decltype(__declaration)>>(std::tuple(declaration_t{}...)) ;
-        
-        return 
-        std::get<__index>(std::tuple(definition_t{}...)) ;
+        return
+        meta::definition(
+            meta::extract_if (
+                [] (auto const & __rule) constexpr 
+                { return meta::id (std::decay_t<decltype(__declaration)>{}) == meta::id(meta::declaration(__rule)); },
+                rule<declaration_t, definition_t> {} ... ));
     }
     
 

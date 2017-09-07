@@ -14,9 +14,9 @@ thodd::lang
 {
     /// CHAR_
     template<auto c>
-    inline auto 
+    constexpr auto 
     matches (
-        chr<c> const& __char,
+        chr<c> const&,
         auto __cursor, 
         auto const __end)
     {
@@ -30,9 +30,9 @@ thodd::lang
 
     /// BETWEEN
     template<auto min_c, auto max_c>
-    inline auto
+    constexpr auto
     matches (
-        between<min_c, max_c> const& __between,
+        between<min_c, max_c> const&,
         auto __cursor, 
         auto const __end)
     {
@@ -46,13 +46,15 @@ thodd::lang
 
 
     /// NOT 
-    inline auto
+    template <
+        typename regex_t>
+    constexpr auto
     matches (
-        not_<auto> const& __not, 
+        not_<regex_t> const& __not, 
         auto __cursor, 
         auto const __end)
     {
-        auto&& [__matched, __it] = matches (__not.item, __cursor, __end) ;
+        auto&& [__matched, __it] = matches (regex_t {}, __cursor, __end) ;
      
         return 
         !__matched ?
@@ -63,19 +65,24 @@ thodd::lang
 
 
     /// SOME
-    inline auto 
+    template<
+        typename regex_t, 
+        auto min_c, 
+        auto max_c>
+    constexpr auto 
     matches (
-        some<auto> const& __some, 
+        some<regex_t> const&, 
         auto __cursor, 
         auto const __end)
     {
         auto __cpt = 0u ;
         auto __previous = __cursor ;
         bool __continue = true ;
-        
-        while (__cpt <= __some.max && __previous != __end && __continue)
+        constexpr auto __regex = regex_t {} ;
+
+        while (__cpt <= max_c && __previous != __end && __continue)
         { 
-            auto&& [__matched, __it] = matches (__some.item, __previous, __end) ;
+            auto&& [__matched, __it] = matches (__regex, __previous, __end) ;
             __continue = __matched ;
 
             if(__matched) 
@@ -86,7 +93,7 @@ thodd::lang
         }
 
         return 
-        __some.min <= __cpt && __cpt <= __some.max ? 
+        min_c <= __cpt && __cpt <= max_c ? 
         std::tuple { true, __previous } : 
         std::tuple { false, __cursor } ; 
     }
@@ -95,10 +102,10 @@ thodd::lang
 
     /// AND_
     template<
-        typename ... types_t>
-    inline auto
+        typename ... item_t>
+    constexpr auto
     matches (
-        and_<types_t...> const& __and,
+        and_<item_t...> const& __and,
         auto __cursor, 
         auto const __end)
     {
@@ -120,10 +127,11 @@ thodd::lang
                 __prev_matched ;  
             } ;
 
-        auto __matcheds = std::apply( 
-                            [__each, &__tmp_it, &__tmp_matched, __end] (auto const & ... __regex)
-                            { return std::array { __each (__tmp_matched, __regex, __tmp_it, __end) ... } ; },
-                            __and.items) ;
+        auto __matcheds = 
+            std::apply( 
+                [__each, &__tmp_it, &__tmp_matched, __end] (auto const & ... __regex)
+                { return std::array { __each (__tmp_matched, __regex, __tmp_it, __end) ... } ; },
+                std::tuple {item_t {} ...}) ;
 
         return 
         std::all_of(__matcheds.begin(), __matcheds.end(), $0) ? 
@@ -135,10 +143,10 @@ thodd::lang
 
     /// OR_
     template<
-        typename ... types_t>
-    inline auto
+        typename ... item_t>
+    constexpr auto
     matches (
-        or_<types_t...> const& __or,
+        or_<item_t...> const& __or,
         auto __cursor, 
         auto const __end)
     {
@@ -160,10 +168,11 @@ thodd::lang
                 __prev_matched ;
             } ;
 
-        auto __matcheds = std::apply(
-            [__each, &__tmp_it, &__tmp_matched, __end] (auto const & ... __choice)
-            { return std::array { __each(__tmp_matched, __choice, __tmp_it, __end) ... } ; } ,
-             __or.choices) ;       
+        auto __matcheds = 
+            std::apply(
+                [__each, &__tmp_it, &__tmp_matched, __end] (auto const & ... __choice)
+                { return std::array { __each(__tmp_matched, __choice, __tmp_it, __end) ... } ; },
+                std::tuple {item_t {} ...}) ;       
 
         return 
         std::any_of (__matcheds.begin(), __matcheds.end(), $0)  ? 

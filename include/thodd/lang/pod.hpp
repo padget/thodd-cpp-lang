@@ -433,6 +433,14 @@ thodd::lang
         { return {} ; }
     
 
+        template <
+            typename start_t>
+        constexpr start_t
+        start (
+            grammar_rules<start_t, auto...> const & __grammar)
+        { return {} ; }
+
+
         constexpr auto
         extract_if (
             auto const & __predicate,
@@ -462,8 +470,6 @@ thodd::lang
                 { return meta::id (std::decay_t<decltype(__declaration)>{}) == meta::id(meta::declaration(__rule)); },
                 rule<declaration_t, definition_t> {} ... ));
     }
-    
-
 
 
     template <

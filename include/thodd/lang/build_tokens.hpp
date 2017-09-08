@@ -5,6 +5,7 @@
 #  include <list>
 #  include <utility>
 
+#  include <thodd/functional.hpp>
 #  include <thodd/lang/pod.hpp>
 
 namespace 
@@ -21,23 +22,15 @@ thodd::lang
     {
         std::list<token<decltype(meta::id(__first)), decltype(__begin)>> __tokens ;
 
-        constexpr auto __each = 
-        [] (auto __begin, auto const & __end, auto const & __word)
-        {
-            auto && [__matched, __it] = matches (meta::item(__word), __begin, __end) ;
-            return 
-            token { std::pair { __begin, __it }, meta::id(__word) } ;
-        } ;
-
         auto __cursor = __begin ;
         
         while (__cursor != __end)
         {
             auto&& __each_tokens = 
                     std::array 
-                    { std::move(__each(__cursor, __end, __ignored)),   
-                      std::move(__each(__cursor, __end, __first)), 
-                      std::move(__each(__cursor, __end, __word))... } ;
+                    { std::move(matches(__ignored, *$0, __cursor, __end)),   
+                      std::move(matches(__first, *$0, __cursor, __end)), 
+                      std::move(matches(__word, *$0, __cursor, __end)) ... } ;
       
             auto&& __greater = 
                 std::max_element(

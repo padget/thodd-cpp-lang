@@ -434,10 +434,11 @@ thodd::lang
     
 
         template <
-            typename start_t>
+            typename start_t, 
+            typename ... rule_t>
         constexpr start_t
         start (
-            grammar_rules<start_t, auto...> const & __grammar)
+            grammar_rules<start_t, rule_t...> const & __grammar)
         { return {} ; }
 
 

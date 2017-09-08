@@ -71,7 +71,8 @@ int main()
     auto && __tokens = build_tokens (
                         __expression.begin(), 
                         __expression.end(), 
-                        error, ignored,
+                        error, 
+                        ignored,
                         digit , 
                         left_symbol , 
                         right_symbol) ;
@@ -93,8 +94,4 @@ int main()
         factor     <= (number | parens) ,
         term       <= (factor > *((mult_symbol | div_symbol) > factor)) ,
         expression <= (term > *((add_symbol | sub_symbol) > term))) ;
-
-    std::cout << type_name<decltype(calc_grammar)>() << std::endl ;
-    std::cout << type_name<decltype(extract_definition(expression, calc_grammar))>() << std::endl ;
-
 }

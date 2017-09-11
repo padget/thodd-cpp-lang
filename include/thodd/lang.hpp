@@ -26,9 +26,9 @@
 // #  include <thodd/lang/syntax/grammar.hpp>
 // #  include <thodd/lang/syntax/check.hpp>
 
-
 #  include <thodd/lang/pod.hpp>
 #  include <thodd/lang/matches.hpp>
 #  include <thodd/lang/build_tokens.hpp>
+#  include <thodd/lang/check.hpp>
 
 #endif

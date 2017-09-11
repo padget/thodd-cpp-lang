@@ -56,7 +56,7 @@ int main()
 {
     using namespace thodd::lang ;
 
-    constexpr auto digit        = term <calc::digit> ( chr<'0'> {} - chr<'9'>{} ) ;
+    constexpr auto digit        = term <calc::number> (+(chr<'0'> {} - chr<'9'>{}) > (~(chr<'.'>{} > +(chr<'0'> {} - chr<'9'> {})))(bounds<0, 1> {})) ;
     constexpr auto sub_symbol   = term <calc::sub_symbol> ( chr<'-'> {} ) ;
     constexpr auto add_symbol   = term <calc::add_symbol> ( chr<'+'> {} ) ;
     constexpr auto mult_symbol  = term <calc::mult_symbol> (  chr<'*'> {} ) ;
@@ -67,7 +67,7 @@ int main()
     constexpr auto error = error_term <calc::error> () ;
     constexpr auto ignored = ignored_term <calc::ignored> ( chr<' '> {} ) ;
 
-    std::string_view __expression = "*    45" ;
+    std::string_view __expression = "45.12" ;
     auto && __tokens = build_tokens (
                         __expression.begin(), 
                         __expression.end(), 
@@ -78,7 +78,7 @@ int main()
                         right_symbol) ;
 
     for(auto const & __token : __tokens)
-        std::cout << (int) __token.id << std::endl ;
+        std::cout << (int) __token.id << " value : " <<std::endl ;
 
     constexpr auto number = non_term <calc::number> () ;
     constexpr auto expression = non_term <calc::expression> () ;
@@ -94,4 +94,6 @@ int main()
         factor     <= (number | parens) ,
         term       <= (factor > *((mult_symbol | div_symbol) > factor)) ,
         expression <= (term > *((add_symbol | sub_symbol) > term))) ;
+
+    check (calc_grammar, __tokens.begin(), __tokens.end()) ;
 }

@@ -28,9 +28,9 @@ thodd::lang
         {
             auto&& __each_tokens = 
                     std::array 
-                    { std::move(matches(__ignored, *$0, __cursor, __end)),   
-                      std::move(matches(__first, *$0, __cursor, __end)), 
-                      std::move(matches(__word, *$0, __cursor, __end)) ... } ;
+                    { std::move(matches(__ignored, __cursor, __end)),   
+                      std::move(matches(__first, __cursor, __end)), 
+                      std::move(matches(__word, __cursor, __end)) ... } ;
       
             auto&& __greater = 
                 std::max_element(

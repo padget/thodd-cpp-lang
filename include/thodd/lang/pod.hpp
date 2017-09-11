@@ -65,6 +65,11 @@ thodd::lang
         using and_marker = void ;
     } ;
 
+    
+    template <
+        auto min_c, 
+        auto max_c>
+    struct bounds {} ;
 
 
     /// SOME
@@ -77,14 +82,13 @@ thodd::lang
         using regex_marker = void ;
         using syntax_marker = void ;
     
-       /* constexpr some
+        template <
+            auto omin_c, 
+            auto omax_c>
+        constexpr some<item_t, omin_c, omax_c>
         operator () (
-            std::size_t const& __min, 
-            std::size_t const& __max) const
-        {
-            return 
-            { item, __min, __max } ;
-        }*/
+            bounds<omin_c, omax_c> const &) const
+        { return {} ; }
     } ;
 
 
@@ -227,17 +231,15 @@ thodd::lang
     constexpr auto
     operator * (
         auto const & __right)
-    -> some<std::decay_t<decltype(__right)>, 0, std::numeric_limits<size_t>::max()>
     requires regex_or_syntax_marked<std::decay_t<decltype(__right)>>
-    { return {} ; }
+    { return (~__right)(bounds<0, std::numeric_limits<size_t>::max()>{}) ; }
 
     
     constexpr auto
     operator + (
         auto const & __right)
-    -> some<std::decay_t<decltype(__right)>, 1, std::numeric_limits<size_t>::max()>
     requires regex_or_syntax_marked<std::decay_t<decltype(__right)>>
-    { return {} ; }
+    { return (~__right)(bounds<1, std::numeric_limits<size_t>::max()>{}) ; }
 
 
     template <
@@ -375,8 +377,10 @@ thodd::lang
         grammar_rules <
             std::decay_t <decltype(__start)>, 
             std::decay_t <decltype(__rules)> ... > {} ;
-        }
+    }
         
+
+    
     
 
     namespace 
@@ -454,7 +458,7 @@ thodd::lang
                 return extract_if (__predicate, __next...) ;
         }
     }
-    
+        
 
     template <
         typename ... declaration_t, 

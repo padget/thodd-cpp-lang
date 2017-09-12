@@ -18,7 +18,7 @@ thodd::lang
         auto const & __error,
         auto const & __ignored, 
         auto const & __first,
-        auto const & ... __word)
+        auto const & ... __terminal)
     {
         std::list<token<decltype(meta::id(__first)), decltype(__begin)>> __tokens ;
 
@@ -30,7 +30,7 @@ thodd::lang
                     std::array 
                     { std::move(matches(__ignored, __cursor, __end)),   
                       std::move(matches(__first, __cursor, __end)), 
-                      std::move(matches(__word, __cursor, __end)) ... } ;
+                      std::move(matches(__terminal, __cursor, __end)) ... } ;
       
             auto&& __greater = 
                 std::max_element(

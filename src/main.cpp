@@ -33,23 +33,34 @@ enum class
 calc : int
 {
     digit = 0,
-    pair, 
-    unpair,
-    sub_symbol,
-    add_symbol,
-    mult_symbol,
-    div_symbol,
-    left_symbol,
-    right_symbol,
-    error, 
-    ignored,
+    pair, // 1 
+    unpair,// 2
+    sub_symbol,// 3
+    add_symbol,// 4
+    mult_symbol,// 5
+    div_symbol,// 6
+    left_symbol,// 7
+    right_symbol,// 8
+    error, // 9
+    ignored,// 10
 
-    term, 
-    expression, 
-    number, 
-    factor,
-    parens
+    term, // 11
+    expression,// 12 
+    number, // 13
+    factor,// 14
+    parens// 15
 } ;
+
+/*
+
+ expression, 
+        number     <= (+digit) ,
+        parens     <= (left_symbol > expression > right_symbol) ,
+        factor     <= (number | parens) ,
+        term       <= (factor > *(mult_symbol | div_symbol)) ,
+        expression <= (term > *((add_symbol | sub_symbol) > term))
+
+*/
 
 
 int main() 
@@ -65,7 +76,7 @@ int main()
     constexpr auto right_symbol = term <calc::right_symbol> ( chr<')'> {} ) ;
 
     constexpr auto error = error_term <calc::error> () ;
-    constexpr auto ignored = ignored_term <calc::ignored> ( chr<' '> {} ) ;
+    constexpr auto ignored = term <calc::ignored> ( chr<' '> {} ) ;
 
     std::string_view __expression = "45.12" ;
     auto && __tokens = build_tokens (
@@ -92,8 +103,9 @@ int main()
         number     <= (+digit) ,
         parens     <= (left_symbol > expression > right_symbol) ,
         factor     <= (number | parens) ,
-        term       <= (factor > *((mult_symbol | div_symbol) > factor)) ,
+        term       <= (factor > *(mult_symbol | div_symbol)) ,
         expression <= (term > *((add_symbol | sub_symbol) > term))) ;
 
-    check (calc_grammar, __tokens.begin(), __tokens.end()) ;
+    auto && [__matched, __it] = check (calc_grammar, __tokens.begin(), __tokens.end()) ;
+    // std::cout << std::boolalpha << __matched << std::endl ;
 }

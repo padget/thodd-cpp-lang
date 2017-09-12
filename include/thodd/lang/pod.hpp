@@ -310,25 +310,6 @@ thodd::lang
 
 
     template <
-        auto id_t, 
-        typename regex_t>
-    struct ignored_terminal 
-    { 
-        using syntax_marker = void ;
-        using regex_marker = void ; 
-    } ;   
-
-
-    template <
-        auto id_c>
-    constexpr auto
-    ignored_term (
-        auto const & __item)
-    -> ignored_terminal<id_c, std::decay_t<decltype(__item)>>
-    { return {} ; }
-
-
-    template <
         auto id_t>
     struct error_terminal 
     { 
@@ -402,19 +383,6 @@ thodd::lang
         template <   
             auto id_c>
         constexpr auto 
-        id (ignored_terminal<id_c, auto> const &) 
-        { return id_c ; }
-
-        template <auto id_c, typename regex_t>
-        constexpr auto
-        item (ignored_terminal<id_c, regex_t> const &)
-        -> regex_t
-        { return {} ; }
-
-
-        template <   
-            auto id_c>
-        constexpr auto 
         id (error_terminal<id_c> const &) 
         { return id_c ; }
 
@@ -467,11 +435,12 @@ thodd::lang
     extract_definition (
         auto const & __declaration,
         grammar_rules<auto, rule<declaration_t, definition_t>...> const & __grammar)
+    -> decltype(auto)
     { 
         return
-        meta::definition(
+        meta::definition (
             meta::extract_if (
-                [] (auto const & __rule) constexpr 
+                [] (auto const & __rule) constexpr
                 { return meta::id (std::decay_t<decltype(__declaration)>{}) == meta::id(meta::declaration(__rule)); },
                 rule<declaration_t, definition_t> {} ... ));
     }

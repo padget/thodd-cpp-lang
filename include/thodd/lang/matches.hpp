@@ -27,23 +27,7 @@ thodd::lang
         return 
         token { std::pair { __cursor, __it }, id_c } ;
 
-    }
-
-
-    /// INGORED_TERMINAL
-    template<
-        auto id_c, 
-        typename regex_t>
-    constexpr auto 
-    matches (
-        ignored_terminal<id_c, regex_t>,
-        auto __cursor, 
-        auto __end)
-    {
-        return
-        token { std::pair { __cursor, ++__cursor }, id_c } ;
-    }
-    
+    }    
 
 
     /// CHAR_
@@ -178,7 +162,6 @@ thodd::lang
         auto __cursor, 
         auto __end)
     {
-
     	auto __tmp_it = __cursor ; 
         auto __tmp_matched = false ;
 

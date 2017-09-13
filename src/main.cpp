@@ -29,83 +29,23 @@ std::string type_name()
     return tname;
 }
 
-enum class
-calc : int
-{
-    digit = 0,
-    pair, // 1 
-    unpair,// 2
-    sub_symbol,// 3
-    add_symbol,// 4
-    mult_symbol,// 5
-    div_symbol,// 6
-    left_symbol,// 7
-    right_symbol,// 8
-    error, // 9
-    ignored,// 10
 
-    term, // 11
-    expression,// 12 
-    number, // 13
-    factor,// 14
-    parens// 15
-} ;
 
-/*
 
- expression, 
-        number     <= (+digit) ,
-        parens     <= (left_symbol > expression > right_symbol) ,
-        factor     <= (number | parens) ,
-        term       <= (factor > *(mult_symbol | div_symbol)) ,
-        expression <= (term > *((add_symbol | sub_symbol) > term))
+enum struct 
+math
+{ digit, number, add, sub, expression, addition, substraction } ;
 
-*/
-
+THODD_LANG_OPERATOR_FOR(math)
 
 int main() 
 {
     using namespace thodd::lang ;
 
-    constexpr auto digit        = term <calc::number> (+(chr<'0'> {} - chr<'9'>{}) > (~(chr<'.'>{} > +(chr<'0'> {} - chr<'9'> {})))(bounds<0, 1> {})) ;
-    constexpr auto sub_symbol   = term <calc::sub_symbol> ( chr<'-'> {} ) ;
-    constexpr auto add_symbol   = term <calc::add_symbol> ( chr<'+'> {} ) ;
-    constexpr auto mult_symbol  = term <calc::mult_symbol> (  chr<'*'> {} ) ;
-    constexpr auto div_symbol   = term <calc::div_symbol> ( chr<'/'> {} ) ;
-    constexpr auto left_symbol  = term <calc::left_symbol> ( chr<'('> {} ) ;
-    constexpr auto right_symbol = term <calc::right_symbol> ( chr<')'> {} ) ;
+    constexpr auto number =       math::number <= *math::digit ;
+    constexpr auto addition =     math::addition <= and_op (math::expression, math::add, math::expression) ;
+    constexpr auto substraction = math::substraction <= and_op (math::expression, math::sub, math::expression) ;
+    constexpr auto expression =   math::expression <= or_op (math::number, math::addition, math::substraction) ;
 
-    constexpr auto error = error_term <calc::error> () ;
-    constexpr auto ignored = term <calc::ignored> ( chr<' '> {} ) ;
-
-    std::string_view __expression = "45.12" ;
-    auto && __tokens = build_tokens (
-                        __expression.begin(), 
-                        __expression.end(), 
-                        error, 
-                        ignored,
-                        digit , 
-                        left_symbol , 
-                        right_symbol) ;
-
-    for(auto const & __token : __tokens)
-        std::cout << (int) __token.id << " value : " <<std::endl ;
-
-    constexpr auto number = non_term <calc::number> () ;
-    constexpr auto expression = non_term <calc::expression> () ;
-    constexpr auto parens = non_term <calc::parens> ()  ;
-    constexpr auto factor = non_term <calc::factor> () ;
-    constexpr auto term = non_term <calc::term> () ;
-    
-    constexpr auto calc_grammar = 
-    grammar (
-        expression, 
-        number     <= (+digit) ,
-        parens     <= (left_symbol > expression > right_symbol) ,
-        factor     <= (number | parens) ,
-        term       <= (factor > *(mult_symbol | div_symbol)) ,
-        expression <= (term > *((add_symbol | sub_symbol) > term))) ;
-
-    auto && [__matched, __it] = check (calc_grammar, __tokens.begin(), __tokens.end()) ;
-    // std::cout << std::boolalpha << __matched << std::endl ;
+    std::cout << type_name<decltype(number)> () << std::endl ;
 }

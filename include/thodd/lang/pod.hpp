@@ -341,109 +341,7 @@ thodd::lang
     non_term ()
     -> non_terminal<id_c>
     { return {} ; }
-
-
-   template <
-        typename start_t, 
-        typename ... rule_t> 
-    struct grammar_rules {} ;
-
-
-    constexpr auto 
-    grammar (
-        auto const & __start,
-        rule<auto, auto> const & ... __rules)
-    {
-        return 
-        grammar_rules <
-            std::decay_t <decltype(__start)>, 
-            std::decay_t <decltype(__rules)> ... > {} ;
-    }
-        
-
     
-    
-
-    namespace 
-    meta
-    {
-        template <   
-            auto id_c>
-        constexpr auto 
-        id (terminal<id_c, auto> const &) 
-        { return id_c ; }
-
-        template <auto id_c, typename regex_t>
-        constexpr auto
-        item (terminal<id_c, regex_t> const &)
-        -> regex_t
-        { return {} ; }
-
-
-        template <   
-            auto id_c>
-        constexpr auto 
-        id (error_terminal<id_c> const &) 
-        { return id_c ; }
-
-        template <   
-            auto id_c>
-        constexpr auto 
-        id (non_terminal<id_c> const &) 
-        { return id_c ; }
-
-        template < 
-            typename declaration_t>
-        constexpr declaration_t 
-        declaration (rule<declaration_t, auto> const &)
-        { return {} ; }
-
-        template < 
-            typename definition_t>
-        constexpr definition_t 
-        definition (rule<auto, definition_t> const &)
-        { return {} ; }
-    
-
-        template <
-            typename start_t, 
-            typename ... rule_t>
-        constexpr start_t
-        start (
-            grammar_rules<start_t, rule_t...> const & __grammar)
-        { return {} ; }
-
-
-        constexpr auto
-        extract_if (
-            auto const & __predicate,
-            auto const & __first,
-            auto const & ... __next)
-        {
-            if constexpr (__predicate (__first))
-                return __first ;
-            else 
-                return extract_if (__predicate, __next...) ;
-        }
-    }
-        
-
-    template <
-        typename ... declaration_t, 
-        typename ... definition_t>
-    constexpr auto 
-    extract_definition (
-        auto const & __declaration,
-        grammar_rules<auto, rule<declaration_t, definition_t>...> const & __grammar)
-    -> decltype(auto)
-    { 
-        return
-        meta::definition (
-            meta::extract_if (
-                [] (auto const & __rule) constexpr
-                { return meta::id (std::decay_t<decltype(__declaration)>{}) == meta::id(meta::declaration(__rule)); },
-                rule<declaration_t, definition_t> {} ... ));
-    }
 
 
     template <
@@ -498,7 +396,143 @@ thodd::lang
         typename lang_t, 
         typename iterator_t>
     token (std::pair<iterator_t, iterator_t> const &, lang_t) -> token<lang_t, iterator_t> ;
+
+
+
+
+
+
+
+
+
+
+
+
+    /// GRAMMAR
+
+
+    enum struct production_operator 
+    { and_, or_, some } ;
+
+    template <
+        typename language_t, 
+        auto definition_size_c>
+    struct definition 
+    {
+        using ids_container_t = std::array<language_t, definition_size_c> ;
+        using operator_t = production_operator ;
+        
+        operator_t op ;
+        ids_container_t ids ;
+    } ;
+
+    template <typename language_t>
+    constexpr auto 
+    make_definition (
+        production_operator op, 
+        language_t first_id,
+        auto ... next_id)
+    {
+        using definition_t = definition <language_t, 1 + sizeof...(next_id)> ; 
+        
+        return 
+        definition_t { op, { first_id, next_id... } } ;
+    }
+
+
+
+
+    constexpr auto 
+    and_op (
+        auto first_id, 
+        auto ... next_id)
+    {
+        using po = production_operator ; 
+        
+        return 
+        make_definition (po::and_, first_id, next_id ...) ;
+    }
+
+
+    constexpr auto 
+    or_op (
+        auto first_id, 
+        auto ... next_id)
+    {
+        using po = production_operator ; 
+        
+        return 
+        make_definition (po::or_, first_id, next_id ...) ;
+    }
+        
+        
+    constexpr auto 
+    some_op (
+        auto id)
+    {
+        using po = production_operator ; 
+        
+        return 
+        make_definition (po::some, id) ;
+    }
+
+
+
+
+    template <
+        typename language_t,
+        auto production_size_c> 
+    struct production 
+    {
+        using ids_container_t = std::array<language_t, production_size_c> ;
+        using operator_t = production_operator ;
+
+        language_t id ;
+        operator_t op ;
+        ids_container_t ids ;
+    } ;
+
+
+    template <
+        typename language_t, 
+        auto definition_size_c>
+    constexpr auto 
+    is (
+        language_t id, 
+        definition<language_t, definition_size_c> def)
+    {
+        using production_t = production <language_t, definition_size_c> ;
+
+        return production_t { id, def.op, def.ids } ;
+    }
+
+    
+
+    template <
+        typename language_t, 
+        typename ... production_t>
+    struct productions ;
 }
+
+#define THODD_LANG_OPERATOR_FOR(language_t) \
+template <auto size_c> \
+constexpr auto \
+operator <= (language_t id, thodd::lang::definition<language_t, size_c> def) \
+{ return thodd::lang::is (id, def) ; } \
+\
+\
+constexpr auto \
+operator * (language_t id) \
+{ return thodd::lang::some_op (id) ; } \
+\
+constexpr auto \
+operator > (language_t id, language_t id2) \
+{ return thodd::lang::and_op (id, id2) ; } \
+\
+template<auto size_c>\
+constexpr auto \
+operator > (definition<language_t, size_c> and_def, language_t id2) \
+{ return thodd::lang::and_op (id, id2) ; } \
 
 
 #endif

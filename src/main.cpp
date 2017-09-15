@@ -32,8 +32,7 @@ std::string type_name()
 
 
 
-enum struct 
-math
+enum struct math
 { digit, number, add, sub, expression, addition, substraction } ;
 
 THODD_LANG_OPERATOR_FOR(math)
@@ -42,10 +41,18 @@ int main()
 {
     using namespace thodd::lang ;
 
-    constexpr auto number =       math::number <= *math::digit ;
-    constexpr auto addition =     math::addition <= and_op (math::expression, math::add, math::expression) ;
-    constexpr auto substraction = math::substraction <= and_op (math::expression, math::sub, math::expression) ;
-    constexpr auto expression =   math::expression <= or_op (math::number, math::addition, math::substraction) ;
+    auto calc_grammar = 
+    grammar<math> (
+        math::number,
+        math::number <= (*math::digit), 
+        math::addition <= (math::expression > math::add > math::expression),
+        math::substraction <= (math::expression > math::sub > math::expression),
+        math::expression <= (math::number | math::addition | math::substraction)) ;
 
-    std::cout << type_name<decltype(number)> () << std::endl ;
+    auto number = { math::digit, math::digit } ;
+    
+    check (calc_grammar, number.begin(), number.end()) ;
+    
+    
+    
 }

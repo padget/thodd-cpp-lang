@@ -30,5 +30,7 @@
 #  include <thodd/lang/matches.hpp>
 #  include <thodd/lang/build_tokens.hpp>
 #  include <thodd/lang/check.hpp>
+#  include <thodd/lang/grammar.hpp>
+#  include <thodd/lang/token.hpp>
 
 #endif

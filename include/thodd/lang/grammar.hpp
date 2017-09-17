@@ -3,7 +3,8 @@
 
 #  include <array>
 #  include <map>
-#  include <list>
+#  include <vector>
+#include <stack>
 #  include <algorithm>
 
 namespace
@@ -145,7 +146,7 @@ thodd::lang
     {
         language_t id ; 
         production_operator op ;
-        std::list<language_t> ids ;
+        std::vector<language_t> ids ;
     } ;
 
     
@@ -155,9 +156,9 @@ thodd::lang
     struct runtime_grammar
     {
         using production_t = runtime_production<language_t> ;
-        using productions_t = std::list<production_t> ;
+        using productions_t = std::vector<production_t> ;
         using dictionary_t = std::map<language_t, production_t> ;
-        using terminals_t = std::list<language_t> ;
+        using terminals_t = std::vector<language_t> ;
 
         language_t start ;
         dictionary_t dictionary ;
@@ -172,7 +173,7 @@ thodd::lang
     to_runtime (
         production<language_t, size_c> prod) 
     {
-        std::list<language_t> ids {} ;
+        std::vector<language_t> ids { std::distance(prod.ids.begin(), prod.ids.end()) } ;
         std::copy (prod.ids.begin(), prod.ids.end(), ids.begin()) ;
 
         return 
@@ -214,25 +215,6 @@ thodd::lang
         }
     }
 
-    constexpr auto
-    check_id (
-        auto id, 
-        auto const & grammar, 
-        auto begin, auto end)
-    {
-        if (grammar.dictionary.count(id) == 0)
-            return check_terminal (id, grammar, begin, end) ;
-        else switch (grammar.dictionary.at(id).op)
-        {
-            case production_operator::and_ : 
-                return check_and (grammar.dictionary.at(id), grammar, begin, end) ;
-            case production_operator::or_  : 
-                return check_or (grammar.dictionary.at(id), grammar, begin, end) ;
-            case production_operator::some :
-                return check_some (grammar.dictionary.at(id), grammar, begin, end) ;
-        }
-    }
-
     constexpr auto 
     check_terminal (
         auto const & id,
@@ -245,70 +227,45 @@ thodd::lang
         && *begin == id ;  
     }
 
-    constexpr auto 
-    check_and (
-        auto const & definition,
-        auto const & grammar, 
-        auto begin, auto end)
+    template <
+        typename language_t>
+    struct trace
     {
-        if (definition.op == production_operator::and_)
-        {
-            auto results = std::apply(
-                [&grammar, cursor = begin, end] (auto ... id)
-                { return std::array { check_id (id, grammar, cursor, end) ... } ; },
-                definition.ids) ;
+        language_t id ; 
+    } ;
 
-            std::all_of(results.begin(), results.end, $0) ;
-        }
-        else
-            return 
-            false ; 
-    }
-        
-    constexpr auto 
-    check_or (
-        auto const & definition,
-        auto const & grammar, 
-        auto begin, auto end)
-    {
-        if (definition.op == production_operator::or_)
-        {    
-            auto results = std::apply(
-                [&grammar, cursor = begin, end] (auto ... id)
-                { return std::array { check_id (id, grammar, cursor, end) ... } ; },
-                definition.ids) ;
-
-            std::any_of(results.begin(), results.end, $0) ;
-        }
-        else
-            return 
-            false ; 
-    }
-        
-    constexpr auto 
-    check_some (
-        auto const & definition,
-        auto const & grammar, 
-        auto begin, auto end)
-    {
-        if (definition.op == production_operator::some)
-        {
-            auto id = definition.ids[0] ;
-        }
-        else
-            return 
-            false ; 
-    }
 
     constexpr auto 
     check (
         auto const & grammar,
         auto begin, auto end)
     {
-        return 
-        check_id(
-            grammar.start, 
-            grammar, begin, end) ;
+        using id_t = decltype(grammar.start) ;
+        std::stack<trace<id_t>> id_stack ;
+        
+        id_stack.push (grammar.start)
+        
+        production_operator op ;
+        auto index = 0u ;
+
+        while (begin != end)
+        {
+            while (grammar.dictonary.count(id_stack.top()) != 0)
+            {
+                auto definition = grammar.dictionary.at(id_stack.top()) ;
+                op = definition.op ;
+
+                id_stack.push( { definition.ids[index] } ) ;
+
+                switch (op)
+                {
+                    production_operator::and_ : ;
+                    production_operator::or_  : ;
+                    production_operator::some : ;
+                }
+            }
+
+        }
     }
 }
 

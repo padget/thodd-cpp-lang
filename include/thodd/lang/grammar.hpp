@@ -173,7 +173,7 @@ thodd::lang
     to_runtime (
         production<language_t, size_c> prod) 
     {
-        std::vector<language_t> ids { std::distance(prod.ids.begin(), prod.ids.end()) } ;
+        std::vector<language_t> ids (std::distance(prod.ids.begin(), prod.ids.end())) ;
         std::copy (prod.ids.begin(), prod.ids.end(), ids.begin()) ;
 
         return 
@@ -227,46 +227,36 @@ thodd::lang
         && *begin == id ;  
     }
 
-    template <
-        typename language_t>
-    struct trace
-    {
-        language_t id ; 
-    } ;
+    // template <
+    //     typename language_t>
+    // struct trace
+    // {
+    //     language_t id ; 
+    //     size_t index ;
+    //     production_operator op ;
+    // } ;
 
 
-    constexpr auto 
-    check (
-        auto const & grammar,
-        auto begin, auto end)
-    {
-        using id_t = decltype(grammar.start) ;
-        std::stack<trace<id_t>> id_stack ;
+    // constexpr auto 
+    // check (
+    //     auto const & grammar,
+    //     auto begin, auto end)
+    // {
+    //     using id_t = decltype(grammar.start) ;
+    //     std::stack<trace<id_t>> id_stack ;
         
-        id_stack.push (grammar.start)
-        
-        production_operator op ;
-        auto index = 0u ;
+    //     id_stack.push ( { grammar.start, 0 } ) ;
 
-        while (begin != end)
-        {
-            while (grammar.dictonary.count(id_stack.top()) != 0)
-            {
-                auto definition = grammar.dictionary.at(id_stack.top()) ;
-                op = definition.op ;
-
-                id_stack.push( { definition.ids[index] } ) ;
-
-                switch (op)
-                {
-                    production_operator::and_ : ;
-                    production_operator::or_  : ;
-                    production_operator::some : ;
-                }
-            }
-
-        }
-    }
+    //     while (begin != end)
+    //     {
+    //         while (grammar.dictonary.count(id_stack.top()) != 0)
+    //         {
+    //             auto definition = grammar.dictionary.at(id_stack.top()) ;
+    //             id_stack.push( { definition.ids[index], index, definition.op } ) ;
+    //             std::cout << 
+    //         }
+    //     }
+    // }
 }
 
 

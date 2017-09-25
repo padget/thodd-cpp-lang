@@ -60,54 +60,45 @@ check (
     using po_t = thodd::lang::production_operator ;
         
     bool checked = true ;
- 
-    auto id_index = 0u ;
+    bool dive = true ; // to dive or contrary if false ;
+
     std::stack<trace<id_t>> grammar_explorer ;
-    grammar_explorer.push({ grammar.start, id_index }) ;
+    grammar_explorer.push({grammar.start, 0u, grammar.dictionary.at(grammar.start).op}) ;    
 
-    while (begin != end && checked)
+    while (begin != end && checked && !grammar_explorer.empty())
     {
-        while (!is_terminal(grammar_explorer.top().id, grammar))
-        {
-            auto const & production = grammar.dictionary.at(grammar_explorer.top().id) ;
+        std::cout << "id to check " << (int) *begin << ", explorer top id " << (int) grammar_explorer.top().id << ", explorer top operator " << (int) grammar_explorer.top().op << ", dived " << std::boolalpha << dive <<std::endl ; 
 
-            grammar_explorer.push( { production.ids[id_index], id_index, production.op } ) ; 
-            std::cout << (int) grammar_explorer.top().id << std::endl ;
-        }
+        auto const & top_id = grammar_explorer.top().id ;
 
-        bool const local_checked { *begin == grammar_explorer.top().id } ;
-        bool must_up { true } ;
-        
-        if (local_checked)
-            ++ begin ; 
-        
-        while (must_up && !grammar_explorer.empty())
-        {
-            grammar_explorer.pop() ;
+        if (is_terminal (top_id, grammar))
+        {    
+            std::cout << "is terminal" << std::endl ;
+            dive = false ;
+            checked &= *begin == grammar_explorer.top().id ;
             
-            switch (grammar_explorer.top().op)
-            {
-                case po_t::some : 
-                { 
-                    must_up = ! local_checked ; 
-                    break ;
-                }
-                case po_t::and_ : 
-                { 
-                    must_up = (id_index == grammar_explorer.top().id.size()) ; 
-                    break ;
-                }
-                case po_t::or_  :
-                { 
-                    ; 
-                    break ; 
-                }
-                default : break ;
-            }
+            if (checked) ++ begin ; 
         }
         
+        if (dive)
+        {
+            std::cout << "i push" << std::endl ;
+            auto const & production = grammar.dictionary.at (grammar_explorer.top().id);
+            grammar_explorer.push ({production.ids[0u], 0u, production.op}) ;
+        }     
+        else
+        {
+            std::cout << "i pop" << std::endl ;
+            grammar_explorer.pop () ;
 
-        
+            if (!grammar_explorer.empty())
+                switch (grammar_explorer.top().op)
+                {
+                    case thodd::lang::production_operator::some : std::cout << "i am some" << std::endl ; dive = checked ; break ;
+                    case thodd::lang::production_operator::and_ : std::cout << "i am and" << std::endl ; break ;
+                    default: break ;
+                }
+        }
     }
 
     return 
@@ -128,12 +119,13 @@ int main()
     auto calc_grammar = 
     grammar<math> (
         math::expression,
-        math::number <= (*math::digit), 
+        math::number <= (*math::digit),
+        math::expression <= (math::number > math::add > math::number)/*, 
         math::addition <= (math::expression > math::add > math::expression),
         math::substraction <= (math::expression > math::sub > math::expression),
-        math::expression <= (math::number | math::addition | math::substraction)) ;
+        math::expression <= (math::number | math::addition | math::substraction)*/) ;
 
-    auto number = { math::digit, math::digit } ;
+    auto number = { math::digit, math::digit, math::add, math::digit } ;
     
     check (calc_grammar, number.begin(), number.end()) ;
     

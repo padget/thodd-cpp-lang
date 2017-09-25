@@ -12,7 +12,7 @@ thodd::lang
 {
 
     enum struct production_operator 
-    { and_, or_, some } ;
+    { and_, or_, some, none } ;
 
     
     namespace 
@@ -106,7 +106,6 @@ thodd::lang
         make_definition <detail::operator_t::some> (id) ;
     }
 
-    
 
 
 

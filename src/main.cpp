@@ -41,6 +41,15 @@ struct trace
     thodd::lang::production_operator op ;
 } ;
 
+constexpr auto 
+is_terminal (
+    auto id, 
+    auto const & grammar)
+{
+    return 
+    grammar.dictionary.count(id) == 0 ;
+}
+
 
 constexpr auto 
 check (
@@ -48,18 +57,61 @@ check (
     auto begin, auto end)
 {
     using id_t = decltype(grammar.start) ;
-    std::stack<trace<id_t>> id_stack ;
-    
-    id_stack.push ( { grammar.start, 0 } ) ;
+    using po_t = thodd::lang::production_operator ;
+        
+    bool checked = true ;
+ 
+    auto id_index = 0u ;
+    std::stack<trace<id_t>> grammar_explorer ;
+    grammar_explorer.push({ grammar.start, id_index }) ;
 
-    while (begin != end)
+    while (begin != end && checked)
     {
-        while (grammar.dictionary.count(id_stack.top().id) != 0)
+        while (!is_terminal(grammar_explorer.top().id, grammar))
         {
-            auto definition = grammar.dictionary.at(id_stack.top().id) ;
-            id_stack.push( { definition.ids[0], 0, definition.op } ) ; 
+            auto const & production = grammar.dictionary.at(grammar_explorer.top().id) ;
+
+            grammar_explorer.push( { production.ids[id_index], id_index, production.op } ) ; 
+            std::cout << (int) grammar_explorer.top().id << std::endl ;
         }
+
+        bool const local_checked { *begin == grammar_explorer.top().id } ;
+        bool must_up { true } ;
+        
+        if (local_checked)
+            ++ begin ; 
+        
+        while (must_up && !grammar_explorer.empty())
+        {
+            grammar_explorer.pop() ;
+            
+            switch (grammar_explorer.top().op)
+            {
+                case po_t::some : 
+                { 
+                    must_up = ! local_checked ; 
+                    break ;
+                }
+                case po_t::and_ : 
+                { 
+                    must_up = (id_index == grammar_explorer.top().id.size()) ; 
+                    break ;
+                }
+                case po_t::or_  :
+                { 
+                    ; 
+                    break ; 
+                }
+                default : break ;
+            }
+        }
+        
+
+        
     }
+
+    return 
+    checked ;
 }
 
 
@@ -75,7 +127,7 @@ int main()
 
     auto calc_grammar = 
     grammar<math> (
-        math::number,
+        math::expression,
         math::number <= (*math::digit), 
         math::addition <= (math::expression > math::add > math::expression),
         math::substraction <= (math::expression > math::sub > math::expression),

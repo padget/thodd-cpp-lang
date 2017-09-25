@@ -63,7 +63,7 @@ check (
     bool dive = true ; // to dive or contrary if false ;
 
     std::stack<trace<id_t>> grammar_explorer ;
-    grammar_explorer.push({grammar.start, 0u, grammar.dictionary.at(grammar.start).op}) ;    
+    grammar_explorer.push({grammar.start}) ;    
 
     while (begin != end && checked && !grammar_explorer.empty())
     {
@@ -77,6 +77,8 @@ check (
             dive = false ;
             checked &= *begin == grammar_explorer.top().id ;
             
+            std::cout << "checked  " << std::boolalpha << checked << std::endl ;
+
             if (checked) ++ begin ; 
         }
         
@@ -84,7 +86,11 @@ check (
         {
             std::cout << "i push" << std::endl ;
             auto const & production = grammar.dictionary.at (grammar_explorer.top().id);
-            grammar_explorer.push ({production.ids[0u], 0u, production.op}) ;
+            
+            if (is_terminal(production.ids[0u], grammar))
+                grammar_explorer.push ({production.ids[0u]}) ;
+            else 
+                grammar_explorer.push ({production.ids[0u], 0u, grammar.dictionary.at(production.ids[0u]).op}) ;
         }     
         else
         {

@@ -51,65 +51,6 @@ is_terminal (
 }
 
 
-constexpr auto 
-check (
-    auto const & grammar,
-    auto begin, auto end)
-{
-    using id_t = decltype(grammar.start) ;
-    using po_t = thodd::lang::production_operator ;
-        
-    bool checked = true ;
-    bool dive = true ; // to dive or contrary if false ;
-
-    std::stack<trace<id_t>> grammar_explorer ;
-    grammar_explorer.push({grammar.start}) ;    
-
-    while (begin != end && checked && !grammar_explorer.empty())
-    {
-        std::cout << "id to check " << (int) *begin << ", explorer top id " << (int) grammar_explorer.top().id << ", explorer top operator " << (int) grammar_explorer.top().op << ", dived " << std::boolalpha << dive <<std::endl ; 
-
-        auto const & top_id = grammar_explorer.top().id ;
-
-        if (is_terminal (top_id, grammar))
-        {    
-            std::cout << "is terminal" << std::endl ;
-            dive = false ;
-            checked &= *begin == grammar_explorer.top().id ;
-            
-            std::cout << "checked  " << std::boolalpha << checked << std::endl ;
-
-            if (checked) ++ begin ; 
-        }
-        
-        if (dive)
-        {
-            std::cout << "i push" << std::endl ;
-            auto const & production = grammar.dictionary.at (grammar_explorer.top().id);
-            
-            if (is_terminal(production.ids[0u], grammar))
-                grammar_explorer.push ({production.ids[0u]}) ;
-            else 
-                grammar_explorer.push ({production.ids[0u], 0u, grammar.dictionary.at(production.ids[0u]).op}) ;
-        }     
-        else
-        {
-            std::cout << "i pop" << std::endl ;
-            grammar_explorer.pop () ;
-
-            if (!grammar_explorer.empty())
-                switch (grammar_explorer.top().op)
-                {
-                    case thodd::lang::production_operator::some : std::cout << "i am some" << std::endl ; dive = checked ; break ;
-                    case thodd::lang::production_operator::and_ : std::cout << "i am and" << std::endl ; break ;
-                    default: break ;
-                }
-        }
-    }
-
-    return 
-    checked ;
-}
 
 
 
@@ -126,14 +67,13 @@ int main()
     grammar<math> (
         math::expression,
         math::number <= (*math::digit),
-        math::expression <= (math::number > math::add > math::number)/*, 
         math::addition <= (math::expression > math::add > math::expression),
         math::substraction <= (math::expression > math::sub > math::expression),
-        math::expression <= (math::number | math::addition | math::substraction)*/) ;
+        math::expression <= (math::number | math::addition | math::substraction)) ;
 
     auto number = { math::digit, math::digit, math::add, math::digit } ;
     
-    check (calc_grammar, number.begin(), number.end()) ;
+    //check (calc_grammar, number.begin(), number.end()) ;
     
     
     

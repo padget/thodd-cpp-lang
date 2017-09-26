@@ -32,27 +32,6 @@ std::string type_name()
 }
 
 
-template <
-    typename language_t>
-struct trace
-{
-    language_t id ; 
-    size_t index ;
-    thodd::lang::production_operator op ;
-} ;
-
-constexpr auto 
-is_terminal (
-    auto id, 
-    auto const & grammar)
-{
-    return 
-    grammar.dictionary.count(id) == 0 ;
-}
-
-
-
-
 
 enum struct math
 { digit, number, add, sub, expression, addition, substraction } ;
@@ -63,7 +42,7 @@ int main()
 {
     using namespace thodd::lang ;
 
-    auto calc_grammar = 
+    auto math_grammar = 
     grammar<math> (
         math::expression,
         math::number <= (*math::digit),
@@ -71,10 +50,10 @@ int main()
         math::substraction <= (math::expression > math::sub > math::expression),
         math::expression <= (math::number | math::addition | math::substraction)) ;
 
-    auto number = { math::digit, math::digit, math::add, math::digit } ;
+    auto number = std::list { math::digit, math::digit, math::add, math::digit } ;
+    auto begin = number.begin() ;
     
-    //check (calc_grammar, number.begin(), number.end()) ;
-    
-    
-    
+    auto && [checked, cursor] = check(math_grammar, begin,  number.end()) ;
+
+    std::cout << std::boolalpha << checked << std::endl ;
 }

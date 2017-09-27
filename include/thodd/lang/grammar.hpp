@@ -6,6 +6,7 @@
 #  include <vector>
 #  include <stack>
 #  include <algorithm>
+#  include <limits>
 
 namespace
 thodd::lang 
@@ -19,8 +20,8 @@ thodd::lang
     struct definition 
     {
         production_operator op ;
-
         std::vector<language_t> ids ;
+        size_t min { 0 }, max { 1 } ;
     } ;
 
 
@@ -76,11 +77,16 @@ thodd::lang
 
     constexpr auto 
     some_def (
-        auto id)
+        auto id, 
+        size_t min, 
+        size_t max)
     {
+        auto && def = make_definition (production_operator::some, id) ;
+        def.min = min ;
+        def.max = max ;
+        
         return
-        make_definition (
-            production_operator::some, id) ;
+        def ;
     }
 
 
@@ -93,6 +99,9 @@ thodd::lang
         language_t id ;
         production_operator op ;
         std::vector<language_t> ids ;
+        size_t min ;
+        size_t max ;
+
     } ;
 
 
@@ -104,7 +113,7 @@ thodd::lang
         definition<language_t> def)
     {
         return 
-        production<language_t> { id, def.op, def.ids } ;
+        production<language_t> { id, def.op, def.ids, def.min, def.max } ;
     }
 
 
@@ -147,24 +156,6 @@ thodd::lang
         grammar.dictionary.count(id_terminal) == 0 ;
     }
 
-    inline auto const &
-    production_of (
-        auto const id_production, 
-        auto const & grammar)
-    {
-        return 
-        grammar.dictionary.at(id_production) ; 
-    }
-
-    inline auto const
-    operator_of (
-        auto const id_production, 
-        auto const & grammar)
-    {
-        return 
-        grammar.dictionary.at(id_production).op ;
-    }
-
 
     struct terminal_checker ;     // X
     struct non_terminal_checker ; // X
@@ -185,8 +176,6 @@ thodd::lang
             iterator_t begin, 
             iterator_t const end) const
         {
-            std::cout << "coucou" << std::endl ;
-            std::cout << "compare " << (int) *begin << " with " << (int) id << std::endl ;
             auto is_same = 
                 begin != end 
                 && is_terminal (id, grammar)
@@ -209,7 +198,7 @@ thodd::lang
             iterator_t begin, 
             iterator_t const end) const
         {
-            switch (operator_of (non_terminal_id, grammar))
+            switch (grammar.dictionary.at(non_terminal_id).op)
             {
                 case production_operator::some : 
                     return some_checker {} (non_terminal_id, grammar, begin, end) ;
@@ -234,10 +223,14 @@ thodd::lang
             iterator_t begin, 
             iterator_t const end) const 
          { 
+            auto cpt = 0u ;
             auto checked = true ;
-            language_t step_id = grammar.dictionary.at(some_id).ids[0] ;
 
-            while (begin != end && checked)
+            language_t step_id = grammar.dictionary.at(some_id).ids[0] ;
+            size_t const min = grammar.dictionary.at(some_id).min ;
+            size_t const max = grammar.dictionary.at(some_id).max ;
+            
+            while (begin != end && checked && cpt <= max )
             {
                 auto && [step_checked, step_cursor] = 
                     is_terminal (step_id, grammar) ? 
@@ -245,11 +238,14 @@ thodd::lang
                         non_terminal_checker {} (step_id, grammar, begin, end) ;
                 
                 if (checked = step_checked)
-                    begin = step_cursor ; 
+                {
+                    ++ cpt ;
+                    begin = step_cursor ;
+                } 
             }
 
             return 
-            std::tuple { true, begin } ;
+            std::tuple { min <= cpt && cpt <= max, begin } ;
         }
     } ;
     
@@ -366,7 +362,15 @@ operator <= (language_t id, thodd::lang::definition<language_t> const & def)    
                                                                                                 \
 inline auto                                                                                     \
 operator * (language_t id)                                                                      \
-{ return thodd::lang::some_def (id) ; }                                                         \
+{ return thodd::lang::some_def (id, 0, std::numeric_limits<size_t>::max()) ; }                  \
+                                                                                                \
+inline auto                                                                                     \
+operator + (language_t id)                                                                      \
+{ return thodd::lang::some_def (id, 1, std::numeric_limits<size_t>::max()) ; }                  \
+                                                                                                \
+inline auto                                                                                     \
+operator - (language_t id)                                                                      \
+{ return thodd::lang::some_def (id, 0, 1) ; }                                                   \
                                                                                                 \
 inline auto                                                                                     \
 operator > (language_t id, language_t id2)                                                      \

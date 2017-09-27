@@ -34,26 +34,55 @@ std::string type_name()
 
 
 enum struct math
-{ digit, number, add, sub, expression, addition, substraction } ;
+{ 
+    digit, 
+    add, 
+    sub,
+    mult, 
+    divi,
+    left, 
+    right,
 
-THODD_LANG_OPERATOR_FOR(math)
+    number, 
+    mult_or_div, 
+    add_or_sub,
+
+    expression, 
+    expression_tail,
+    factor, 
+    term, 
+    term_tail,
+    parens
+} ;
+
+enum struct lisp
+{
+    left, 
+    right, 
+    identifiant,
+    expression, 
+    expressions, 
+    parens_expression
+} ;
+
+THODD_LANG_OPERATOR_FOR(lisp)
 
 int main() 
 {
     using namespace thodd::lang ;
 
-    auto math_grammar = 
-    grammar<math> (
-        math::expression,
-        math::number <= (*math::digit),
-        math::addition <= (math::expression > math::add > math::expression),
-        math::substraction <= (math::expression > math::sub > math::expression),
-        math::expression <= (math::number | math::addition | math::substraction)) ;
+    auto lisp_grammar = 
+    grammar <lisp> (
+        lisp::expression, 
+        lisp::expression  <= ( lisp::identifiant | lisp::parens_expression ) ,
+        lisp::parens_expression <= ( lisp::left > lisp::identifiant > lisp::expressions > lisp::right ) ,
+        lisp::expressions <= ( *lisp::expression )    
+    ) ;
 
-    auto number = std::list { math::digit, math::digit, math::add, math::digit } ;
-    auto begin = number.begin() ;
+    auto lisp_stream = std::list { lisp::left, lisp::identifiant, lisp::left, lisp::identifiant, lisp::identifiant, lisp::right, lisp::right } ;
     
-    auto && [checked, cursor] = check(math_grammar, begin,  number.end()) ;
+    auto && [checked, cursor] = check(lisp_grammar, lisp_stream.begin(),  lisp_stream.end()) ;
 
     std::cout << std::boolalpha << checked << std::endl ;
+    std::cout << std::boolalpha << (cursor == lisp_stream.end()) << std::endl ;
 }

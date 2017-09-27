@@ -11,7 +11,6 @@
 
 
 #include <thodd/lang.hpp>
-#include <thodd/tuple/indexof.hpp>
 
 
 template<
@@ -57,12 +56,14 @@ enum struct math
 
 enum struct lisp
 {
-    left, 
-    right, 
-    identifiant,
-    expression, 
-    expressions, 
-    parens_expression
+    ignored=0, 
+    error=2,
+    left=1, 
+    right=3, 
+    identifiant=6,
+    expression=7, 
+    expressions=8, 
+    parens_expression=9
 } ;
 
 THODD_LANG_OPERATOR_FOR(lisp)
@@ -71,18 +72,31 @@ int main()
 {
     using namespace thodd::lang ;
 
+    auto input_stream = std::string("(add(nega)a))");
+    auto tokens = build_tokens (
+                    input_stream.begin(), 
+                    input_stream.end(), 
+                    terminal<lisp::error, void>{}, 
+                    term<lisp::ignored>(chr<' '>{}),
+                    term<lisp::left>(chr<'('> {}), 
+                    term<lisp::right>(chr<')'> {}), 
+                    term<lisp::identifiant>(+(chr<'a'> {} - chr<'z'> {}))) ;
+
     auto lisp_grammar = 
     grammar <lisp> (
         lisp::expression, 
-        lisp::expression  <= ( lisp::identifiant | lisp::parens_expression ) ,
+        lisp::expression        <= ( lisp::identifiant | lisp::parens_expression ) ,
         lisp::parens_expression <= ( lisp::left > lisp::identifiant > lisp::expressions > lisp::right ) ,
-        lisp::expressions <= ( *lisp::expression )    
+        lisp::expressions       <= ( *lisp::expression )    
     ) ;
 
-    auto lisp_stream = std::list { lisp::left, lisp::identifiant, lisp::left, lisp::identifiant, lisp::identifiant, lisp::right, lisp::right } ;
+    std::vector<lisp> lisp_stream ;
+    std::transform(tokens.begin(), tokens.end(), std::back_inserter(lisp_stream), [](auto&& token){return token.id;});
     
-    auto && [checked, cursor] = check(lisp_grammar, lisp_stream.begin(),  lisp_stream.end()) ;
+    auto && [checked, cursor] = check(lisp_grammar, lisp_stream.begin(), lisp_stream.end()) ;
 
+    std::for_each(lisp_stream.begin(), lisp_stream.end(), [](auto && id){std::cout << (int) id << std::endl ;});
+    
     std::cout << std::boolalpha << checked << std::endl ;
     std::cout << std::boolalpha << (cursor == lisp_stream.end()) << std::endl ;
 }

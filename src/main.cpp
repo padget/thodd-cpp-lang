@@ -43,21 +43,37 @@ enum struct lisp
     parens_expression=9
 } ;
 
+template <
+    typename language_t, 
+    typename iterator_t>
+void 
+print_tree (
+    thodd::lang::tree<language_t, iterator_t> const & tree, 
+    size_t dec = 0)
+{
+    std::cout << std::string(dec, ' ') << (int) tree.id << std::endl ;
+
+    for (auto && tchild : tree.childs)
+        print_tree (tchild, dec + 4) ;
+}
+
 THODD_LANG_OPERATOR_FOR(lisp)
 
 int main() 
 {
     using namespace thodd::lang ;
 
-    auto input_stream = std::string("(add(nega)a))");
-    auto tokens = build_tokens (
-                    input_stream.begin(), 
-                    input_stream.end(), 
-                    terminal<lisp::error, void>{}, 
-                    term<lisp::ignored>(chr<' '>{}),
-                    term<lisp::left>(chr<'('> {}), 
-                    term<lisp::right>(chr<')'> {}), 
-                    term<lisp::identifiant>(+(chr<'a'> {} - chr<'z'> {}))) ;
+    auto input_stream = std::string("(add(nega)a)");
+
+    auto && tokens = build_tokens (
+                        input_stream.begin(), 
+                        input_stream.end(), 
+                        
+                        terminal<lisp::error, void>{}, 
+                        term<lisp::ignored>(chr<' '>{}),
+                        term<lisp::left>(chr<'('> {}), 
+                        term<lisp::right>(chr<')'> {}), 
+                        term<lisp::identifiant>(+(chr<'a'> {} - chr<'z'> {}))) ;
 
     auto lisp_grammar = 
     grammar <lisp> (
@@ -68,12 +84,25 @@ int main()
     ) ;
 
     std::vector<lisp> lisp_stream ;
-    std::transform(tokens.begin(), tokens.end(), std::back_inserter(lisp_stream), [](auto&& token){return token.id;});
+    std::transform (
+        tokens.begin(), 
+        tokens.end(), 
+        std::back_inserter(lisp_stream), 
+        [] (auto&& token) { return token.id ; } ) ;
     
     auto && [checked, cursor] = check(lisp_grammar, lisp_stream.begin(), lisp_stream.end()) ;
 
-    std::for_each(lisp_stream.begin(), lisp_stream.end(), [](auto && id){std::cout << (int) id << std::endl ;});
+    std::for_each (
+        lisp_stream.begin(), 
+        lisp_stream.end(), 
+        [] (auto && id) { std::cout << (int) id << std::endl ; } ) ;
     
     std::cout << std::boolalpha << checked << std::endl ;
     std::cout << std::boolalpha << (cursor == lisp_stream.end()) << std::endl ;
+
+    if (checked)
+    {
+        auto && [tree, it] = build_tree<decltype((*tokens.begin()).begin())> (lisp_grammar, tokens.begin(), tokens.end()) ;
+        print_tree (tree) ;
+    }
 }

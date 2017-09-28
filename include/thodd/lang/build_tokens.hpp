@@ -18,7 +18,7 @@ thodd::lang
     build_tokens (
         auto __begin, 
         auto const __end,
-        terminal<error_id, auto>,
+        terminal<error_id, void>,
         terminal<ignored_id, auto> __ignored, 
         auto __first,
         auto ... __next)

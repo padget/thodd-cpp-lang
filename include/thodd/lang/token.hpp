@@ -8,12 +8,12 @@ namespace
 thodd::lang
 {
     template <
-        typename lang_t,
+        typename language_t,
         typename iterator_t>
     struct token
     {
         std::pair<iterator_t, iterator_t> data ;
-        lang_t id ;
+        language_t id ;
 
         inline auto 
         begin () 
@@ -56,9 +56,9 @@ thodd::lang
 
 
     template<
-        typename lang_t, 
+        typename language_t, 
         typename iterator_t>
-    token (std::pair<iterator_t, iterator_t> const &, lang_t) -> token<lang_t, iterator_t> ;
+    token (std::pair<iterator_t, iterator_t> const &, language_t) -> token<language_t, iterator_t> ;
 }
 
 #endif 

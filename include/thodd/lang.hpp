@@ -7,5 +7,6 @@
 #  include <thodd/lang/check.hpp>
 #  include <thodd/lang/grammar.hpp>
 #  include <thodd/lang/token.hpp>
+#  include <thodd/lang/build_tree.hpp>
 
 #endif

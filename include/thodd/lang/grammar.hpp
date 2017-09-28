@@ -157,44 +157,6 @@ thodd::lang
     }
 
     
-    template <
-        typename iterator_t>
-    std::tuple<bool, iterator_t>
-    check_terminal (
-        auto id, 
-        auto const & grammar, 
-        iterator_t begin, 
-        iterator_t const end)
-    {
-        auto is_same = 
-            begin != end 
-            && is_terminal (id, grammar)
-            && *begin == id ; 
-        
-        return 
-        { is_same, is_same ? ++begin : begin } ;  
-    }
-
-    template <
-        typename language_t, 
-        typename iterator_t>
-    std::tuple<bool, iterator_t> 
-    check_non_terminal (
-        language_t non_terminal_id, 
-        basic_grammar<language_t> const & grammar,
-        iterator_t begin, 
-        iterator_t const end)
-    {
-        switch (grammar.dictionary.at(non_terminal_id).op)
-        {
-            case production_operator::some : 
-                return check_some (non_terminal_id, grammar, begin, end) ;
-            case production_operator::and_ : 
-                return check_and (non_terminal_id, grammar, begin, end) ;
-            case production_operator::or_  : 
-                return check_or (non_terminal_id, grammar, begin, end) ;
-        }
-    } 
 
     template <
         typename language_t, 
@@ -208,27 +170,26 @@ thodd::lang
     { 
         auto cpt = 0u ;
         auto checked = true ;
-
+        auto local_cursor = begin ; 
         language_t step_id = grammar.dictionary.at(some_id).ids[0] ;
         size_t const min = grammar.dictionary.at(some_id).min ;
         size_t const max = grammar.dictionary.at(some_id).max ;
         
-        while (begin != end && checked && cpt <= max )
+        while (checked && cpt <= max)
         {
-            auto && [step_checked, step_cursor] = 
-                is_terminal (step_id, grammar) ? 
-                    check_terminal (step_id, grammar,  begin, end) :
-                    check_non_terminal (step_id, grammar, begin, end) ;
+            auto && [step_checked, step_cursor] = check(step_id, grammar, local_cursor, end) ;
             
             if (checked = step_checked)
             {
                 ++ cpt ;
-                begin = step_cursor ;
+                local_cursor = step_cursor ;
             } 
         }
 
+        checked = min <= cpt && cpt <= max ; 
+
         return 
-        { min <= cpt && cpt <= max, begin } ;
+        { checked, checked ? local_cursor : begin } ;
     }
 
 
@@ -242,23 +203,21 @@ thodd::lang
         iterator_t begin, 
         iterator_t const end)
     {
+        auto local_cursor = begin ; 
         auto checked = true ;
         auto const & step_ids = grammar.dictionary.at(and_id).ids ;
 
         for (auto && step_id : step_ids)
         {
-            auto && [step_checked, step_cursor] = 
-                is_terminal (step_id, grammar) ?
-                    check_terminal (step_id, grammar, begin, end) :
-                    check_non_terminal (step_id, grammar, begin, end) ;
+            auto && [step_checked, step_cursor] = check(step_id, grammar, local_cursor, end) ;
 
             if (checked = step_checked) 
-                begin = step_cursor ; 
+                local_cursor = step_cursor ; 
             else break ;
         }  
         
         return 
-        { checked, begin } ;
+        { checked, checked ? local_cursor : begin } ;
     }
 
     template <
@@ -271,41 +230,53 @@ thodd::lang
         iterator_t begin, 
         iterator_t const end)
     {
+        auto local_cursor = begin ; 
         auto checked = false ;
         auto const & step_ids = grammar.dictionary.at(or_id).ids ;
         
         for (auto && step_id : step_ids)
         {
-            auto && [step_checked, step_cursor] = 
-                is_terminal (step_id, grammar) ?
-                    check_terminal (step_id, grammar, begin, end) :
-                    check_non_terminal (step_id, grammar, begin, end) ;
+            auto && [step_checked, step_cursor] = check(step_id, grammar, local_cursor, end) ;
 
             if (checked = step_checked)
             {    
-                begin = step_cursor;
+                local_cursor = step_cursor;
                 break ;
             }
         }
 
         return 
-        { checked, begin } ; 
+        { checked, checked ? local_cursor : begin } ; 
     }
 
     template <
         typename language_t, 
         typename iterator_t>
     std::tuple<bool, iterator_t>
-    check_start (
-        language_t start_id, 
+    check (
+        language_t id, 
         basic_grammar<language_t> const & grammar, 
         iterator_t begin, 
         iterator_t const end)
     {
-        return 
-        is_terminal (start_id, grammar) ?
-            check_terminal (start_id, grammar, begin, end) : 
-            check_non_terminal (start_id, grammar, begin, end) ; 
+        if (is_terminal (id, grammar))
+        {   
+            auto is_same = 
+                begin != end 
+                && *begin == id ; 
+            
+            return 
+            { is_same, is_same ? ++begin : begin } ;
+        }
+        else switch (grammar.dictionary.at(id).op)
+        {
+            case production_operator::some : 
+                return check_some (id, grammar, begin, end) ;
+            case production_operator::and_ : 
+                return check_and (id, grammar, begin, end) ;
+            case production_operator::or_  : 
+                return check_or (id, grammar, begin, end) ;
+        }
     }    
 
 
@@ -318,7 +289,7 @@ thodd::lang
         auto const end)
     {
         return 
-        check_start (grammar.start, grammar, begin, end) ;
+        check (grammar.start, grammar, begin, end) ;
     }
 }
 

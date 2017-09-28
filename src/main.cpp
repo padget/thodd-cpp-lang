@@ -11,17 +11,18 @@
 
 
 #include <thodd/lang.hpp>
-#include <thodd/tuple/indexof.hpp>
 
 
-template<typename T>
+template<
+    typename T>
 std::string type_name()
 {
     int status;
     std::string tname = typeid(T).name();
     char *demangled_name = abi::__cxa_demangle(tname.c_str(), NULL, NULL, &status);
     
-    if(status == 0) {
+    if(status == 0) 
+    {
         tname = demangled_name;
         std::free(demangled_name);
     } 
@@ -29,83 +30,50 @@ std::string type_name()
     return tname;
 }
 
-enum class
-calc : int
-{
-    digit = 0,
-    pair, // 1 
-    unpair,// 2
-    sub_symbol,// 3
-    add_symbol,// 4
-    mult_symbol,// 5
-    div_symbol,// 6
-    left_symbol,// 7
-    right_symbol,// 8
-    error, // 9
-    ignored,// 10
 
-    term, // 11
-    expression,// 12 
-    number, // 13
-    factor,// 14
-    parens// 15
+enum struct lisp
+{
+    ignored=0, 
+    error=2,
+    left=1, 
+    right=3, 
+    identifiant=6,
+    expression=7, 
+    expressions=8, 
+    parens_expression=9
 } ;
 
-/*
-
- expression, 
-        number     <= (+digit) ,
-        parens     <= (left_symbol > expression > right_symbol) ,
-        factor     <= (number | parens) ,
-        term       <= (factor > *(mult_symbol | div_symbol)) ,
-        expression <= (term > *((add_symbol | sub_symbol) > term))
-
-*/
-
+THODD_LANG_OPERATOR_FOR(lisp)
 
 int main() 
 {
     using namespace thodd::lang ;
 
-    constexpr auto digit        = term <calc::number> (+(chr<'0'> {} - chr<'9'>{}) > (~(chr<'.'>{} > +(chr<'0'> {} - chr<'9'> {})))(bounds<0, 1> {})) ;
-    constexpr auto sub_symbol   = term <calc::sub_symbol> ( chr<'-'> {} ) ;
-    constexpr auto add_symbol   = term <calc::add_symbol> ( chr<'+'> {} ) ;
-    constexpr auto mult_symbol  = term <calc::mult_symbol> (  chr<'*'> {} ) ;
-    constexpr auto div_symbol   = term <calc::div_symbol> ( chr<'/'> {} ) ;
-    constexpr auto left_symbol  = term <calc::left_symbol> ( chr<'('> {} ) ;
-    constexpr auto right_symbol = term <calc::right_symbol> ( chr<')'> {} ) ;
+    auto input_stream = std::string("(add(nega)a))");
+    auto tokens = build_tokens (
+                    input_stream.begin(), 
+                    input_stream.end(), 
+                    terminal<lisp::error, void>{}, 
+                    term<lisp::ignored>(chr<' '>{}),
+                    term<lisp::left>(chr<'('> {}), 
+                    term<lisp::right>(chr<')'> {}), 
+                    term<lisp::identifiant>(+(chr<'a'> {} - chr<'z'> {}))) ;
 
-    constexpr auto error = error_term <calc::error> () ;
-    constexpr auto ignored = term <calc::ignored> ( chr<' '> {} ) ;
+    auto lisp_grammar = 
+    grammar <lisp> (
+        lisp::expression, 
+        lisp::expression        <= ( lisp::identifiant | lisp::parens_expression ) ,
+        lisp::parens_expression <= ( lisp::left > lisp::identifiant > lisp::expressions > lisp::right ) ,
+        lisp::expressions       <= ( *lisp::expression )    
+    ) ;
 
-    std::string_view __expression = "45.12" ;
-    auto && __tokens = build_tokens (
-                        __expression.begin(), 
-                        __expression.end(), 
-                        error, 
-                        ignored,
-                        digit , 
-                        left_symbol , 
-                        right_symbol) ;
-
-    for(auto const & __token : __tokens)
-        std::cout << (int) __token.id << " value : " <<std::endl ;
-
-    constexpr auto number = non_term <calc::number> () ;
-    constexpr auto expression = non_term <calc::expression> () ;
-    constexpr auto parens = non_term <calc::parens> ()  ;
-    constexpr auto factor = non_term <calc::factor> () ;
-    constexpr auto term = non_term <calc::term> () ;
+    std::vector<lisp> lisp_stream ;
+    std::transform(tokens.begin(), tokens.end(), std::back_inserter(lisp_stream), [](auto&& token){return token.id;});
     
-    constexpr auto calc_grammar = 
-    grammar (
-        expression, 
-        number     <= (+digit) ,
-        parens     <= (left_symbol > expression > right_symbol) ,
-        factor     <= (number | parens) ,
-        term       <= (factor > *(mult_symbol | div_symbol)) ,
-        expression <= (term > *((add_symbol | sub_symbol) > term))) ;
+    auto && [checked, cursor] = check(lisp_grammar, lisp_stream.begin(), lisp_stream.end()) ;
 
-    auto && [__matched, __it] = check (calc_grammar, __tokens.begin(), __tokens.end()) ;
-    // std::cout << std::boolalpha << __matched << std::endl ;
+    std::for_each(lisp_stream.begin(), lisp_stream.end(), [](auto && id){std::cout << (int) id << std::endl ;});
+    
+    std::cout << std::boolalpha << checked << std::endl ;
+    std::cout << std::boolalpha << (cursor == lisp_stream.end()) << std::endl ;
 }

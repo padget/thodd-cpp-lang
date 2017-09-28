@@ -341,164 +341,21 @@ thodd::lang
     non_term ()
     -> non_terminal<id_c>
     { return {} ; }
-
-
-   template <
-        typename start_t, 
-        typename ... rule_t> 
-    struct grammar_rules {} ;
-
-
-    constexpr auto 
-    grammar (
-        auto const & __start,
-        rule<auto, auto> const & ... __rules)
-    {
-        return 
-        grammar_rules <
-            std::decay_t <decltype(__start)>, 
-            std::decay_t <decltype(__rules)> ... > {} ;
-    }
-        
-
-    
     
 
-    namespace 
-    meta
-    {
-        template <   
-            auto id_c>
-        constexpr auto 
-        id (terminal<id_c, auto> const &) 
-        { return id_c ; }
-
-        template <auto id_c, typename regex_t>
-        constexpr auto
-        item (terminal<id_c, regex_t> const &)
-        -> regex_t
-        { return {} ; }
 
 
-        template <   
-            auto id_c>
-        constexpr auto 
-        id (error_terminal<id_c> const &) 
-        { return id_c ; }
-
-        template <   
-            auto id_c>
-        constexpr auto 
-        id (non_terminal<id_c> const &) 
-        { return id_c ; }
-
-        template < 
-            typename declaration_t>
-        constexpr declaration_t 
-        declaration (rule<declaration_t, auto> const &)
-        { return {} ; }
-
-        template < 
-            typename definition_t>
-        constexpr definition_t 
-        definition (rule<auto, definition_t> const &)
-        { return {} ; }
-    
-
-        template <
-            typename start_t, 
-            typename ... rule_t>
-        constexpr start_t
-        start (
-            grammar_rules<start_t, rule_t...> const & __grammar)
-        { return {} ; }
 
 
-        constexpr auto
-        extract_if (
-            auto const & __predicate,
-            auto const & __first,
-            auto const & ... __next)
-        {
-            if constexpr (__predicate (__first))
-                return __first ;
-            else 
-                return extract_if (__predicate, __next...) ;
-        }
-    }
-        
-
-    template <
-        typename ... declaration_t, 
-        typename ... definition_t>
-    constexpr auto 
-    extract_definition (
-        auto const & __declaration,
-        grammar_rules<auto, rule<declaration_t, definition_t>...> const & __grammar)
-    -> decltype(auto)
-    { 
-        return
-        meta::definition (
-            meta::extract_if (
-                [] (auto const & __rule) constexpr
-                { return meta::id (std::decay_t<decltype(__declaration)>{}) == meta::id(meta::declaration(__rule)); },
-                rule<declaration_t, definition_t> {} ... ));
-    }
 
 
-    template <
-        typename lang_t,
-        typename iterator_t>
-    struct token
-    {
-        std::pair<iterator_t, iterator_t> data ;
-        lang_t id ;
-
-        inline auto 
-        begin () 
-        {
-            return data.first ;
-        }
-
-        inline auto const
-        begin () const 
-        {
-            return data.first ;
-        }
-
-        inline auto 
-        end () 
-        {
-            return data.second ;
-        }
-
-        inline auto const
-        end () const
-        {
-            return data.second ;
-        }
-
-        inline auto const
-        size() const 
-        {
-            return 
-            std::distance(begin(), end()) ;
-        }
-
-        inline auto const
-        invalid () const
-        {
-            return 
-            size() == 0 ;
-        }
-    } ;
 
 
-    template<
-        typename lang_t, 
-        typename iterator_t>
-    token (std::pair<iterator_t, iterator_t> const &, lang_t) -> token<lang_t, iterator_t> ;
+
 }
+
+
+
 
 
 #endif

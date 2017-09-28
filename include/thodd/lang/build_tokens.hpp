@@ -5,22 +5,25 @@
 #  include <list>
 #  include <utility>
 
-#  include <thodd/functional.hpp>
-#  include <thodd/lang/pod.hpp>
+#  include <thodd/lang/token.hpp>
+#  include <thodd/lang/matches.hpp>
 
 namespace 
 thodd::lang
 {
+    template <
+        auto error_id, 
+        auto ignored_id>
     inline auto
     build_tokens (
         auto __begin, 
         auto const __end,
-        auto const & __error,
-        auto const & __ignored, 
-        auto const & __first,
-        auto const & ... __terminal)
+        terminal<error_id, auto>,
+        terminal<ignored_id, auto> __ignored, 
+        auto __first,
+        auto ... __next)
     {
-        std::list<token<decltype(meta::id(__first)), decltype(__begin)>> __tokens ;
+        std::list<token<decltype(ignored_id), decltype(__begin)>> __tokens ;
 
         auto __cursor = __begin ;
         
@@ -30,7 +33,7 @@ thodd::lang
                     std::array 
                     { std::move(matches(__ignored, __cursor, __end)),   
                       std::move(matches(__first, __cursor, __end)), 
-                      std::move(matches(__terminal, __cursor, __end)) ... } ;
+                      std::move(matches(__next, __cursor, __end)) ... } ;
       
             auto&& __greater = 
                 std::max_element(
@@ -39,13 +42,12 @@ thodd::lang
                     { return __l.size() < __r.size() ; }) ;
 
             if (__cursor == (*__greater).end())
-               __tokens.push_back(token { std::pair { __cursor, ++__cursor }, meta::id(__error) }) ;  
+               __tokens.push_back(token { std::pair { __cursor, ++__cursor }, error_id }) ;  
             else 
             {
                 __cursor = (*__greater).end() ;
-                constexpr auto __ignored_id = meta::id(__ignored) ;
                 
-                if ((*__greater).id != __ignored_id) 
+                if ((*__greater).id != ignored_id) 
                     __tokens.push_back(std::move(*__greater)) ;
             }
         }

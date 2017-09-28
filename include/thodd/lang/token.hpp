@@ -12,7 +12,9 @@ thodd::lang
         typename iterator_t>
     struct token
     {
-        std::pair<iterator_t, iterator_t> data ;
+        using data_iterator = iterator_t ;
+
+        std::pair<data_iterator, data_iterator> data ;
         language_t id ;
 
         inline auto 

@@ -4,6 +4,7 @@
 #  include <list>
 #  include <tuple>
 #  include <utility>
+#  include <iterator>
 
 #  include <thodd/lang/grammar.hpp>
 
@@ -20,24 +21,17 @@ thodd::lang
         std::list<tree<language_t, iterator_t>> childs ;
     } ;
 
-    template <
-        typename data_iterator_t,    
-        typename language_t, 
-        typename iterator_t>
-    std::tuple<tree<language_t, data_iterator_t>, iterator_t>
-    build_tree (
-        language_t id,
-        basic_grammar<language_t> const & grammar, 
-        iterator_t begin, 
-        iterator_t const end) ;
-    
-
 
     template <
-        typename data_iterator_t,
+        typename iterator_t>
+    using data_iterator_t = 
+        typename std::iterator_traits<iterator_t>::value_type::data_iterator ;
+
+        
+    template <
         typename language_t, 
         typename iterator_t>
-    std::tuple<tree<language_t, data_iterator_t>, iterator_t>
+    std::tuple<tree<language_t, data_iterator_t<iterator_t>>, iterator_t>
     build_tree_some (
         language_t some_id, 
         basic_grammar<language_t> const & grammar, 
@@ -53,11 +47,11 @@ thodd::lang
         size_t const min = grammar.dictionary.at(some_id).min ;
         size_t const max = grammar.dictionary.at(some_id).max ;
 
-        std::list<tree<language_t, data_iterator_t>> local_childs ;
+        std::list<tree<language_t, data_iterator_t<iterator_t>>> local_childs ;
 
         while (checked && cpt <= max)
         {
-            auto && [step_tree, step_cursor] = build_tree <data_iterator_t> (step_id, grammar, local_cursor, end) ;
+            auto && [step_tree, step_cursor] = build_tree (step_id, grammar, local_cursor, end) ;
 
             if (checked = (step_tree.id != language_t::error))
             {
@@ -81,10 +75,9 @@ thodd::lang
 
 
     template <
-        typename data_iterator_t,
         typename language_t, 
         typename iterator_t>
-    std::tuple<tree<language_t, data_iterator_t>, iterator_t>
+    std::tuple<tree<language_t, data_iterator_t<iterator_t>>, iterator_t>
     build_tree_and (
         language_t and_id, 
         basic_grammar<language_t> const & grammar, 
@@ -95,11 +88,11 @@ thodd::lang
         auto checked = true ;
         auto const & step_ids = grammar.dictionary.at(and_id).ids ;
 
-        std::list<tree<language_t, data_iterator_t>> local_childs ;
+        std::list<tree<language_t, data_iterator_t<iterator_t>>> local_childs ;
 
         for (auto && step_id : step_ids)
         {
-            auto && [step_tree, step_cursor] = build_tree <data_iterator_t> (step_id, grammar, local_cursor, end) ;
+            auto && [step_tree, step_cursor] = build_tree (step_id, grammar, local_cursor, end) ;
 
             if (checked = (step_tree.id != language_t::error)) 
             {
@@ -121,10 +114,9 @@ thodd::lang
 
 
     template <
-        typename data_iterator_t,
         typename language_t, 
         typename iterator_t>
-    std::tuple<tree<language_t, data_iterator_t>, iterator_t>
+    std::tuple<tree<language_t, data_iterator_t<iterator_t>>, iterator_t>
     build_tree_or (
         language_t or_id, 
         basic_grammar<language_t> const & grammar, 
@@ -135,11 +127,11 @@ thodd::lang
         auto checked = true ;
         auto const & step_ids = grammar.dictionary.at(or_id).ids ;
 
-        std::list<tree<language_t, data_iterator_t>> local_childs ;
+        std::list<tree<language_t, data_iterator_t<iterator_t>>> local_childs ;
 
         for (auto && step_id : step_ids)
         {
-            auto && [step_tree, step_cursor] = build_tree <data_iterator_t> (step_id, grammar, local_cursor, end) ;
+            auto && [step_tree, step_cursor] = build_tree (step_id, grammar, local_cursor, end) ;
 
             if (checked = (step_tree.id != language_t::error)) 
             {
@@ -161,10 +153,9 @@ thodd::lang
 
     
     template <
-        typename data_iterator_t,    
         typename language_t, 
         typename iterator_t>
-    std::tuple<tree<language_t, data_iterator_t>, iterator_t>
+    std::tuple<tree<language_t, data_iterator_t<iterator_t>>, iterator_t>
     build_tree (
         language_t id,
         basic_grammar<language_t> const & grammar, 
@@ -176,31 +167,30 @@ thodd::lang
             auto && matched = begin != end && (*begin).id == id ; 
         
             return 
-            { tree<language_t, data_iterator_t> { matched ? (*begin).id : language_t::error, (*begin).data }, matched ? ++begin : begin } ;
+            { tree<language_t, data_iterator_t<iterator_t>> { matched ? (*begin).id : language_t::error, (*begin).data }, matched ? ++begin : begin } ;
         }
         else switch (grammar.dictionary.at(id).op)
         {
             case production_operator::some : 
-                return build_tree_some <data_iterator_t> (id, grammar, begin, end) ;
+                return build_tree_some (id, grammar, begin, end) ;
             case production_operator::and_ : 
-                return build_tree_and <data_iterator_t> (id, grammar, begin, end) ;
+                return build_tree_and (id, grammar, begin, end) ;
             case production_operator::or_ :
-                return build_tree_or <data_iterator_t> (id, grammar, begin, end) ;
+                return build_tree_or (id, grammar, begin, end) ;
         }
     }
 
     template <
-        typename data_iterator_t,
         typename language_t, 
         typename iterator_t>
-    std::tuple<tree<language_t, data_iterator_t>, iterator_t>
+    std::tuple<tree<language_t, data_iterator_t<iterator_t>>, iterator_t>
     build_tree (
         basic_grammar<language_t> const & grammar, 
         iterator_t begin, 
         iterator_t const end)
     {
         return 
-        build_tree <data_iterator_t> (grammar.start, grammar, begin, end) ;
+        build_tree (grammar.start, grammar, begin, end) ;
     }
 }
 

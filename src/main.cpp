@@ -51,7 +51,11 @@ print_tree (
     thodd::lang::tree<language_t, iterator_t> const & tree, 
     size_t dec = 0)
 {
-    std::cout << std::string(dec, ' ') << (int) tree.id << std::endl ;
+    std::cout << std::string(dec, ' ') << (int) tree.id << "'" ;
+
+    std::for_each(tree.data.first, tree.data.second, [] (auto && c) { std::cout << c ; } ) ;
+
+    std::cout << "'" << std::endl ;
 
     for (auto && tchild : tree.childs)
         print_tree (tchild, dec + 4) ;
@@ -102,7 +106,12 @@ int main()
 
     if (checked)
     {
-        auto && [tree, it] = build_tree<decltype((*tokens.begin()).begin())> (lisp_grammar, tokens.begin(), tokens.end()) ;
-        print_tree (tree) ;
+        auto && [tree, it] = 
+            build_tree (lisp_grammar, tokens.begin(), tokens.end()) ;
+
+        if (tree.id != lisp::error) ;
+            print_tree (tree) ;
+
+        std::cout << std::boolalpha << (it == tokens.end()) << std::endl ;
     }
 }

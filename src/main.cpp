@@ -31,29 +31,6 @@ std::string type_name()
 }
 
 
-
-enum struct math
-{ 
-    digit, 
-    add, 
-    sub,
-    mult, 
-    divi,
-    left, 
-    right,
-
-    number, 
-    mult_or_div, 
-    add_or_sub,
-
-    expression, 
-    expression_tail,
-    factor, 
-    term, 
-    term_tail,
-    parens
-} ;
-
 enum struct lisp
 {
     ignored=0, 

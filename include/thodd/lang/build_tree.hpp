@@ -7,27 +7,17 @@
 #  include <iterator>
 
 #  include <thodd/lang/grammar.hpp>
+#  include <thodd/lang/tree.hpp>
 
 namespace 
 thodd::lang 
 {
     template <
-        typename language_t, 
-        typename iterator_t>
-    struct tree 
-    {
-        language_t id ;
-        std::pair<iterator_t, iterator_t> data ;
-        std::list<tree<language_t, iterator_t>> childs ;
-    } ;
-
-
-    template <
         typename iterator_t>
     using data_iterator_t = 
         typename std::iterator_traits<iterator_t>::value_type::data_iterator ;
 
-        
+
     template <
         typename language_t, 
         typename iterator_t>

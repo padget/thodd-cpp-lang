@@ -10,5 +10,6 @@
 #  include <thodd/lang/tree.hpp>
 #  include <thodd/lang/build_tree.hpp>
 #  include <thodd/lang/purge_tree.hpp>
+#  include <thodd/lang/interpret.hpp>
 
 #endif

@@ -119,12 +119,12 @@ int main()
         purge_tree (tree, lisp_grammar) ;
         print_tree (tree) ;
 
-        /* interpret (tree, 
-            rule (lisp::identifiant, 
+        interpret (tree, 
+            react (lisp::identifiant, 
                   [] (auto const & data_begin, auto const & data_end) 
                   { std::for_each(data_begin, data_end, cout_ << $0) ; } ), 
-            rule (lisp::number, 
+            react (lisp::number, 
                   [] (auto && data_begin, auto && data_end)
-                  { std::for_each(data_begin, data_end, cout_ << $0) })) ;*/
+                  { std::for_each(data_begin, data_end, cout_ << $0) ; })) ;
     }
 }

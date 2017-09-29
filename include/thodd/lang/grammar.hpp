@@ -3,7 +3,7 @@
 
 #  include <array>
 #  include <map>
-#  include <vector>
+#  include <list>
 #  include <stack>
 #  include <algorithm>
 #  include <limits>
@@ -20,7 +20,7 @@ thodd::lang
     struct definition 
     {
         production_operator op ;
-        std::vector<language_t> ids ;
+        std::list<language_t> ids ;
         size_t min { 0 }, max { 1 } ;
     } ;
 
@@ -30,7 +30,7 @@ thodd::lang
     inline auto 
     make_definition (
         production_operator op, 
-        std::vector<language_t> const & ids)
+        std::list<language_t> const & ids)
     {
         return 
         definition<language_t> 
@@ -48,7 +48,7 @@ thodd::lang
     {
         return 
         make_definition( 
-            op, std::vector { first_id, next_id... } ) ;
+            op, std::list { first_id, next_id... } ) ;
     }
 
     inline auto 
@@ -98,7 +98,7 @@ thodd::lang
     {
         language_t id ;
         production_operator op ;
-        std::vector<language_t> ids ;
+        std::list<language_t> ids ;
         size_t min ;
         size_t max ;
 
@@ -171,7 +171,7 @@ thodd::lang
         auto cpt = 0u ;
         auto checked = true ;
         auto local_cursor = begin ; 
-        language_t step_id = grammar.dictionary.at(some_id).ids[0] ;
+        language_t step_id = *grammar.dictionary.at(some_id).ids.begin() ;
         size_t const min = grammar.dictionary.at(some_id).min ;
         size_t const max = grammar.dictionary.at(some_id).max ;
         

@@ -116,7 +116,8 @@ int main()
 
         std::cout << std::boolalpha << (it == tokens.end()) << std::endl ;
         
-        purge_tree (tree, lisp_grammar, lisp::expression) ;
+        purge_tree (tree, lisp_grammar) ;
+        print_tree (tree) ;
 
         /* interpret (tree, 
             rule (lisp::identifiant, 

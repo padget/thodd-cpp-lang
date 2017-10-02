@@ -62,6 +62,17 @@ print_tree (
         print_tree (tchild, dec + 4) ;
 }
 
+
+struct lisp_identifiant {} ;
+
+struct lisp_number  {} ;
+
+struct lisp_parens_expression 
+{
+    lisp_identifiant identfiant ;
+    std::vector<int> args ;
+} ;
+
 THODD_LANG_OPERATOR_FOR(lisp)
 
 int main() 
@@ -69,7 +80,7 @@ int main()
     using namespace thodd ;
     using namespace thodd::lang ;
 
-    auto input_stream = std::string("(add(neg1)a)");
+    auto input_stream = std::string("(add (neg 1 12 12 a) a)");
 
     auto && tokens = build_tokens (
                         input_stream.begin(), 
@@ -86,8 +97,7 @@ int main()
         lisp::expression, 
         lisp::expression        <= ( lisp::number | lisp::identifiant | lisp::parens_expression ) ,
         lisp::parens_expression <= ( lisp::left > lisp::identifiant > lisp::expressions > lisp::right ) ,
-        lisp::expressions       <= ( *lisp::expression )    
-    ) ;
+        lisp::expressions       <= ( *lisp::expression ) ) ;
 
     std::vector<lisp> lisp_stream ;
     std::transform (
@@ -97,14 +107,6 @@ int main()
         [] (auto&& token) { return token.id ; } ) ;
     
     auto && [checked, cursor] = check (lisp_grammar, lisp_stream.begin(), lisp_stream.end()) ;
-
-    std::for_each (
-        lisp_stream.begin(), 
-        lisp_stream.end(), 
-        [] (auto && id) { std::cout << (int) id << std::endl ; } ) ;
-    
-    std::cout << std::boolalpha << checked << std::endl ;
-    std::cout << std::boolalpha << (cursor == lisp_stream.end()) << std::endl ;
 
     if (checked)
     {
@@ -119,12 +121,36 @@ int main()
         purge_tree (tree, lisp_grammar) ;
         print_tree (tree) ;
 
-        interpret (tree, 
-            react (lisp::identifiant, 
-                  [] (auto const & data_begin, auto const & data_end) 
-                  { std::for_each(data_begin, data_end, cout_ << $0) ; } ), 
-            react (lisp::number, 
-                  [] (auto && data_begin, auto && data_end)
-                  { std::for_each(data_begin, data_end, cout_ << $0) ; })) ;
+        constexpr auto lisp_expression_interpret =  
+        [] (
+            auto && tree, 
+            auto const & identifiant_interpretor, 
+            auto const & args_interpretor)
+        {
+            return 
+            lisp_parens_expression 
+            {
+                identifiant_interpretor (tree.childs[0]), 
+                args_interpretor (tree.childs)
+            };
+        } ;
+
+        // interpret <basic_lisp> (tree, 
+        //     react (
+        //         lisp::identifiant, 
+        //         [] (auto const & data_begin, auto const & data_end)   
+        //         { std::for_each(data_begin, data_end, cout_ << $0) ; } ), 
+        //     react (
+        //         lisp::number, 
+        //         [] (auto const & data_begin, auto const & data_end)
+        //         { std::for_each(data_begin, data_end, cout_ << $0) ; } ), 
+        //     react (
+        //         lisp::parens_expression, 
+        //         [] (std::vector<std::unique_ptr<basic_lisp>> const & args)
+        //         {
+                    
+        //         }
+        //     )) ;
+
     }
 }

@@ -18,29 +18,30 @@ thodd::lang
         [terminal...] (auto begin, auto const end)
         {
             constexpr auto greater_token = 
-            [] (auto const & __l, auto const & __r) { return __l.size() < __r.size() ; } ;
-                
-            std::list<token<language_t, decltype(__begin)>> __tokens ;
-            auto cursor = __begin ;
+            [] (auto const & l, auto const & r) { return l.size() < r.size() ; } ;
+            constexpr auto make_token = 
+            [] (auto begin, auto end, auto id) { return token{std::pair{begin, end}, id} ;} ;
             
-
+            std::list<token<language_t, decltype(begin)>> tokens ;
+            auto cursor = begin ;
+            
             while (cursor != end)
             {
-                auto&& __each_tokens = std::array {std::move(terminal(cursor, end)) ... } ;
-                auto&& __greater = std::max_element(__each_tokens.begin(), __each_tokens.end(), greater_token) ;
+                auto&& each_tokens = std::array {std::move(terminal(cursor, end)) ... } ;
+                auto&& greater = std::max_element(each_tokens.begin(), each_tokens.end(), greater_token) ;
 
-                if (cursor == (*__greater).end())
-                   __tokens.push_back(token { std::pair { cursor, ++cursor }, language_t::error }) ;  
+                if (cursor == (*greater).end())
+                   tokens.push_back(make_token(cursor, ++cursor, language_t::error)) ;  
                 else 
                 {
-                    cursor = (*__greater).end() ;
+                    cursor = (*greater).end() ;
 
-                    if ((*__greater).id != language_t::ignored) 
-                        __tokens.push_back(std::move(*__greater)) ;
+                    if ((*greater).id != language_t::ignored) 
+                        tokens.push_back(std::move(*greater)) ;
                 }
             }
 
-            return __tokens ;
+            return tokens ;
         } ;
     } ;
 }

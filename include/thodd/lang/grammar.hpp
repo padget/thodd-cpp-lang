@@ -175,7 +175,7 @@ thodd::lang
         size_t const min = grammar.dictionary.at(some_id).min ;
         size_t const max = grammar.dictionary.at(some_id).max ;
         
-        while (checked && cpt <= max)
+        while (checked && cpt < max)
         {
             auto && [step_checked, step_cursor] = check(step_id, grammar, local_cursor, end) ;
             

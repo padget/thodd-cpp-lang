@@ -39,7 +39,7 @@ thodd::lang
 
         std::list<tree<language_t, data_iterator_t<iterator_t>>> local_childs ;
 
-        while (checked && cpt <= max)
+        while (checked && cpt < max)
         {
             auto && [step_tree, step_cursor] = build_tree (step_id, grammar, local_cursor, end) ;
 

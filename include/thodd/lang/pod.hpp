@@ -1,354 +1,157 @@
 #ifndef __THODD_LANG_POD_HPP__
 #  define __THODD_LANG_POD_HPP__
 
-#  include <tuple>
 #  include <limits>
-#  include <utility>
-#  include <type_traits>
-#  include <algorithm>
+
+#  include <thodd/lang/token.hpp>
 
 namespace
 thodd::lang
 {
-    /// CHAR_
-    template <
-        auto char_c>
-    struct chr
-    {
-        using regex_marker = void ;
-    } ;
-    
-
-    /// NOT_
-    template<
-        typename item_t>
-    struct not_
-    {
-        using regex_marker = void ;
-    } ;
-
-
-
-    /// BETWEEN
-    template<
-        auto min_c, 
-        auto max_c>
-    struct between
-    {
-        using regex_marker = void ;
-    } ;
-
-
-    
-    /// OR_
-    template <
-        typename ... choice_t>
-    struct or_  
-    {
-        using regex_marker = void ;
-        using syntax_marker = void ;
-        using or_marker = void ;
-    } ;
-    
-
-
-    // AND_
-    template <
-        typename ... item_t>
-    struct and_ 
-    {
-        using regex_marker = void ;
-        using syntax_marker = void ;
-        using and_marker = void ;
-    } ;
-
-    
-    template <
-        auto min_c, 
-        auto max_c>
-    struct bounds {} ;
-
-
-    /// SOME
-    template <
-        typename item_t, 
-        auto min_c = 0, 
-        auto max_c = std::numeric_limits<size_t>::max()>
-    struct some 
-    {
-        using regex_marker = void ;
-        using syntax_marker = void ;
-    
-        template <
-            auto omin_c, 
-            auto omax_c>
-        constexpr some<item_t, omin_c, omax_c>
-        operator () (
-            bounds<omin_c, omax_c> const &) const
-        { return {} ; }
-    } ;
-
-
-    template <typename regex_t>
-    concept bool or_marked = requires { typename std::decay_t<regex_t>::or_marker ; } ;
-
-    template <typename regex_t>
-    concept bool and_marked = requires { typename std::decay_t<regex_t>::and_marker ; } ;
-
-    template <typename regex_t>
-    concept bool regex_marked = requires { typename std::decay_t<regex_t>::regex_marker ; } ;
-
-    template <typename ... regex_t>
-    concept bool all_regex_marked = (regex_marked<regex_t> && ...) ;
-
-
-
-    template <typename syntax_t>
-    concept bool syntax_marked = requires { typename std::decay_t<syntax_t>::syntax_marker ; } ;
-
-    template <typename ... syntax_t>
-    concept bool all_syntax_marked = (syntax_marked<syntax_t> && ...) ;
-
-
-    template<typename type_t>
-    concept bool regex_or_syntax_marked =
-        regex_marked<type_t> or syntax_marked<type_t> ; 
-
-
-    template<auto min_c, auto max_c>
-    constexpr auto
-    operator - (
-        chr<min_c> const & __min, 
-        chr<max_c> const & __max)
-    -> between<min_c, max_c>
-    { return {} ; }
-
-    
-    constexpr auto
-    operator ! (
-        auto const & __right)
-    -> not_<std::decay_t<decltype(__right)>>
-    requires regex_marked<decltype(__right)>
-    
-    { return {} ; }
-
-    
-    namespace 
-    meta 
-    {
-        template<
-            typename added_t,
-            template <typename ... > typename pack_t,
-            typename ... type_t>
-        constexpr pack_t <type_t..., added_t>
-        push_back (pack_t<type_t...> const &)
-        { return {} ; } 
-
-
-        template<
-            typename added_t,
-            template <typename ... > typename pack_t, 
-            typename ... type_t>
-        constexpr pack_t <added_t, type_t...>
-        push_front (pack_t<type_t...> const &)
-        { return {} ; } 
-
-        template<
-            template <typename ... > typename pack_t, 
-            typename ... left_t, 
-            typename ... right_t>
-        constexpr pack_t <left_t..., right_t...>
-        concat (pack_t<left_t...> const &, pack_t<right_t...> const &)
-        { return {} ; } 
-    }
-
-
-    constexpr auto
-    operator | (
-        auto const & __left, 
-        auto const & __right)
-    requires 
-        all_regex_marked<decltype(__left), decltype(__right)>
-     or all_syntax_marked<decltype(__left), decltype(__right)>
-    {        
-        using left_t = decltype(__left) ;
-        using right_t = decltype(__right) ;
-
-        if constexpr (!or_marked<left_t> && !or_marked<right_t>)
-            return or_ <
-                    std::decay_t<decltype(__left)>, 
-                    std::decay_t<right_t>> {} ;
-        else if constexpr (or_marked<decltype(__left)> && !or_marked<right_t>)
-            return meta::push_back <std::decay_t<right_t>> (__left) ;
-        else if constexpr (!or_marked<decltype(__left)> && or_marked<right_t>)
-            return meta::push_front <std::decay_t<decltype(__left)>> (__right) ;
-        else if constexpr (or_marked<decltype(__left)> && or_marked<right_t>)
-            return meta::concat (__left, __right) ;
-    }
-
-    
-    constexpr auto
-    operator > (
-        auto const & __left, 
-        auto const & __right)
-    requires 
-        all_regex_marked<decltype(__left), decltype(__right)>
-     or all_syntax_marked<decltype(__left), decltype(__right)>
-    {        
-        using left_t = decltype(__left) ;
-        using right_t = decltype(__right) ;
-
-        if constexpr (!and_marked<left_t> && !and_marked<right_t>)
-            return and_ <
-                    std::decay_t<decltype(__left)>, 
-                    std::decay_t<right_t>> {} ;
-        else if constexpr (and_marked<decltype(__left)> && !and_marked<right_t>)
-            return meta::push_back <std::decay_t<right_t>> (__left) ;
-        else if constexpr (!and_marked<decltype(__left)> && and_marked<right_t>)
-            return meta::push_front <std::decay_t<decltype(__left)>> (__right) ;
-        else if constexpr (and_marked<decltype(__left)> && and_marked<right_t>)
-            return meta::concat (__left, __right) ;
-    }
-
-
-
-    
-
-
-
-
-    constexpr auto
-    operator ~ (
-        auto const & __right)
-    -> some<std::decay_t<decltype(__right)>>
-    requires regex_or_syntax_marked<std::decay_t<decltype(__right)>>
-    { return {} ; }
-
-
-    constexpr auto
-    operator * (
-        auto const & __right)
-    requires regex_or_syntax_marked<std::decay_t<decltype(__right)>>
-    { return (~__right)(bounds<0, std::numeric_limits<size_t>::max()>{}) ; }
-
-    
-    constexpr auto
-    operator + (
-        auto const & __right)
-    requires regex_or_syntax_marked<std::decay_t<decltype(__right)>>
-    { return (~__right)(bounds<1, std::numeric_limits<size_t>::max()>{}) ; }
-
-
-    template <
-        typename char_t, 
-        size_t size_c,
-        template <
-            typename, 
-            size_t...> 
-        typename sequence_t,
-        size_t ... idx_c>
-    constexpr auto 
-    __chrs_impl (
-        char_t const (&__chrs) [size_c], 
-        sequence_t<size_t, idx_c...>)
+    inline constexpr auto 
+    chr = 
+    [] (auto c) 
     {
         return 
-        ( chr(__chrs[idx_c]) > ... ) ;
-    }
-
-    template<
-        typename char_t, 
-        size_t size_c>
-    constexpr auto
-    chrs (
-    char_t const (&__chrs) [size_c])
+        [c] (auto begin, auto const end)
+        {
+            auto matches = begin != end && *begin == c ;
+            
+            return 
+            std::tuple { matches, matches ? ++begin : begin } ;
+        } ;
+    } ;
+    
+    inline constexpr auto
+    range = 
+    [] (auto min, auto max)
     {
         return 
-        __chrs_impl (
-            __chrs, 
-            std::make_index_sequence<size_c - 1>{}) ;
-    }
-
-
-
-
-    template <
-        typename declaration_t, 
-        typename definition_t>
-    struct rule { } ; 
-
-
-    constexpr auto
-    operator <= (
-        auto const & __declaration, 
-        auto const & __definition) 
-    -> rule<std::decay_t<decltype(__declaration)>, std::decay_t<decltype(__definition)>>
-    requires all_syntax_marked<decltype(__declaration), decltype(__definition)>
-    { return {} ; }
-
-
-    
-    template <
-        auto id_t, 
-        typename regex_t>
-    struct terminal 
-    { 
-        using syntax_marker = void ;
-        using regex_marker = void ;
-    } ;   
-
-    template <
-        auto id_c>
-    constexpr auto
-    term (
-        auto const & __item)
-    -> terminal<id_c, std::decay_t<decltype(__item)>>
-    { return {} ; }
-
-
-    template <
-        auto id_t>
-    struct error_terminal 
-    { 
-        using syntax_marker = void ;
-        using regex_marker = void ; 
-    } ;   
-
-
-    template <
-        auto id_c>
-    constexpr auto
-    error_term ()
-    -> error_terminal<id_c>
-    { return {} ; }
-    
-
-    template<
-        auto id_t>
-    struct non_terminal
-    {
-        using regex_marker = void ;
-        using syntax_marker = void ;
+        [min, max] (auto begin, auto const end)
+        {
+            auto matched = 
+                begin != end 
+                && min <= *begin 
+                && *begin <= max ;
+            
+            return 
+            std::tuple { matched, matched ? ++begin : begin } ;
+        } ;
     } ;
 
 
-    template <
-        auto id_c>
-    constexpr auto
-    non_term ()
-    -> non_terminal<id_c>
-    { return {} ; }
-    
+    inline constexpr auto
+    some =
+    [] (auto rx)
+    {
+        return
+        [rx] (auto min, auto max)
+        {
+            return 
+            [rx, min, max] (auto begin, auto const end)
+            {
+                auto cpt = 0u ;
+                auto local_cursor = begin ; 
+                auto local_matched = true ; 
 
+                while (local_matched && cpt < max)
+                {
+                    auto && [step_matched, step_cursor] = rx (local_cursor, end) ;
+                    
+                    if (local_matched = step_matched)
+                    {
+                        ++ cpt ;
+                        local_cursor = step_cursor ;
+                    }
+                }
 
+                local_matched = min <= cpt && cpt <= max ; 
+                
+                return 
+                std::tuple { local_matched, local_matched ? local_cursor : begin } ;
+            } ;
+        } ;
+    } ;
 
+    inline constexpr auto
+    one_more = 
+    [] (auto rx)
+    { return some (rx) (1u, std::numeric_limits<size_t>::max()) ; } ;
 
+    inline constexpr auto
+    zero_more = 
+    [] (auto rx)
+    { return some (rx) (0u, std::numeric_limits<size_t>::max()) ; } ;
 
+    inline constexpr auto
+    or_ = 
+    [] (auto ... rx)
+    {
+        static_assert (sizeof...(rx) > 0, "or_ must be applied to one or more rxs") ;
+        
+        return 
+        [rx...] (auto begin, auto const end)
+        {
+            auto matched = false ;
+            auto step_cursor = begin ; 
 
+            auto each = 
+            [&matched, &step_cursor] (auto const & rx, auto begin, auto const end) 
+            { 
+                if (!matched)
+                {
+                    auto && [m, c] = rx (begin, end) ;
+                    matched = m ; step_cursor = c ;
+                }
+            } ;
 
+            return 
+            std::tuple { matched, matched ? step_cursor : begin } ;
+        } ;
+    } ;
+        
+    inline constexpr auto
+    and_ = 
+    [] (auto ... rx)
+    {
+        static_assert (sizeof...(rx) > 0, "and_ must be applied to one or more rxs") ;
 
+        return 
+        [rx...] (auto begin, auto const end)
+        {
+            auto matched = true ;
+            auto step_cursor = begin ; 
 
+            auto each = 
+            [&matched, &step_cursor] (auto const & rx, auto begin, auto const end) 
+            { 
+                if (matched)
+                {
+                    auto && [m, c] = rx (begin, end) ;
+                    matched = m ; step_cursor = c ;
+                }
+            } ;
 
+            (each(rx, step_cursor, end), ...) ;
+
+            return 
+            std::tuple { matched, matched ? step_cursor : begin } ;
+        } ;
+    } ;
+
+    inline constexpr auto
+    term = 
+    [] (auto id, auto rx)
+    {
+        return 
+        [id, rx] (auto begin, auto end)
+        {
+            auto && [matched, cursor] = rx(begin, end) ;
+        
+            return 
+            token { std::pair { begin, cursor }, id } ;
+        } ;
+    } ;
 }
 
 

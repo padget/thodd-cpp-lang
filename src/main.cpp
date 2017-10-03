@@ -70,7 +70,6 @@ struct lisp_number  {} ;
 struct lisp_parens_expression 
 {
     lisp_identifiant identfiant ;
-    std::vector<int> args ;
 } ;
 
 THODD_LANG_OPERATOR_FOR(lisp)
@@ -80,17 +79,23 @@ int main()
     using namespace thodd ;
     using namespace thodd::lang ;
 
-    auto input_stream = std::string("(add (neg 1 12 12 a) a)");
+    auto input_stream = std::string("(add (neg 1 12 12 a) a)") ;
 
-    auto && tokens = build_tokens (
+    constexpr auto rx = and_(some(chr('a'))(0, 4), chr('a'));
+    constexpr auto stream = { 'a', 'a', 'a', 'a', 'a' } ;
+    constexpr auto res = rx(stream.begin(), stream.end());
+    std::cout << std::boolalpha << std::get<0>(res) << std::endl ;
+    std::cout << std::boolalpha << (std::get<1>(res) == stream.end()) << std::endl ;
+    auto && tokens = build_tokens <lisp> (
                         input_stream.begin(), 
                         input_stream.end(), 
-                        terminal<lisp::error, void>{}, 
-                        term<lisp::ignored>(chr<' '>{}),
-                        term<lisp::left>(chr<'('> {}), 
-                        term<lisp::right>(chr<')'> {}), 
-                        term<lisp::identifiant>(+(chr<'a'> {} - chr<'z'> {})), 
-                        term<lisp::number>(+(chr<'0'> {} - chr<'9'> {}))) ;
+                        term (lisp::ignored, chr(' ')),
+                        term (lisp::left, chr('(')), 
+                        term (lisp::right, chr(')')), 
+                        term (lisp::identifiant, (one_more(range('a', 'z')))), 
+                        term (lisp::number, (one_more(range('0', '9'))))) ;
+
+    
 
     auto lisp_grammar = 
     grammar <lisp> (
@@ -121,20 +126,7 @@ int main()
         purge_tree (tree, lisp_grammar) ;
         print_tree (tree) ;
 
-        constexpr auto lisp_expression_interpret =  
-        [] (
-            auto && tree, 
-            auto const & identifiant_interpretor, 
-            auto const & args_interpretor)
-        {
-            return 
-            lisp_parens_expression 
-            {
-                identifiant_interpretor (tree.childs[0]), 
-                args_interpretor (tree.childs)
-            };
-        } ;
-
+       
         // interpret <basic_lisp> (tree, 
         //     react (
         //         lisp::identifiant, 

@@ -10,6 +10,8 @@
 namespace 
 thodd::lang
 {
+    template <
+        typename language_t>
     inline constexpr auto
     token_builder = 
     [] (auto ... terminal) 

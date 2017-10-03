@@ -86,15 +86,14 @@ int main()
     constexpr auto res = rx(stream.begin(), stream.end());
     std::cout << std::boolalpha << std::get<0>(res) << std::endl ;
     std::cout << std::boolalpha << (std::get<1>(res) == stream.end()) << std::endl ;
-    auto && tokens = build_tokens <lisp> (
-                        input_stream.begin(), 
-                        input_stream.end(), 
+    auto && tokens = token_builder <lisp> (
                         term (lisp::ignored, chr(' ')),
                         term (lisp::left, chr('(')), 
                         term (lisp::right, chr(')')), 
                         term (lisp::identifiant, (one_more(range('a', 'z')))), 
-                        term (lisp::number, (one_more(range('0', '9'))))) ;
-
+                        term (lisp::number, (one_more(range('0', '9')))))
+                        (input_stream.begin(), input_stream.end()) ;
+    
     
 
     auto lisp_grammar = 

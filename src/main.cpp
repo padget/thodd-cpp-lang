@@ -81,9 +81,9 @@ int main()
 
     auto input_stream = std::string("(add (neg 1 12 12 a) a)") ;
 
-    constexpr auto rx = and_(some(chr('a'))(0, 4), chr('a'));
+    constexpr auto rx = and_ (some (chr ('a'))(0, 4), chr ('a'));
     constexpr auto stream = { 'a', 'a', 'a', 'a', 'a' } ;
-    constexpr auto res = rx(stream.begin(), stream.end());
+    constexpr auto res = rx (stream.begin(), stream.end());
     std::cout << std::boolalpha << std::get<0>(res) << std::endl ;
     std::cout << std::boolalpha << (std::get<1>(res) == stream.end()) << std::endl ;
     auto && tokens = token_builder <lisp> (

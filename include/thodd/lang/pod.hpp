@@ -97,13 +97,7 @@ thodd::lang
 
             auto each = 
             [&matched, &step_cursor] (auto const & rx, auto begin, auto const end) 
-            { 
-                if (!matched)
-                {
-                    auto && [m, c] = rx (begin, end) ;
-                    matched = m ; step_cursor = c ;
-                }
-            } ;
+            { if (!matched) { auto && [m, c] = rx (begin, end) ; matched = m ; step_cursor = c ; } } ;
 
             return 
             std::tuple { matched, matched ? step_cursor : begin } ;
@@ -124,13 +118,7 @@ thodd::lang
 
             auto each = 
             [&matched, &step_cursor] (auto const & rx, auto begin, auto const end) 
-            { 
-                if (matched)
-                {
-                    auto && [m, c] = rx (begin, end) ;
-                    matched = m ; step_cursor = c ;
-                }
-            } ;
+            { if (matched) { auto && [m, c] = rx (begin, end) ; matched = m ; step_cursor = c ; } } ;
 
             (each(rx, step_cursor, end), ...) ;
 

@@ -1,37 +1,15 @@
-#ifndef __THODD_LANG_POD_HPP__
-#  define __THODD_LANG_POD_HPP__
+#ifndef __THODD_LANG_REGEX_HPP__
+#  define __THODD_LANG_REGEX_HPP__
 
 #  include <limits>
 
 #  include <thodd/lang/token.hpp>
-#  include <thodd/lang/functional.hpp>
+#  include <thodd/lang/match_result.hpp>
+#  include <thodd/functional.hpp>
 
 namespace
 thodd::lang
-{
-    inline constexpr auto
-    match_result = 
-    [] (bool const & matched, auto const & cursor)
-    { return tuple (matched, cursor) ; } ;
-    
-    inline constexpr auto
-    matched =
-    [] (auto && mres)
-    -> decltype(auto)
-    {
-        return
-        nth (std::forward<decltype(mres)>(mres), idx0) ;
-    } ;
-    
-    inline constexpr auto
-    cursor =
-    [] (auto && mres) 
-    ->  decltype(auto)
-    {
-        return
-        nth (std::forward<decltype(mres)>(mres), idx1) ;
-    } ;
-    
+{    
     inline constexpr auto   
     chr = 
     [] (auto c) 
@@ -108,7 +86,7 @@ thodd::lang
     { return some (rx) (0u, std::numeric_limits<size_t>::max()) ; } ;
 
     inline constexpr auto
-    or_ = 
+    one_of = 
     [] (auto ... rx)
     {
         static_assert (sizeof...(rx) > 0, "or_ must be applied to one or more rxs") ;
@@ -131,7 +109,7 @@ thodd::lang
     } ;
         
     inline constexpr auto
-    and_ = 
+    sequence_of = 
     [] (auto ... rx)
     {
         static_assert (sizeof...(rx) > 0, "and_ must be applied to one or more rxs") ;

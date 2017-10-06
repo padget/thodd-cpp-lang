@@ -4,11 +4,35 @@
 #  include <limits>
 
 #  include <thodd/lang/token.hpp>
+#  include <thodd/lang/functional.hpp>
 
 namespace
 thodd::lang
 {
-    inline constexpr auto 
+    inline constexpr auto
+    match_result = 
+    [] (bool const & matched, auto const & cursor)
+    { return tuple (matched, cursor) ; } ;
+    
+    inline constexpr auto
+    matched =
+    [] (auto && mres)
+    -> decltype(auto)
+    {
+        return
+        nth (std::forward<decltype(mres)>(mres), idx0) ;
+    } ;
+    
+    inline constexpr auto
+    cursor =
+    [] (auto && mres) 
+    ->  decltype(auto)
+    {
+        return
+        nth (std::forward<decltype(mres)>(mres), idx1) ;
+    } ;
+    
+    inline constexpr auto   
     chr = 
     [] (auto c) 
     {
@@ -18,7 +42,7 @@ thodd::lang
             auto matches = begin != end && *begin == c ;
             
             return 
-            std::tuple { matches, matches ? ++begin : begin } ;
+            match_result (matches, matches ? ++begin : begin) ;
         } ;
     } ;
     
@@ -35,7 +59,7 @@ thodd::lang
                 && *begin <= max ;
             
             return 
-            std::tuple { matched, matched ? ++begin : begin } ;
+            match_result (matched, matched ? ++begin : begin) ;
         } ;
     } ;
 
@@ -56,19 +80,19 @@ thodd::lang
 
                 while (local_matched && cpt < max)
                 {
-                    auto && [step_matched, step_cursor] = rx (local_cursor, end) ;
+                    auto && mres = rx (local_cursor, end) ;
                     
-                    if (local_matched = step_matched)
+                    if (local_matched = matched (mres))
                     {
                         ++ cpt ;
-                        local_cursor = step_cursor ;
+                        local_cursor = cursor (mres) ;
                     }
                 }
 
                 local_matched = min <= cpt && cpt <= max ; 
                 
                 return 
-                std::tuple { local_matched, local_matched ? local_cursor : begin } ;
+                match_result (local_matched, local_matched ? local_cursor : begin) ;
             } ;
         } ;
     } ;
@@ -92,15 +116,17 @@ thodd::lang
         return 
         [rx...] (auto begin, auto const end)
         {
-            auto matched = false ;
+            auto step_matched = false ;
             auto step_cursor = begin ; 
 
             auto each = 
-            [&matched, &step_cursor] (auto const & rx, auto begin, auto const end) 
-            { if (!matched) { auto && [m, c] = rx (begin, end) ; matched = m ; step_cursor = c ; } } ;
-
+            [&step_matched, &step_cursor] (auto const & rx, auto begin, auto const end) 
+            { if (!step_matched) { auto && mres = rx (begin, end) ; step_matched = matched (mres) ; step_cursor = cursor (mres) ; } } ;
+            
+            (each (rx, step_cursor, end), ...) ;
+          
             return 
-            std::tuple { matched, matched ? step_cursor : begin } ;
+            match_result (step_matched, step_matched ? step_cursor : begin) ;
         } ;
     } ;
         
@@ -113,17 +139,17 @@ thodd::lang
         return 
         [rx...] (auto begin, auto const end)
         {
-            auto matched = true ;
+            auto step_matched = true ;
             auto step_cursor = begin ; 
 
             auto each = 
-            [&matched, &step_cursor] (auto const & rx, auto begin, auto const end) 
-            { if (matched) { auto && [m, c] = rx (begin, end) ; matched = m ; step_cursor = c ; } } ;
+            [&step_matched, &step_cursor] (auto const & rx, auto begin, auto const end) 
+            { if (step_matched) { auto && mres = rx (begin, end) ; step_matched = matched (mres) ; step_cursor = cursor (mres) ; } } ;
 
-            (each(rx, step_cursor, end), ...) ;
+            (each (rx, step_cursor, end), ...) ;
 
             return 
-            std::tuple { matched, matched ? step_cursor : begin } ;
+            match_result (step_matched, step_matched ? step_cursor : begin) ;
         } ;
     } ;
 
@@ -134,10 +160,10 @@ thodd::lang
         return 
         [id, rx] (auto begin, auto end)
         {
-            auto && [matched, cursor] = rx(begin, end) ;
+            auto && mres = rx (begin, end) ;
         
             return 
-            token { std::pair { begin, cursor }, id } ;
+            token { std::pair { begin, cursor (mres) }, id } ;
         } ;
     } ;
 }

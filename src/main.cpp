@@ -63,16 +63,22 @@ print_tree (
 }
 
 
-struct lisp_identifiant {} ;
-
-struct lisp_number  {} ;
-
-struct lisp_parens_expression 
+inline constexpr auto
+lisp_token_builder = 
+[] () 
 {
-    lisp_identifiant identfiant ;
-} ;
+    using namespace thodd ;
+    using namespace thodd::lang ;
+    using namespace thodd::lang::regex ;
 
-THODD_LANG_OPERATOR_FOR(lisp)
+    return 
+    token_builder <lisp> (
+        term (lisp::ignored, chr(' ')),
+        term (lisp::left, chr('(')), 
+        term (lisp::right, chr(')')), 
+        term (lisp::identifiant, (one_more(range('a', 'z')))), 
+        term (lisp::number, (one_more(range('0', '9'))))) ;
+} ;
 
 int main() 
 {
@@ -80,21 +86,9 @@ int main()
     using namespace thodd::lang ;
 
     auto input_stream = std::string("(add (neg 1 12 12 a) a)") ;
+    auto && tokens = lisp_token_builder () (input_stream.begin(), input_stream.end()) ;
 
-    constexpr auto rx = sequence_of (some (chr ('a'))(0, 4), chr ('a'));
-    constexpr auto stream = { 'a', 'a', 'a', 'a', 'a' } ;
-    constexpr auto res = rx (stream.begin(), stream.end());
-    std::cout << std::boolalpha << matched(res) << std::endl ;
-    std::cout << std::boolalpha << (cursor(res) == stream.end()) << std::endl ;
-    auto && tokens = token_builder <lisp> (
-                        term (lisp::ignored, chr(' ')),
-                        term (lisp::left, chr('(')), 
-                        term (lisp::right, chr(')')), 
-                        term (lisp::identifiant, (one_more(range('a', 'z')))), 
-                        term (lisp::number, (one_more(range('0', '9')))))
-                        (input_stream.begin(), input_stream.end()) ;
-
-    auto lisp_grammar = 
+    /*auto lisp_grammar = 
     grammar <lisp> (
         lisp::expression, 
         lisp::expression        <= ( lisp::number | lisp::identifiant | lisp::parens_expression ) ,
@@ -122,6 +116,6 @@ int main()
         
         purge_tree (tree, lisp_grammar) ;
         print_tree (tree) ;
-    }
+    }*/
 
 }

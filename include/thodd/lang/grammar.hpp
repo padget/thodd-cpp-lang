@@ -9,7 +9,7 @@
 #  include <limits>
 
 namespace
-thodd::lang 
+thodd::lang::syntax
 {
     enum struct production_operator 
     { and_, or_, some } ;
@@ -24,6 +24,75 @@ thodd::lang
         size_t min { 0 }, max { 1 } ;
     } ;
 
+    
+    inline constexpr auto
+    some = 
+    [] (auto id) 
+    {
+        return
+        [id] (auto min, auto max)
+        {
+            return 
+            [id, min, max] (auto begin, auto const end)
+            {
+
+            } ;
+        } ;
+    } ;
+
+    inline constexpr auto
+    one_more = 
+    [] (auto id) 
+    { return some (id) (1u, std::numeric_limits<size_t>::max()) ; } ;
+
+    inline constexpr auto
+    zero_more = 
+    [] (auto id) 
+    { return some (id) (0u, std::numeric_limits<size_t>::max()) ; } ;
+
+    inline constexpr auto
+    one_of = 
+    [] (auto ... ids) 
+    {
+        return 
+        [ids...] (auto begin, auto const end) 
+        {
+
+        } ;
+    } ;
+
+    inline constexpr auto
+    sequence_of = 
+    [] (auto ... ids) 
+    {
+        return 
+        [ids...] (auto begin, auto const end)
+        {
+
+        } ;
+    } ;
+
+    inline constexpr auto
+    is = 
+    [] (auto id, auto def)
+    {
+        return 
+        [id, def] (auto begin, auto const end)
+        {
+
+        } ;
+    } ;
+
+    inline constexpr auto
+    grammar =
+    [] (auto start, uto ... iss) 
+    {
+        return 
+        [start, iss...] (auto begin, auto const end)
+        {
+
+        } ;
+    } ;
 
     template <
         typename language_t>
@@ -156,83 +225,5 @@ thodd::lang
         grammar.dictionary.count(id_terminal) == 0 ;
     }
 }
-
-
-
-
-#define THODD_LANG_OPERATOR_FOR(language_t)                                                     \
-                                                                                                \
-inline auto                                                                                     \
-operator <= (language_t id, thodd::lang::definition<language_t> const & def)                    \
-{ return thodd::lang::is (id, def) ; }                                                          \
-                                                                                                \
-inline auto                                                                                     \
-operator * (language_t id)                                                                      \
-{ return thodd::lang::some_def (id, 0, std::numeric_limits<size_t>::max()) ; }                  \
-                                                                                                \
-inline auto                                                                                     \
-operator + (language_t id)                                                                      \
-{ return thodd::lang::some_def (id, 1, std::numeric_limits<size_t>::max()) ; }                  \
-                                                                                                \
-inline auto                                                                                     \
-operator - (language_t id)                                                                      \
-{ return thodd::lang::some_def (id, 0, 1) ; }                                                   \
-                                                                                                \
-inline auto                                                                                     \
-operator > (language_t id, language_t id2)                                                      \
-{ return thodd::lang::and_def (id, id2) ; }                                                     \
-                                                                                                \
-inline auto                                                                                     \
-operator > (thodd::lang::definition<language_t> const & left, language_t id2)                   \
-{                                                                                               \
-    auto ids = left.ids ;                                                                       \
-    ids.push_back(id2) ;                                                                        \
-                                                                                                \
-    return                                                                                      \
-    thodd::lang::make_definition(                                                               \
-        thodd::lang::production_operator::and_, ids) ;                                          \
-}                                                                                               \
-                                                                                                \
-inline auto                                                                                     \
-operator > (                                                                                    \
-    thodd::lang::definition<language_t> const & left,                                           \
-    thodd::lang::definition<language_t> const & right)                                          \
-{                                                                                               \
-    auto ids = left.ids ;                                                                       \
-    std::copy (right.ids.begin(), right.ids.end(), ids.end()) ;                                 \
-    return                                                                                      \
-    thodd::lang::make_definition(                                                               \
-        thodd::lang::production_operator::and_, ids) ;                                          \
-}                                                                                               \
-                                                                                                \
-inline auto                                                                                     \
-operator | (language_t id, language_t id2)                                                      \
-{ return thodd::lang::or_def (id, id2) ; }                                                      \
-                                                                                                \
-inline auto                                                                                     \
-operator | (thodd::lang::definition<language_t> const & left, language_t id2)                   \
-{                                                                                               \
-    auto ids = left.ids ;                                                                       \
-    ids.push_back(id2) ;                                                                        \
-                                                                                                \
-    return                                                                                      \
-    thodd::lang::make_definition(                                                               \
-        thodd::lang::production_operator::or_, ids) ;                                           \
-}                                                                                               \
-                                                                                                \
-inline auto                                                                                     \
-operator | (                                                                                    \
-    thodd::lang::definition<language_t> const & left,                                           \
-    thodd::lang::definition<language_t> const & right)                                          \
-{                                                                                               \
-    auto ids = left.ids ;                                                                       \
-    std::copy (right.ids.begin(), right.ids.end(), ids.end()) ;                                 \
-    return                                                                                      \
-    thodd::lang::make_definition(                                                               \
-       thodd::lang::production_operator::or_, ids) ;                                            \
-}                                                                                               \
-
-
-
 
 #endif

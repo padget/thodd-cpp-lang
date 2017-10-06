@@ -1,0 +1,402 @@
+[33mcommit 2d846b3850c88ad2a9321d5ca80bc95d4034bd45[m
+Author: padget <padget.pro@gmail.com>
+Date:   Fri Oct 6 17:04:31 2017 +0200
+
+    functional return match_result for check
+
+[33mcommit 558a8c8b54c9196675e2895d325146f9336266ab[m
+Author: padget <padget.pro@gmail.com>
+Date:   Fri Oct 6 02:55:19 2017 +0200
+
+    use of match_result lambda instead of std::tuple
+
+[33mcommit 788b57cc70f41c4304a95cbb42a44912ea8ba923[m
+Author: padget <padget.pro@gmail.com>
+Date:   Thu Oct 5 18:20:15 2017 +0200
+
+    experimental functional
+
+[33mcommit 0f27612f9c6f3283ff09e466ef1b341365a85850[m
+Author: padget <padget.pro@gmail.com>
+Date:   Wed Oct 4 09:56:44 2017 +0200
+
+    simple format
+
+[33mcommit 43f591a1b898e0d2c330ccbb744ec20f07b73ab1[m
+Author: padget <padget.pro@gmail.com>
+Date:   Tue Oct 3 20:33:09 2017 +0200
+
+    add language_t param on token_builder
+
+[33mcommit 21667a1270b3ca4e8e2767836f0aa200c36015b0[m
+Author: padget <padget.pro@gmail.com>
+Date:   Tue Oct 3 20:32:25 2017 +0200
+
+    use of new token_builder lambda
+
+[33mcommit 7ecccb816ea8fe8f1c45379eed945d76ba7c39bd[m
+Author: padget <padget.pro@gmail.com>
+Date:   Tue Oct 3 20:31:00 2017 +0200
+
+    more expressive build tokens
+
+[33mcommit 56f334263ec41f791bb4dc1a24736585649fc3c8[m
+Author: padget <padget.pro@gmail.com>
+Date:   Tue Oct 3 20:18:55 2017 +0200
+
+    build_tokens in lambda
+
+[33mcommit 4006ea6298a23cfc70cf45e26de17be6f5bc350e[m
+Author: padget <padget.pro@gmail.com>
+Date:   Tue Oct 3 17:06:15 2017 +0200
+
+    fully functional regex
+
+[33mcommit 36f5ef7ee123d715a89c4f9d50587820beb08daa[m
+Author: padget <padget.pro@gmail.com>
+Date:   Mon Oct 2 17:35:25 2017 +0200
+
+    interpretor by lambda
+
+[33mcommit 46f30deecc710dbd69fbfda0e45c10185188336b[m
+Author: padget <padget.pro@gmail.com>
+Date:   Fri Sep 29 17:21:59 2017 +0200
+
+    create file interpret and first use of this in main.cpp
+
+[33mcommit 6e9b1988a0e431e8781562537e2501bc84639282[m
+Author: padget <padget.pro@gmail.com>
+Date:   Fri Sep 29 15:34:34 2017 +0200
+
+    git purge
+
+[33mcommit e85b2cdcd0a15e0fa25fa1a93596ed365dfefc94[m
+Author: padget <padget.pro@gmail.com>
+Date:   Thu Sep 28 17:42:34 2017 +0200
+
+     add purge and tree files, TODO purge methods
+
+[33mcommit d7755f5de782dfdea8e531f3652a4ff811997cfa[m
+Author: padget <padget.pro@gmail.com>
+Date:   Thu Sep 28 16:49:02 2017 +0200
+
+    improve tree debug printing
+
+[33mcommit 1cf5e93570526402698fd41ada5f8333b12b8c14[m
+Author: padget <padget.pro@gmail.com>
+Date:   Thu Sep 28 16:24:47 2017 +0200
+
+    some optimizations + build_tree
+
+[33mcommit 3cc8cd57d12f5cbce1fe70ccf64d41e5e3eb6896[m
+Author: padget <padget.pro@gmail.com>
+Date:   Thu Sep 28 13:31:08 2017 +0200
+
+    checker removed instead of functions
+
+[33mcommit f59725425cfe7b4cb8537d2caca99501df34d0a8[m
+Author: padget <padget.pro@gmail.com>
+Date:   Thu Sep 28 10:51:44 2017 +0200
+
+    late insert into main.cpp
+
+[33mcommit eca3834ddc84826a50dcca48818c9f40cfe61601[m
+Author: padget <padget.pro@gmail.com>
+Date:   Wed Sep 27 17:50:30 2017 +0200
+
+    lisp grammar try
+
+[33mcommit 41177dc567ccb6325944c1633b764f4c507dfcec[m
+Author: padget <padget.pro@gmail.com>
+Date:   Wed Sep 27 13:28:32 2017 +0200
+
+    lisp grammar
+
+[33mcommit 9ca0e87fa825382b84e018c928c4b1a317d582ea[m
+Author: padget <padget.pro@gmail.com>
+Date:   Tue Sep 26 17:58:06 2017 +0200
+
+    check complete, but try a new grammar
+
+[33mcommit d6dd54e4aef660627b7c2297792770f484dfa9e0[m
+Author: padget <padget.pro@gmail.com>
+Date:   Tue Sep 26 15:15:01 2017 +0200
+
+    strictly runtime grammar computation
+
+[33mcommit 5a4544888b1cc71891b86feed71b52f3403f775e[m
+Author: padget <padget.pro@gmail.com>
+Date:   Mon Sep 25 18:05:30 2017 +0200
+
+    check  v3
+
+[33mcommit acd5b521ce299bea91ae654bcf134ef92938a3e4[m
+Author: padget <padget.pro@gmail.com>
+Date:   Mon Sep 25 17:53:39 2017 +0200
+
+    check v2
+
+[33mcommit d2a90b49d7ba1e084df3d573c050974a960479fb[m
+Author: padget <padget.pro@gmail.com>
+Date:   Mon Sep 25 15:51:52 2017 +0200
+
+    first check version
+
+[33mcommit ae6a7fe250a4b36861f5964dc638d0bce15fa435[m
+Author: padget <padget.pro@gmail.com>
+Date:   Fri Sep 22 17:45:25 2017 +0200
+
+    correction main.cpp
+
+[33mcommit 8cc2dab4109318f14b62ad906882429daf186697[m
+Author: padget <padget.pro@gmail.com>
+Date:   Sun Sep 17 14:26:41 2017 +0200
+
+    check with stack
+
+[33mcommit ecb2582dffe9735979c07ea55b4cf27c97f53e54[m
+Author: padget <padget.pro@gmail.com>
+Date:   Fri Sep 15 17:51:42 2017 +0200
+
+    check_xxx methods
+
+[33mcommit 8667eefb6e104f4c2cc52b288043872b6dae9003[m
+Author: padget <padget.pro@gmail.com>
+Date:   Thu Sep 14 17:42:08 2017 +0200
+
+    split files
+
+[33mcommit 4834983e500e5d0baecf11271fdfe4f284bbe877[m
+Author: padget <padget.pro@gmail.com>
+Date:   Wed Sep 13 17:26:36 2017 +0200
+
+    new way produce grammar
+
+[33mcommit 365968a53a6bffcdee346ad2155e3cda5b09c838[m
+Author: padget <padget.pro@gmail.com>
+Date:   Tue Sep 12 09:06:32 2017 +0200
+
+    add check methods. pb to build check for recursive grammar
+
+[33mcommit 2348602c8310f9513f8e2bf1b1ed57c6dbc1e1f1[m
+Author: padget <padget.pro@gmail.com>
+Date:   Mon Sep 11 15:16:18 2017 +0200
+
+    try to simplify
+
+[33mcommit 8d943b3322597ac90f4bc5dc4d0b11c12ea52660[m
+Author: padget <padget.pro@gmail.com>
+Date:   Fri Sep 8 17:44:30 2017 +0200
+
+    common getter
+
+[33mcommit 81fbf2df158f280c1051a161d5f5169f64776b9f[m
+Author: padget <padget.pro@gmail.com>
+Date:   Thu Sep 7 18:14:58 2017 +0200
+
+    add check method TODO merge with matches
+
+[33mcommit e38506e65dd57989f2fa382f75d766a2948b2b7a[m
+Author: padget <padget.pro@gmail.com>
+Date:   Wed Sep 6 17:59:28 2017 +0200
+
+    add extract_definition. TODO Meta lib
+
+[33mcommit 4165f9f9efbcbdf456c3945407a328351b1f8ccc[m
+Author: padget <padget.pro@gmail.com>
+Date:   Wed Sep 6 15:30:04 2017 +0200
+
+    full type version for regex and grammar
+
+[33mcommit c6a0f02d3d8e3dab10b411503163dbc8967790ee[m
+Author: padget <padget.pro@gmail.com>
+Date:   Wed Sep 6 14:02:21 2017 +0200
+
+    add extract_definition
+
+[33mcommit 2ad1b42b59282499728a8e7d9b14d11b2bc7e3ea[m
+Merge: 2951317 4f4fa59
+Author: padget <padget.pro@gmail.com>
+Date:   Tue Sep 5 16:56:27 2017 +0200
+
+    Merge branch 'master' of http://github.com/padget/thodd-cpp-lang
+
+[33mcommit 295131723e0bcf88633b19c6472e7aa84f33380e[m
+Author: padget <padget.pro@gmail.com>
+Date:   Tue Sep 5 16:54:03 2017 +0200
+
+    change declaration of rules to enable extracting it in grammar
+
+[33mcommit acde8565c86eb394cb32c8ecb5d672cbf9875ad3[m
+Author: padget <padget.pro@gmail.com>
+Date:   Tue Sep 5 13:18:18 2017 +0200
+
+    add ignored and error token.
+
+[33mcommit 4f4fa59f03347292f33f931c14ff6daddcb1cc40[m
+Author: padget <padget.pro@gmail.com>
+Date:   Thu Aug 17 17:52:52 2017 +0200
+
+    build_tokens
+
+[33mcommit 823e82552eac5f4cbead7ac80335454e79e75c05[m
+Author: padget <padget.pro@gmail.com>
+Date:   Thu Aug 17 11:56:05 2017 +0200
+
+    simplify
+
+[33mcommit 90ea672d1947ff88c89e1a3b1ad3414d735b974c[m
+Author: Benjamin MATHIEU <benjamin-externe.mathieu@enedis.fr>
+Date:   Fri Aug 11 17:12:07 2017 +0200
+
+    new syntax regex pod
+
+[33mcommit 04f70b0ade10d8649678d6780303a505c90ef7bf[m
+Author: padget <padget.pro@gmail.com>
+Date:   Thu Aug 10 17:06:18 2017 +0200
+
+    check and or
+
+[33mcommit 82dfacd5651e9c65f6ec157e4c747312d5373522[m
+Author: padget <padget.pro@gmail.com>
+Date:   Wed Aug 9 10:37:04 2017 +0200
+
+    marker on regex classes
+
+[33mcommit bba46ff5384fc4e4c2037aa59c2970b74efcd423[m
+Author: padget <padget.pro@gmail.com>
+Date:   Tue Aug 8 17:55:16 2017 +0200
+
+    check next step
+
+[33mcommit 1d237b9bb83b4f39ba3bbef5755cdbf5233cae6f[m
+Author: padget <padget.pro@gmail.com>
+Date:   Thu Aug 3 17:12:03 2017 +0200
+
+    analyse optimization
+
+[33mcommit 5d6f80e122eb4fbec7df7c9fbcd282f405d30927[m
+Author: padget <padget.pro@gmail.com>
+Date:   Thu Aug 3 12:02:00 2017 +0200
+
+    analyse method for tokens. Next step : grammar syntax analyse
+
+[33mcommit aec3aa5ee709f720598b9a4ab6f2ace44664ab9b[m
+Author: padget <padget.pro@gmail.com>
+Date:   Tue Aug 1 21:50:44 2017 +0200
+
+    a conssssst char* ends with \0 char
+
+[33mcommit 69364f7c4344dd53d0e01c6d29d58800ee132329[m
+Author: padget <padget.pro@gmail.com>
+Date:   Tue Aug 1 21:29:11 2017 +0200
+
+    and and or overload operator
+
+[33mcommit 3ec30cc759088cee088ce70e6f5cd702e61f623c[m
+Author: padget <padget.pro@gmail.com>
+Date:   Tue Aug 1 17:13:42 2017 +0200
+
+    matches
+
+[33mcommit 3638060af2760683efeff09cbe5f9ba6ad960eae[m
+Author: padget <padget.pro@gmail.com>
+Date:   Mon Jul 31 17:14:19 2017 +0200
+
+    new version regex
+
+[33mcommit 4263533cfe87340d140844cb18db3c92f28be64f[m
+Author: padget <padget.pro@gmail.com>
+Date:   Fri Jul 28 16:43:08 2017 +0200
+
+    analyse first
+
+[33mcommit d52e905b288f0dba42533234fb92890ddfab45ed[m
+Author: padget <padget.pro@gmail.com>
+Date:   Thu Jul 27 18:26:42 2017 +0200
+
+    lexical
+
+[33mcommit 5e58f7179bfb132a2481c6e6592bd79e7ac16f1d[m
+Author: padget <padget.pro@gmail.com>
+Date:   Wed Jul 26 17:57:20 2017 +0200
+
+    new way grammar
+
+[33mcommit 4673dbfb5522512516c214c6d1478a7673cd1be0[m
+Author: padget <padget.pro@gmail.com>
+Date:   Tue Jul 25 20:57:51 2017 +0200
+
+    lambda style
+
+[33mcommit 7491f320947256d9aba261664bb13b36f843701d[m
+Author: padget <padget.pro@gmail.com>
+Date:   Tue Jul 25 17:50:48 2017 +0200
+
+    potential
+
+[33mcommit d07bd574e59b7906bb62e243d4af98777f36f47f[m
+Author: padget <padget.pro@gmail.com>
+Date:   Mon Jul 24 17:48:49 2017 +0200
+
+    deduction rules + syntax::and
+
+[33mcommit 2f3f302829e156d48466835444ab341ea7fb3968[m
+Author: padget <padget.pro@gmail.com>
+Date:   Thu Jul 20 17:36:27 2017 +0200
+
+    tuple integration
+
+[33mcommit 26425c488451a5fb83f25baa3a67b25d1ec028e7[m
+Author: padget <padget.pro@gmail.com>
+Date:   Wed Jul 19 17:46:09 2017 +0200
+
+    read method in and_ or_ and some
+
+[33mcommit 398345b6eb2f68bc240c8290f986d053a1205dcc[m
+Author: padget <padget.pro@gmail.com>
+Date:   Tue Jul 18 17:48:26 2017 +0200
+
+    matches on word
+
+[33mcommit 557dab3363c73c941f68598d00fe7dd8bc788b78[m
+Author: padget <padget.pro@gmail.com>
+Date:   Tue Jul 18 16:38:07 2017 +0200
+
+    add syntax
+
+[33mcommit 1f451dba19f2dd604006402bfa9b5a6956b10e3e[m
+Author: padget <padget.pro@gmail.com>
+Date:   Thu Jul 13 17:01:37 2017 +0200
+
+    add some regex
+
+[33mcommit 0e7915917e6906f9e7bdc25dec5ae15c0167ddf4[m
+Author: padget <padget.pro@gmail.com>
+Date:   Wed Jul 12 16:40:40 2017 +0200
+
+    add some regex
+
+[33mcommit 40715586e338cba0cf7f731b1f72d5555a4f4dae[m
+Author: padget <padget.pro@gmail.com>
+Date:   Tue Jul 11 22:10:07 2017 +0200
+
+    matches method for regex
+
+[33mcommit d1635dad266542de5381e056253773d6cd8b2a60[m
+Author: padget <padget.pro@gmail.com>
+Date:   Tue Jul 11 17:54:54 2017 +0200
+
+    regex improvement
+
+[33mcommit c7a781b48122af425ee943b2b276b053e20e1c31[m
+Author: padget <padget.pro@gmail.com>
+Date:   Tue Jul 11 14:55:56 2017 +0200
+
+    add regex
+
+[33mcommit a046443205d3e26b32674588286ccf10be0edfef[m
+Author: padget <padget.pro@gmail.com>
+Date:   Tue Jul 11 10:47:50 2017 +0200
+
+    Initial commit

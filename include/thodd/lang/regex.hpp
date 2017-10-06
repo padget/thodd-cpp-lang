@@ -8,7 +8,7 @@
 #  include <thodd/functional.hpp>
 
 namespace
-thodd::lang
+thodd::lang::regex
 {    
     inline constexpr auto   
     chr = 

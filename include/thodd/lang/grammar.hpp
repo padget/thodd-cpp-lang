@@ -94,6 +94,14 @@ thodd::lang::syntax
         } ;
     } ;
 
+    inline constexpr auto
+    is_terminal = 
+    [] (auto id, auto const & grammar)
+    {
+        return
+        
+    } ;
+    
     template <
         typename language_t>
     inline auto 

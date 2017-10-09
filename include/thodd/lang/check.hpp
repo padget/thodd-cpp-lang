@@ -6,7 +6,7 @@
 #  include <thodd/lang/grammar.hpp>
 
 namespace 
-thodd::lang
+thodd::lang::syntax
 {
     /*template <
         typename language_t, 
@@ -139,6 +139,32 @@ thodd::lang
         return 
         check (grammar.start, grammar, begin, end) ;
     }*/
+
+
+    inline constexpr auto 
+    generic_check = 
+    [] (auto id, auto const & grammar, auto begin, auto const end) 
+    {
+        if (is_terminal (id, grammar))
+        {
+            auto is_same = begin != end && *begin == id ; 
+            
+            return 
+            match_result(is_same, is_same ? ++begin : begin) ;
+        }
+    } ;
+
+    inline constexpr auto
+    check_builder = 
+    [] (auto && grammar)
+    {
+        return 
+        [grammar] (auto begin, auto const end)
+        {
+            return 
+            generic_check (grammar, begin, end) ;
+        } ;
+    } ;
 }
 
 #endif

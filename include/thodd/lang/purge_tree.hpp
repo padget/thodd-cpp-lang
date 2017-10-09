@@ -7,7 +7,7 @@
 namespace
 thodd::lang 
 {
-    template <
+    /*template <
         typename language_t, 
         typename ... ids_t>
     bool
@@ -77,7 +77,7 @@ thodd::lang
                 if (!is_terminal (child.id, grammar) && child.childs.size() == 1)
                     std::swap(child, *child.childs.begin()) ;
             }) ;
-     }
+     }*/
 }
 
 #endif

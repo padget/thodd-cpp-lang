@@ -12,7 +12,7 @@
 namespace 
 thodd::lang 
 {
-    template <
+    /*template <
         typename iterator_t>
     using data_iterator_t = 
         typename std::iterator_traits<iterator_t>::value_type::data_iterator ;
@@ -181,7 +181,7 @@ thodd::lang
     {
         return 
         build_tree (grammar.start, grammar, begin, end) ;
-    }
+    }*/
 }
 
 #endif

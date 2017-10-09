@@ -8,7 +8,7 @@
 namespace 
 thodd::lang
 {
-    template <
+    /*template <
         typename language_t, 
         typename iterator_t>
     constexpr auto
@@ -138,7 +138,7 @@ thodd::lang
     {
         return 
         check (grammar.start, grammar, begin, end) ;
-    }
+    }*/
 }
 
 #endif

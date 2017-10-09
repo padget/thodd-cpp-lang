@@ -88,6 +88,15 @@ int main()
     auto input_stream = std::string("(add (neg 1 12 12 a) a)") ;
     auto && tokens = lisp_token_builder () (input_stream.begin(), input_stream.end()) ;
 
+    constexpr auto lisp_grammar = 
+        syntax::grammar (
+            lisp::expression,
+            syntax::is (lisp::expression, syntax::one_of (lisp::number, lisp::identifiant, lisp::parens_expression)), 
+            syntax::is (lisp::parens_expression, syntax::sequence_of (lisp::left, lisp::expressions, lisp::right)), 
+            syntax::is (lisp::expressions, syntax::zero_more (lisp::expression))) ;
+        
+    std::cout << std::boolalpha << syntax::is_terminal (lisp::number, lisp_grammar) << std::endl ;
+
     /*auto lisp_grammar = 
     grammar <lisp> (
         lisp::expression, 

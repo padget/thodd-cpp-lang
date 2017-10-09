@@ -96,14 +96,9 @@ int main()
             syntax::is (lisp::expressions, syntax::zero_more (lisp::expression))) ;
         
     std::cout << std::boolalpha << syntax::is_terminal (lisp::number, lisp_grammar) << std::endl ;
+    std::cout << (int) syntax::get_operator_by_id (lisp::parens_expression, lisp_grammar) << std::endl ; 
 
-    /*auto lisp_grammar = 
-    grammar <lisp> (
-        lisp::expression, 
-        lisp::expression        <= ( lisp::number | lisp::identifiant | lisp::parens_expression ) ,
-        lisp::parens_expression <= ( lisp::left > lisp::identifiant > lisp::expressions > lisp::right ) ,
-        lisp::expressions       <= ( *lisp::expression ) ) ;
-
+    /*
     std::vector<lisp> lisp_stream ;
     std::transform (
         tokens.begin(), 

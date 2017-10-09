@@ -64,6 +64,11 @@ thodd::lang::syntax
     { return nth (std::forward<decltype(is)>(is), idx0) ; } ;
 
     inline constexpr auto
+    get_is_operator =
+    [] (auto const & is)
+    { return nth(nth(is, idx1), idx0) ; } ;
+
+    inline constexpr auto
     grammar = 
     [] (auto start, auto && ... iss)
     { return tuple (start, std::forward<decltype(iss)>(iss)...) ; } ;
@@ -91,6 +96,20 @@ thodd::lang::syntax
         accumulate (
             get_grammar_ids(std::forward<decltype(grammar)>(grammar)), true, 
             and_($0, not_equal(val(id), $1))) ;
+    } ;
+
+    inline constexpr auto 
+    get_operator_by_id =
+    [] (auto id, auto && grammar)
+    {
+        return 
+        grammar (
+            [id] (auto && start, auto && ... iss) 
+            {
+                production_operator op ;
+                ((op = (get_is_id (iss) == id) ? get_is_operator (iss) : op), ...) ;
+                return op ;
+            }) ;
     } ;
 }
 

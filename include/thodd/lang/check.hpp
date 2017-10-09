@@ -150,7 +150,16 @@ thodd::lang::syntax
             auto is_same = begin != end && *begin == id ; 
             
             return 
-            match_result(is_same, is_same ? ++begin : begin) ;
+            match_result (is_same, is_same ? ++begin : begin) ;
+        }
+        else switch (get_operator_by_id (id, grammar))
+        {
+            case production_operator::some : 
+                return check_some (id, grammar, begin, end) ;
+            case production_operator::and_ : 
+                return check_and (id, grammar, begin, end) ;
+            case production_operator::or_  : 
+                return check_or (id, grammar, begin, end) ;
         }
     } ;
 

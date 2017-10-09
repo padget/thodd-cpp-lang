@@ -90,8 +90,7 @@ thodd::lang::syntax
         return 
         accumulate (
             get_grammar_ids(std::forward<decltype(grammar)>(grammar)), true, 
-            ass($0, and_($0, not_equal(val(id), $1)))
-        ) ;
+            and_($0, not_equal(val(id), $1))) ;
     } ;
 }
 

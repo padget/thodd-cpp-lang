@@ -14,6 +14,7 @@ thodd::lang::syntax
     enum struct production_operator 
     { and_, or_, some } ;
 
+    // SOME
     inline constexpr auto
     some = 
     [] (auto id) 
@@ -34,82 +35,109 @@ thodd::lang::syntax
     { return some (id) (0u, std::numeric_limits<size_t>::max()) ; } ;
 
     inline constexpr auto
+    some_min = bind (nth, $0, val(idx2)) ; 
+
+    inline constexpr auto
+    some_max = bind (nth, $0, val(idx3)) ;
+    
+    inline constexpr auto
+    some_id = bind (nth, $0, val(idx1)) ;
+
+    inline constexpr auto
+    some_op = bind (nth, $0, val(idx0)) ;
+
+
+
+    // ONE_OF
+    inline constexpr auto
     one_of = 
     [] (auto ... ids) 
-    { return tuple (production_operator::or_, ids...) ; } ;
+    { return tuple (production_operator::or_, tuple(ids...)) ; } ;
 
+    inline constexpr auto
+    one_of_ids = bind (nth, $0, val(idx1)) ;
+
+    inline constexpr auto
+    one_of_op = bind (nth, $0, val(idx0)) ;
+
+
+
+    // SEQUENCE_OF
     inline constexpr auto
     sequence_of = 
     [] (auto ... ids) 
     { return tuple (production_operator::and_, ids...) ; } ;
 
     inline constexpr auto
-    get_def_operator =
-    [] (auto && def)
-    { return nth (std::forward<decltype(def)>(def), idx0) ; } ;
+    sequence_of_ids = bind (nth, $0, val(idx1)) ;
 
     inline constexpr auto
-    get_def_ids = 
-    [] (auto && def)
-    { return std::forward<decltype(def)>(def)([] (auto op, auto ... ) {  } ) ; } ;
+    sequence_of_op = bind (nth, $0, val(idx0)) ;
 
+
+    // DEF
+    inline constexpr auto
+    def_operator = bind (nth, $0, val(idx0)) ;
+
+
+    // IS
     inline constexpr auto
     is = 
     [] (auto id, auto && def)
     { return tuple (id, std::forward<decltype(def)>(def)) ; } ;
 
     inline constexpr auto
-    get_is_id = 
-    [] (auto const & is)
-    { return nth (std::forward<decltype(is)>(is), idx0) ; } ;
+    is_id = bind(nth, $0, val(idx0)) ;
 
     inline constexpr auto
-    get_is_operator =
-    [] (auto const & is)
-    { return nth(nth(is, idx1), idx0) ; } ;
+    is_operator = bind(nth, bind(nth, $0, val(idx1)), val(idx0)) ;
 
+   
+    // GRAMMAR
     inline constexpr auto
     grammar = 
     [] (auto start, auto && ... iss)
     { return tuple (start, std::forward<decltype(iss)>(iss)...) ; } ;
 
     inline constexpr auto
-    get_grammar_start = 
+    grammar_start = 
     [] (auto && grammar)
     { return nth (std::forward<decltype(grammar)>(grammar), idx0) ; } ;
 
     inline constexpr auto
-    get_grammar_ids =
+    grammar_iss = 
     [] (auto const & grammar)
     {
         return 
         grammar (
             [] (auto && start, auto && ... iss) 
-            { return tuple(get_is_id(iss)...) ; }) ;
+            { return tuple(std::forward<decltype(iss)>(iss)...) ; }) ;
     } ;
+
 
     inline constexpr auto
     is_terminal = 
-    [] (auto id, auto && grammar)
+    [] (auto id, auto const & grammar)
     {
         return 
         accumulate (
-            get_grammar_ids(std::forward<decltype(grammar)>(grammar)), true, 
-            and_($0, not_equal(val(id), $1))) ;
+            transform (grammar_iss(grammar), bind(is_id, $0)), 
+            true, and_($0, not_equal(val(id), $1))) ;
     } ;
+
 
     inline constexpr auto 
     get_operator_by_id =
     [] (auto id, auto && grammar)
     {
         return 
-        grammar (
-            [id] (auto && start, auto && ... iss) 
-            {
-                production_operator op ;
-                ((op = (get_is_id (iss) == id) ? get_is_operator (iss) : op), ...) ;
-                return op ;
-            }) ;
+        accumulate (
+            grammar_iss(grammar),
+            production_operator{},
+            tern(
+                equal(bind(is_id, $1)), 
+                bind(is_operator, $1), 
+                $0));
     } ;
 }
 

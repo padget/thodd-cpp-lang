@@ -98,17 +98,20 @@ int main()
     std::cout << std::boolalpha << syntax::is_terminal (lisp::number, lisp_grammar) << std::endl ;
     std::cout << (int) syntax::get_operator_by_id (lisp::parens_expression, lisp_grammar) << std::endl ; 
 
-    /*
+
+    
     std::vector<lisp> lisp_stream ;
     std::transform (
         tokens.begin(), 
         tokens.end(), 
         std::back_inserter(lisp_stream), 
         [] (auto&& token) { return token.id ; } ) ;
-    
-    auto && mres = check (lisp_grammar, lisp_stream.begin(), lisp_stream.end()) ;
 
-    if (matched (mres))
+    //std::cout << std::boolalpha << inside(2, tuple_map(tuple(0, "coucou"), tuple(1, 12))) << std::endl  ;
+    //std::cout << at(1, tuple_map(tuple(0, "coucou"), tuple(1, ""))) << std::endl ;
+    auto && mres = syntax::check_builder (lisp_grammar) (lisp_stream.begin(), lisp_stream.end()) ;
+
+    /*if (matched (mres))
     {
         auto && [tree, it] = 
             build_tree (lisp_grammar, tokens.begin(), tokens.end()) ;

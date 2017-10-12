@@ -84,7 +84,7 @@ thodd::lang::syntax
     inline constexpr auto 
     generic_check = 
     [] (auto id, auto const & grammar, auto begin, auto const end) 
-    {
+    {        
         if (is_terminal (id, grammar))
         {
             auto is_same = begin != end && *begin == id ; 
@@ -94,13 +94,74 @@ thodd::lang::syntax
         }
         else switch (get_operator_by_id (id, grammar))
         {
-            case production_operator::some : 
+            /*case production_operator::some : 
                 return check_some (id, grammar, begin, end) ;
             case production_operator::and_ : 
                 return check_and (id, grammar, begin, end) ;
             case production_operator::or_  : 
-                return check_or (id, grammar, begin, end) ;
+                return check_or (id, grammar, begin, end) ;*/
         }
+    } ;
+
+    inline constexpr auto 
+    one_of_check_builder =
+    [] () 
+    {
+        return 
+        [] (auto ... ids)
+        {
+            return 
+            [ids...] ()
+            {
+
+            } ;
+        } ;
+    } ;
+
+    inline constexpr auto
+    sequence_of_check_builder = 
+    [] () 
+    {
+        [] (auto ... ids) 
+        {
+            return 
+            [ids...] ()
+            {
+
+            } ;
+        } ; 
+    } ;
+
+    inline constexpr auto
+    some_check_builder = 
+    [] () 
+    {
+        [] (auto id) 
+        {
+            return 
+            [id] (auto min, auto max)
+            {
+                return 
+                [id, min, max] ()
+                {
+
+                } ;
+            } ;
+        } ;
+    } ;
+
+    inline constexpr auto 
+    grammar_checker =
+    [] (auto const & grammar)
+    {
+        return
+        [grammar] (
+            auto some_check_builder, 
+            auto sequence_of_check_builder, 
+            auto one_of_check_builder) 
+        {
+            
+        } ;
     } ;
 
     inline constexpr auto

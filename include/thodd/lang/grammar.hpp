@@ -61,8 +61,8 @@ thodd::lang::syntax
     constexpr auto is_alternative_def (auto const &) { return false ; }
 
     constexpr auto
-    id_of (
-        auto const & def)
+    id_of =
+    [] (auto const & def)
     {
         if constexpr (is_some_def(def))
             return def.some_id ; 

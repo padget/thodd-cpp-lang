@@ -4,176 +4,132 @@
 #  include <thodd/lang/regex.hpp>
 #  include <thodd/lang/match_result.hpp>
 #  include <thodd/lang/grammar.hpp>
+#  include <thodd/functional.hpp>
 
 namespace 
 thodd::lang::syntax
 {
     inline constexpr auto 
-    check_or = 
-    [] (auto id, auto const & grammar, auto begin, auto const end)
-    {
-        auto local_cursor = begin ; 
-        auto checked = false ;
-        auto const & step_ids = get_ids_by_id (id, grammar) ;
-        
-        for (auto && step_id : step_ids)
-        {
-            auto && mres = generic_check (step_id, grammar, local_cursor, end) ;
-
-            if (checked = matched (mres))
-            {    
-                local_cursor = cursor (mres) ;
-                break ;
-            }
-        }
-
-        return 
-        match_result (checked, checked ? local_cursor : begin) ;
-    } ;
+    def_handler = bind(tuple, $0, $1) ;
 
     inline constexpr auto 
-    check_and =
-    [] (auto id, auto const & grammar, auto begin, auto const end)
-    {
-        auto local_cursor = begin ; 
-        auto checked = true ;
-        auto const & step_ids = get_ids_by_id (id, grammar) ;
-
-        for (auto && step_id : step_ids)
-        {
-            auto && mres = generic_check (step_id, grammar, local_cursor, end) ;
-
-            if (checked = matched (mres)) 
-                local_cursor = cursor (mres) ; 
-            else break ;
-        }  
-        
-        return 
-        match_result (checked, checked ? local_cursor : begin) ;
-    } ;
-
-    inline constexpr auto 
-    check_some = 
-    [] (auto id, auto const & grammar, auto begin, auto const end)
-    {
-        auto cpt = 0u ;
-        auto checked = true ;
-        auto local_cursor = begin ; 
-        auto step_id = get_iss_by_id(id, grammar).begin() ;
-        size_t const min = get_min(get_is_by_id(id, grammar)) ;
-        size_t const max = get_max(get_is_by_id(id, grammar)) ;
-        
-        while (checked && cpt < max)
-        {
-            auto && mres = generic_check (step_id, grammar, local_cursor, end) ;
-        
-            if (checked = matched (mres))
-            {
-                ++ cpt ;
-                local_cursor = cursor (mres) ;
-            } 
-        }
-
-        checked = min <= cpt && cpt <= max ; 
-
-        return 
-        match_result (checked, checked ? local_cursor : begin) ;
-    } ;
-
-
-    inline constexpr auto 
-    generic_check = 
-    [] (auto id, auto const & grammar, auto begin, auto const end) 
-    {        
-        if (is_terminal (id, grammar))
-        {
-            auto is_same = begin != end && *begin == id ; 
-            
-            return 
-            match_result (is_same, is_same ? ++begin : begin) ;
-        }
-        else switch (get_operator_by_id (id, grammar))
-        {
-            /*case production_operator::some : 
-                return check_some (id, grammar, begin, end) ;
-            case production_operator::and_ : 
-                return check_and (id, grammar, begin, end) ;
-            case production_operator::or_  : 
-                return check_or (id, grammar, begin, end) ;*/
-        }
-    } ;
-
-    inline constexpr auto 
-    one_of_check_builder =
-    [] () 
-    {
-        return 
-        [] (auto ... ids)
-        {
-            return 
-            [ids...] ()
-            {
-
-            } ;
-        } ;
-    } ;
+    def_handler_id = bind(nth, $0, val(idx0)) ;
 
     inline constexpr auto
-    sequence_of_check_builder = 
-    [] () 
-    {
-        [] (auto ... ids) 
-        {
-            return 
-            [ids...] ()
-            {
-
-            } ;
-        } ; 
-    } ;
-
-    inline constexpr auto
-    some_check_builder = 
-    [] () 
-    {
-        [] (auto id) 
-        {
-            return 
-            [id] (auto min, auto max)
-            {
-                return 
-                [id, min, max] ()
-                {
-
-                } ;
-            } ;
-        } ;
-    } ;
+    def_handler_handler = bind(nth, $0, val(idx1)) ;
 
     inline constexpr auto 
-    grammar_checker =
-    [] (auto const & grammar)
+    generic_check =
+    [] (auto id, auto begin, auto const end, auto const & def_handlers)
     {
+        constexpr auto for_each_def_handler = 
+        [id, begin, end] (auto && def_handler, auto && ... next_handler)
+        {
+            if (id == id_of(def))
+                return def 
+        } 
+
         return
-        [grammar] (
-            auto some_check_builder, 
-            auto sequence_of_check_builder, 
-            auto one_of_check_builder) 
-        {
-            
-        } ;
-    } ;
+        defs (
+            [id, begin, end] (auto && ... def)
+            {
+                
+            }) ;
+    }
 
     inline constexpr auto
     check_builder = 
-    [] (auto && grammar)
+    [] (grammar_data<auto> const & grammar)
     {
         return 
-        [grammar] (auto begin, auto const end)
-        {
-            return 
-            generic_check (grammar_start(grammar), grammar, begin, end) ;
-        } ;
+        std::apply (
+            [start_id = grammar.start_id] (auto && ... def) 
+            {
+                return 
+                [start_id, def...] ()
+                {
+                    constexpr auto
+                    build_specific_checker =  
+                    [] (auto && def)
+                    {
+                        if constexpr (is_some_def(def))
+                            return 
+                            [step_id = def.step_id, 
+                             min = def.min, 
+                             max = def.max] 
+                            (auto begin, auto const end, auto const & defs)
+                            {        
+                                auto checked = true ;
+                                auto local_cursor = begin ; 
+                                
+                                auto cpt = 0u ;
+
+                                while (checked && cpt < max)
+                                {
+                                    auto && mres = generic_check (step_id, local_cursor, end, defs) ;
+                                
+                                    if (checked = matched (mres))
+                                    {
+                                        ++ cpt ;
+                                        local_cursor = cursor (mres) ;
+                                    } 
+                                }
+                        
+                                checked = min <= cpt && cpt <= max ; 
+
+                                return 
+                                match_result (checked, checked ? local_cursor : begin) ;
+                            } ;
+                        else if constexpr (is_sequence_def(def))
+                            return 
+                            [step_ids = def.step_ids] 
+                            (auto begin, auto const end, auto const & defs)
+                            {
+                                auto local_cursor = begin ; 
+                                auto checked = true ;
+
+                                for (auto && step_id : step_ids)
+                                {
+                                    auto && mres = generic_check (step_id, local_cursor, end, defs) ;
+                        
+                                    if (checked = matched (mres)) 
+                                        local_cursor = cursor (mres) ; 
+                                    else break ;
+                                }
+                                
+                                return 
+                                match_result (checked, checked ? local_cursor : begin) ;
+                            } ;
+                        else if constexpr (is_alternative_def(def))
+                            return 
+                            [step_ids = def.step_ids] 
+                            (auto begin, auto const end, auto const & defs)
+                            {
+                                auto local_cursor = begin ; 
+                                auto checked = false ;
+
+                                for (auto && step_id : step_ids)
+                                {
+                                    auto && mres = generic_check (step_id, local_cursor, end, defs) ;
+                        
+                                    if (checked = matched (mres))
+                                    {    
+                                        local_cursor = cursor (mres) ;
+                                        break ;
+                                    }
+                                }
+                        
+                                return 
+                                match_result (checked, checked ? local_cursor : begin) ;
+                            } ;
+                    } ;
+
+                    constexpr auto defs = 
+                    thodd::tuple(
+                        build_specific_checker (def)...) ;
+                } ;
+            }, 
+            grammar.defs) ;
     } ;
 }
 

@@ -1,35 +1,19 @@
 #ifndef __THODD_LANG_MATCH_RESULT_HPP__
 #  define __THODD_LANG_MATCH_RESULT_HPP__
 
-#  include <utility>
-
-#  include <thodd/functional.hpp>
-
 namespace 
 thodd::lang
 {
-    inline constexpr auto
-    match_result = 
-    [] (bool const & matched, auto const & cursor)
-    { return tuple (matched, cursor) ; } ;
-    
-    inline constexpr auto
-    matched =
-    [] (auto && mres)
-    -> decltype(auto)
+    template<
+        typename iterator_t>
+    struct match_result
     {
-        return
-        nth (std::forward<decltype(mres)>(mres), idx0) ;
-    } ;
-    
-    inline constexpr auto
-    cursor =
-    [] (auto && mres) 
-    ->  decltype(auto)
-    {
-        return
-        nth (std::forward<decltype(mres)>(mres), idx1) ;
-    } ;
+        bool matched ; 
+        iterator_t local_cursor ; 
+    } ; 
+
+    template <typename iterator_t>
+    match_result (bool, iterator_t) -> match_result<iterator_t> ;
 }
 
 #endif

@@ -20,7 +20,7 @@ thodd::lang::regex
             auto matches = begin != end && *begin == c ;
             
             return 
-            match_result (matches, matches ? ++begin : begin) ;
+            match_result { matches, matches ? ++begin : begin } ;
         } ;
     } ;
     
@@ -37,7 +37,7 @@ thodd::lang::regex
                 && *begin <= max ;
             
             return 
-            match_result (matched, matched ? ++begin : begin) ;
+            match_result { matched, matched ? ++begin : begin } ;
         } ;
     } ;
 
@@ -58,19 +58,19 @@ thodd::lang::regex
 
                 while (local_matched && cpt < max)
                 {
-                    auto && mres = rx (local_cursor, end) ;
+                    auto && [step_matched, step_cursor] = rx (local_cursor, end) ;
                     
-                    if (local_matched = matched (mres))
+                    if (local_matched = step_matched)
                     {
                         ++ cpt ;
-                        local_cursor = cursor (mres) ;
+                        local_cursor = step_cursor ;
                     }
                 }
 
                 local_matched = min <= cpt && cpt <= max ; 
                 
                 return 
-                match_result (local_matched, local_matched ? local_cursor : begin) ;
+                match_result { local_matched, local_matched ? local_cursor : begin } ;
             } ;
         } ;
     } ;
@@ -94,17 +94,17 @@ thodd::lang::regex
         return 
         [rx...] (auto begin, auto const end)
         {
-            auto step_matched = false ;
-            auto step_cursor = begin ; 
+            auto local_matched = false ;
+            auto local_cursor = begin ; 
 
             auto each = 
-            [&step_matched, &step_cursor] (auto const & rx, auto begin, auto const end) 
-            { if (!step_matched) { auto && mres = rx (begin, end) ; step_matched = matched (mres) ; step_cursor = cursor (mres) ; } } ;
+            [&local_matched, &local_cursor] (auto const & rx, auto begin, auto const end) 
+            { if (!local_matched) { auto && [step_matched, step_cursor] = rx (begin, end) ; local_matched = step_matched ; local_cursor = step_cursor ; } } ;
             
-            (each (rx, step_cursor, end), ...) ;
+            (each (rx, local_cursor, end), ...) ;
           
             return 
-            match_result (step_matched, step_matched ? step_cursor : begin) ;
+            match_result { local_matched, local_matched ? local_cursor : begin } ;
         } ;
     } ;
         
@@ -117,17 +117,17 @@ thodd::lang::regex
         return 
         [rx...] (auto begin, auto const end)
         {
-            auto step_matched = true ;
-            auto step_cursor = begin ; 
+            auto local_matched = true ;
+            auto local_cursor = begin ; 
 
             auto each = 
-            [&step_matched, &step_cursor] (auto const & rx, auto begin, auto const end) 
-            { if (step_matched) { auto && mres = rx (begin, end) ; step_matched = matched (mres) ; step_cursor = cursor (mres) ; } } ;
-
-            (each (rx, step_cursor, end), ...) ;
-
+            [&local_matched, &local_cursor] (auto const & rx, auto begin, auto const end) 
+            { if (local_matched) { auto && [step_matched, step_cursor] = rx (begin, end) ; local_matched = step_matched ; local_cursor = step_cursor ; } } ;
+            
+            (each (rx, local_cursor, end), ...) ;
+          
             return 
-            match_result (step_matched, step_matched ? step_cursor : begin) ;
+            match_result { local_matched, local_matched ? local_cursor : begin } ;
         } ;
     } ;
 
@@ -138,10 +138,10 @@ thodd::lang::regex
         return 
         [id, rx] (auto begin, auto end)
         {
-            auto && mres = rx (begin, end) ;
+            auto && [local_matched, local_cursor] = rx (begin, end) ;
         
             return 
-            token { std::pair { begin, cursor (mres) }, id } ;
+            token { std::pair { begin, local_cursor }, id } ;
         } ;
     } ;
 }

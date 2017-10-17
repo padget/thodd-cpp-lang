@@ -2,13 +2,24 @@
 #  define __THODD_LANG_CHECK_HPP__
 
 #  include <thodd/lang/regex.hpp>
-#  include <thodd/lang/check_result.hpp>
 #  include <thodd/lang/grammar.hpp>
 #  include <thodd/functional.hpp>
 
 namespace 
 thodd::lang::syntax
 {
+    template<
+        typename iterator_t>
+    struct check_result
+    {
+        bool checked ; 
+        iterator_t local_cursor ; 
+    } ;
+
+    template <typename iterator_t>
+    check_result (bool, iterator_t) -> check_result<iterator_t> ;
+
+
     template <
         typename language_t,
         typename handler_t>
@@ -20,6 +31,17 @@ thodd::lang::syntax
 
     template <typename language_t, typename handler_t>
     def_handler (language_t id, handler_t handler) -> def_handler<language_t, handler_t> ;
+
+
+    constexpr auto
+    compute_check_result (
+        auto begin, 
+        auto local_cursor, 
+        auto checked) 
+    {
+        return 
+        check_result { checked, checked ? local_cursor : begin } ;
+    }
 
 
     constexpr auto
@@ -35,17 +57,17 @@ thodd::lang::syntax
 
             for (auto && step_id : step_ids)
             {
-                auto && mres = generic_check (step_id, local_cursor, end, defs) ;
+                auto && [step_checked, step_cursor] = generic_check (step_id, local_cursor, end, defs) ;
 
-                if (checked = matched (mres))
+                if (checked = step_checked)
                 {    
-                    local_cursor = cursor (mres) ;
+                    local_cursor = step_cursor ;
                     break ;
                 }
             }
 
             return 
-            check_result { checked, checked ? local_cursor : begin } ;
+            compute_check_result (begin, local_cursor, checked) ;
         } ;
     }
 
@@ -70,7 +92,7 @@ thodd::lang::syntax
             }
 
             return 
-            check_result { checked, checked ? local_cursor : begin } ;
+            compute_check_result (begin, local_cursor, checked) ;
         } ;
     }
 
@@ -97,9 +119,24 @@ thodd::lang::syntax
             checked = min <= cpt && cpt <= max ; 
 
             return 
-            check_result { checked, checked ? local_cursor : begin } ;
+            compute_check_result (begin, local_cursor, checked) ;
         } ;
     }   
+
+    constexpr auto 
+    check_handler_terminal_algorithm (
+        auto terminal_id, 
+        auto const & def_handlers)
+    {
+        return 
+        [terminal_id, def_handlers] 
+        (auto begin, auto const end)
+        {
+            bool checked = begin != end && *begin == terminal_id ;
+            auto local_cursor = checked ? ++begin : begin ; 
+            compute_check_result (begin, local_cursor, checked) ;
+        } ;
+    }
 }
 
 #endif

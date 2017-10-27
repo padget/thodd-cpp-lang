@@ -69,24 +69,41 @@ lisp_token_builder =
 {
     using namespace thodd ;
     using namespace thodd::lang ;
-    using namespace thodd::lang::regex ;
 
     return 
     token_builder <lisp> (
-        term (lisp::ignored, chr(' ')),
-        term (lisp::left, chr('(')), 
-        term (lisp::right, chr(')')), 
-        term (lisp::identifiant, (one_more(range('a', 'z')))), 
-        term (lisp::number, (one_more(range('0', '9'))))) ;
+        regex::term (lisp::ignored, regex::chr(' ')),
+        regex::term (lisp::left, regex::chr('(')), 
+        regex::term (lisp::right, regex::chr(')')), 
+        regex::term (lisp::identifiant, (regex::one_more(regex::range('a', 'z')))), 
+        regex::term (lisp::number, (regex::one_more(regex::range('0', '9'))))) ;
 } ;
 
 int main() 
 {
     using namespace thodd ;
     using namespace thodd::lang ;
+    
+    auto stream = std::string("(add (neg 1 12 12 a) a)");
+    constexpr auto space = regex::chr(' ');
+    constexpr auto left = regex::chr('(');
 
-    auto input_stream = std::string("(add (neg 1 12 12 a) a)") ;
-    auto && tokens = lisp_token_builder () (input_stream.begin(), input_stream.end()) ;
+    map(
+        indirect(stream), 
+        [rxs = std::array{space, left}] (auto && it) 
+        {
+            return 
+            max(
+                map(rxs, 
+                    [it] (auto && rx) { return rx (it) ; }), 
+                [] (auto && ltoken, auto && rtoken) { return ltoken.size() < rtoken.size() ; } ;
+        }) ;
+    
+    for(auto && it : indirect(stream)) 
+        std::cout << *it << std::endl ;
+
+
+    //auto && tokens = lisp_token_builder () (input_stream.begin(), input_stream.end()) ;
 
     /*constexpr auto lisp_grammar = 
         syntax::grammar (
@@ -132,4 +149,6 @@ int main()
         syntax::zero_more (lisp::expressions, lisp::expression)) ;
 
     std::cout << std::boolalpha << syntax::is_terminal (lisp::number, lisp_grammar) << std::endl ;
+
+  
 }

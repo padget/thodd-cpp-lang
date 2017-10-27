@@ -6,6 +6,7 @@
 #  include <thodd/lang/token.hpp>
 #  include <thodd/lang/match_result.hpp>
 #  include <thodd/functional.hpp>
+#  include <thodd/range.hpp>
 
 namespace
 thodd::lang::regex

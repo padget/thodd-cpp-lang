@@ -79,29 +79,46 @@ lisp_token_builder =
         regex::term (lisp::number, (regex::one_more(regex::range('0', '9'))))) ;
 } ;
 
+#  include <array>
+
 int main() 
 {
     using namespace thodd ;
     using namespace thodd::lang ;
     
-    auto stream = std::string("(add (neg 1 12 12 a) a)");
-    constexpr auto space = regex::chr(' ');
-    constexpr auto left = regex::chr('(');
+    auto stream = std::string("(add (neg 1 12 12 a) a)") ;
+    auto end = stream.end() ;
 
-    map(
-        indirect(stream), 
-        [rxs = std::array{space, left}] (auto && it) 
-        {
-            return 
-            max(
-                map(rxs, 
-                    [it] (auto && rx) { return rx (it) ; }), 
-                [] (auto && ltoken, auto && rtoken) { return ltoken.size() < rtoken.size() ; } ;
-        }) ;
+    constexpr auto space = regex::chr(' ') ;
+    constexpr auto left = regex::chr('(') ;
+    constexpr auto number = regex::range(regex::chr('0'), regex::chr('9')) ;
+    constexpr auto rxs = std::make_tuple(space, left, number) ; 
     
+    constexpr auto group_by = 
+    [] (auto && container, auto && grouper) 
+    {
+
+    } ;
+    
+    group_by(
+        stream, 
+        [rxs, end] (auto && it) 
+        {
+            return
+            std::apply(
+                [it, end] (auto && ... rx) 
+                { return min(std::array(rx(it, end)...), lower($0, $1)) ; }, 
+                rxs) ;
+        }
+    ) ;
+
     for(auto && it : indirect(stream)) 
         std::cout << *it << std::endl ;
 
+    auto && s = {0,1,2,3} ;
+    auto && min_ = min(s, lower($0, $1)) ;
+
+    if_exists(min(s, greater($0, $1)), [] (auto && item) { std::cout << item << std::endl ; });
 
     //auto && tokens = lisp_token_builder () (input_stream.begin(), input_stream.end()) ;
 

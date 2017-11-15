@@ -94,31 +94,11 @@ int main()
     constexpr auto number = regex::range(regex::chr('0'), regex::chr('9')) ;
     constexpr auto rxs = std::make_tuple(space, left, number) ; 
     
-    constexpr auto group_by = 
-    [] (auto && container, auto && grouper) 
-    {
+    auto s = make_array(0,1,2,3) ;
+    auto min_ = min(s, lower($0, $1)) ;
+    if_exists(min_, [] (auto && m) {std::cout << m << std::endl ;}) ;
 
-    } ;
-    
-    group_by(
-        stream, 
-        [rxs, end] (auto && it) 
-        {
-            return
-            std::apply(
-                [it, end] (auto && ... rx) 
-                { return min(std::array(rx(it, end)...), lower($0, $1)) ; }, 
-                rxs) ;
-        }
-    ) ;
-
-    for(auto && it : indirect(stream)) 
-        std::cout << *it << std::endl ;
-
-    auto && s = {0,1,2,3} ;
-    auto && min_ = min(s, lower($0, $1)) ;
-
-    if_exists(min(s, greater($0, $1)), [] (auto && item) { std::cout << item << std::endl ; });
+    make_tokens () ;
 
     //auto && tokens = lisp_token_builder () (input_stream.begin(), input_stream.end()) ;
 

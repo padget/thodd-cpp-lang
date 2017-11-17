@@ -19,7 +19,7 @@ thodd::lang
       thodd::make_optional_if(
         rx(begin, end), 
         [] (auto && rx_res) { return has_value(std::forward<decltype(rx_res)>(rx_res)) ; },
-        [&] (auto && rx_res) { return make_token(id, begin, value_of(rx_res)) ; }) ;
+        [&] (auto && rx_res) { return make_token(id, begin, std::move(value_of(rx_res))) ; }) ;
     } ;
   } ;
 }

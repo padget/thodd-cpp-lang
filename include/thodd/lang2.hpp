@@ -5,4 +5,6 @@
 #  include <thodd/lang2/token.hpp>
 #  include <thodd/lang2/terminal.hpp>
 
+#  include <thodd/lang2/build_tokens.hpp>
+
 #endif

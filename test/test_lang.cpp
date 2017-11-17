@@ -37,7 +37,7 @@ try
 
     
     namespace rx = thodd::lang::regex ;
-
+    
     auto input2 = thodd::make_string("Je commence par une majuscule et termine par un point.") ;
     constexpr auto is_phrase = rx::sequence_of(rx::range('A', 'Z'), rx::zero_more(rx::one_of(rx::range('a', 'z'), rx::chr(' '))), rx::chr('.')) ;
     thodd::if_exists(
@@ -45,6 +45,14 @@ try
         [] (auto && ignored) { std::cout << "je suis une phrase" << std::endl ; }) ;  
 
 
+    thodd::if_exists(
+        thodd::lang::terminal(0, is_phrase)(thodd::begin(input2), thodd::end(input2)),
+        [] (auto && token) 
+        { 
+            std::cout << token.id << std::endl ;
+            thodd::for_each(token.data, [] (auto const & c) {std::cout << c ;});
+            std::cout << std::endl ;
+        }) ;
 } 
 catch (...) 
 {

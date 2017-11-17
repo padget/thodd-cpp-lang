@@ -35,6 +35,15 @@ try
         sequence_ofcc(thodd::begin(input), thodd::end(input)), 
         [] (auto && it) {std::cout << "sequence_ofcc exists : " << get(it) << std::endl ; });
 
+    
+    namespace rx = thodd::lang::regex ;
+
+    auto input2 = thodd::make_string("Je commence par une majuscule et termine par un point.") ;
+    constexpr auto is_phrase = rx::sequence_of(rx::range('A', 'Z'), rx::zero_more(rx::one_of(rx::range('a', 'z'), rx::chr(' '))), rx::chr('.')) ;
+    thodd::if_exists(
+        is_phrase(thodd::begin(input2), thodd::end(input2)), 
+        [] (auto && ignored) { std::cout << "je suis une phrase" << std::endl ; }) ;  
+
 
 } 
 catch (...) 

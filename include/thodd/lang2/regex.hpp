@@ -67,8 +67,8 @@ thodd::lang::regex
                 return 
                 make_optional_if (
                     local_cursor, 
-                    cref (local_matched), 
-                    tern (cref(local_matched)) [ref(local_cursor)] [ref(begin)]) ; 
+                    [&] (auto && cursor) { return local_matched ; }, 
+                    [&] (auto && cursor) { return local_matched ? cursor : begin ; }) ; 
             } ;
         } ;
     } ;
@@ -114,8 +114,8 @@ thodd::lang::regex
             return 
             make_optional_if (
                 local_cursor, 
-                cref (local_matched), 
-                tern (cref(local_matched)) [ref(local_cursor)] [ref(begin)]) ; 
+                [&] (auto && cursor) { return local_matched ; }, 
+                [&] (auto && cursor) { return local_matched ? cursor : begin ; }) ; 
         } ;
     } ;
         
@@ -150,8 +150,8 @@ thodd::lang::regex
             return 
             make_optional_if (
                 local_cursor, 
-                cref (local_matched), 
-                tern (cref(local_matched)) [ref(local_cursor)] [ref(begin)]) ; 
+                [&] (auto && cursor) { return local_matched ; }, 
+                [&] (auto && cursor) { return local_matched ? cursor : begin ; }) ; 
         } ;
     } ;
 }

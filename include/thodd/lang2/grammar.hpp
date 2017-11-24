@@ -38,97 +38,48 @@ thodd::lang::syntax
 namespace 
 thodd::lang::syntax
 {
-  template <
-    typename language_t, 
-    size_t size_c>
-  struct sequence_of_data
-  {
-    language_t id ;
-    thodd::array<language_t, size_c> ids ;
-  } ; 
-
-  constexpr auto 
-  sequence_of (
-    auto id, auto ... ids)
-  {
-    return 
-    sequence_of_data<decltype(id), sizeof...(ids)>
-    { id, { ids... } } ; 
-  }
+  enum struct node_type 
+  { defined, defining } ;
 
   template <
-    typename language_t, 
-    size_t size_c>
-  struct one_of_data
-  {
-    language_t id ;
-    thodd::array<language_t, size_c> ids ;
-  } ;
-
-  constexpr auto
-  one_of (
-    auto id, auto ... ids)
-  {
-    return
-    one_of_data<decltype(id), sizeof...(ids)>
-    { id, { ids... } } ;
-  }
-
-  template < 
     typename language_t>
-  struct some_data
-  {
-    language_t id ; 
-    language_t some_id ;
-    size_t min, max ;
-  } ;
-
-  constexpr auto 
-  some (
-    auto id, auto some_id)
-  {
-    return 
-    [id, some_id] (size_t min, size_t max)
-    {
-      return 
-      some_data<decltype(id)>
-      { id, some_id, min, max } ;
-    } ;
-  }
-
-  constexpr auto
-  zero_more (
-    auto id, auto some_id)
-  {
-    return 
-    some(id, some_id)
-      (0, std::numeric_limits<size_t>::max()) ;
-  }
-
-  constexpr auto
-  one_more (
-    auto id, auto some_id)
-  {
-    return 
-    some(id, some_id)
-      (1, std::numeric_limits<size_t>::max()) ;
-  }
-
-  template <
-    typename language_t,
-    typename ... rule>
-  struct grammar_data
+  struct node
   {
     language_t id ;
-    std::tuple<rule...> rules ;
+    node_type type ;
   } ;
 
   constexpr auto 
-  grammar(auto id, auto && ... rule)
+  make_node (auto id, node_type type)
+  { return node<decltype(id)> { id, type } ; }
+
+  template <
+    typename language_t, 
+    size_t size_c>
+  struct grammar
+  {    
+    language_t start ;
+    thodd::array<node<language_t>, size_c> rules {} ; 
+  } ;
+
+  constexpr auto 
+  init_grammar (auto start) 
   {
     return 
-    grammar_data<decltype(id), std::decay_t<decltype(rule)>...>
-    { id, { std::make_tuple(std::forward<decltype(rule)>(rule)...) } } ;
+    grammar<decltype(start), 0u> { start } ;
+  }
+
+  template<size_t size_c>
+  constexpr auto
+  patch_grammar(
+    grammar<auto, size_c> && gr, 
+    auto id, 
+    auto ... ids)
+  {
+    // TODO faire la fonction concat of two array
+    return 
+    grammar<decltype(id), size_c + sizeof...(ids) + 1>
+    { gr.start, concat(gr.rules, { make_node(id, defined), make_node(ids, node_type::defining)... }) } ;
   }
 }
 

@@ -69,7 +69,7 @@ thodd::lang::syntax
     grammar<decltype(start), 0u> { start } ;
   }
 
-  template<size_t size_c>
+  template <size_t size_c>
   constexpr auto
   patch_grammar(
     grammar<auto, size_c> && gr, 
@@ -79,7 +79,20 @@ thodd::lang::syntax
     // TODO faire la fonction concat of two array
     return 
     grammar<decltype(id), size_c + sizeof...(ids) + 1>
-    { gr.start, concat(gr.rules, { make_node(id, defined), make_node(ids, node_type::defining)... }) } ;
+    { gr.start, concat(gr.rules, { make_node(id, node_type::defined), make_node(ids, node_type::defining)... }) } ;
+  }
+
+  template <typename type_t, size_t size1_c, size_t size2_c>
+  constexpr auto concat (
+    thodd::array<type_t, size1_c> const & arr1, 
+    thodd::array<type_t, size2_c> const & arr2)
+  {
+    thodd::array<type_t, size1_c + size2_c> arr {} ; 
+    
+    thodd::for_each_i (arr1, [&arr] (auto && item, auto index) { arr[index] = item ; }) ;
+    thodd::for_each_i (arr2, [&arr] (auto && item, auto index) { arr[index + size1_c] = item ; }) ;
+    
+    return arr ;
   }
 }
 

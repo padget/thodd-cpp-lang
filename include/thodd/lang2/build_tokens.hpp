@@ -53,7 +53,7 @@ thodd::lang
               }) ;
           }), 
         [&captured_id] (auto && step_it) 
-        { std::cout << "coucou" ; return make_token(captured_id, step_it.begin_it, step_it.it) ; 
+        { return make_token(captured_id, step_it.begin_it, step_it.it) ; 
       }), 
       [] (auto && t) { return t.id != language_t::ignored ; });
   }

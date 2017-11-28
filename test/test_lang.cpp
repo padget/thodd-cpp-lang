@@ -92,11 +92,13 @@ try
       thodd::lang::terminal(phrase_lang::point, rx::chr('.'))) ;
 
   namespace stx = thodd::lang::syntax ;
+  auto arr1 = thodd::make_array(1, 2, 3) ; 
+  auto arr2 = thodd::make_array(4, 5, 6) ;
 
-  
-  constexpr auto words_rule = stx::one_more(phrase_lang::words, phrase_lang::word) ;
-  constexpr auto phrase_rule = stx::sequence_of(phrase_lang::phrase, phrase_lang::maj, phrase_lang::words, phrase_lang::point) ; 
-  constexpr auto phrase_grammar = stx::grammar(phrase_lang::phrase, phrase_rule, words_rule) ;
+  thodd::for_each(arr2, [] (auto && item) {std::cout << item << std::endl ; }) ;
+
+  auto arr = stx::concat(arr1, arr2) ;
+  thodd::for_each(arr, [] (auto && item) {std::cout << item << std::endl ; }) ;
 } 
 catch (...) 
 {

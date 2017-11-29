@@ -89,8 +89,8 @@ thodd::lang::syntax
   {
     thodd::array<type_t, size1_c + size2_c> arr {} ; 
     
-    thodd::for_each_i (arr1, [&arr] (auto && item, auto index) { arr[index] = item ; }) ;
-    thodd::for_each_i (arr2, [&arr] (auto && item, auto index) { arr[index + size1_c] = item ; }) ;
+    thodd::for_eachi (arr1, [&arr] (auto && item, auto index) { std::cout << index << item << std::endl ; arr[index] = std::forward<decltype(item)>(item) ; }) ;
+    thodd::for_eachi (arr2, [&arr] (auto && item, auto index) { arr[index + size1_c] = std::forward<decltype(item)>(item) ; }) ;
     
     return arr ;
   }

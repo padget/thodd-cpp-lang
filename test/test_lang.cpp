@@ -91,12 +91,14 @@ try
       thodd::lang::terminal(phrase_lang::word, rx::one_more(rx::range('a', 'z'))), 
       thodd::lang::terminal(phrase_lang::point, rx::chr('.'))) ;
 
-  namespace stx = thodd::lang::syntax ;
+  
   auto arr1 = thodd::make_array(1, 2, 3) ; 
   auto arr2 = thodd::make_array(4, 5, 6) ;
 
   thodd::for_each(arr2, [] (auto && item) {std::cout << item << std::endl ; }) ;
 
+  namespace stx = thodd::lang::syntax ;
+  
   auto arr = stx::concat(arr1, arr2) ;
   thodd::for_each(arr, [] (auto && item) {std::cout << item << std::endl ; }) ;
 } 

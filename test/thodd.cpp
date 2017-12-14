@@ -6,6 +6,65 @@
 using str = std::string ;
 
 [[pure]]
+auto is_between = [] (auto min, auto max) {
+  return 
+  [=] (auto const & cursor) {
+    return 
+    min <= thodd::value_of(cursor) && thodd::value_of(cursor) <= max ;
+  } ;
+} ;
+
+[[pure]]
+auto is_alpha = 
+[] (auto const & cursor) {
+  return
+  is_between ('a', 'z') (cursor)
+  || is_between ('A', 'Z') (cursor)
+  || thodd::value_of(cursor) == '_'  ;
+} ;
+  
+[[pure]]
+auto is_num = 
+[] (auto const & cursor) {
+  return 
+  is_between ('1', '9') (cursor) ;
+} ;
+
+[[pure]]
+auto is_alpha_num =  
+[] (auto const & cursor) {
+  return 
+  is_num (cursor) || is_alpha (cursor) ;
+} ;
+
+[[pure]]
+inline constexpr auto 
+identifier_rx = 
+[] (auto const & stream) 
+{
+  [[local]]
+  auto cursor = thodd::begin(stream) ; 
+
+  thodd::next_if (is_alpha) (cursor, thodd::end(stream)) ;
+  thodd::next_while (is_alpha_num) (cursor, thodd::end(stream)) ;
+  
+  return  
+  thodd::make_optional_if (
+    cursor, 
+    [&stream] (auto const & cursor) { 
+      return 
+      thodd::not_equals(cursor, thodd::begin(stream)) ; 
+    },
+    [&stream] (auto const & cursor) { 
+      return 
+      thodd::make_range (
+        thodd::begin(stream), 
+        cursor) ; 
+    }) ;
+  
+} ;
+
+[[pure]]
 inline constexpr auto
 native_types = 
 [] 
@@ -39,9 +98,9 @@ native_functions =
       thodd::make_array (
         str("__add"), str("__sub"), str("__div"), str("__mult"), str("__mod"), 
         str("__less"), str("__equal"), str("__greater"), 
-        str("__not"), str("__and"), str("__or"), 
+        str("__not"), str("__and"), str("__or")), 
       [] (auto const & name) { return str("thodd::") + name ; }), 
-    thodd::to_array) ; 
+    thodd::to_list<std::string>) ; 
 } ;
 
 [[pure]]
@@ -60,43 +119,8 @@ enum class thodd_term
   purekw, impurekw, builderkw
 } ;
 
-[[pure]]
-inline constexpr auto
-one_of = 
-[] (auto const & ... cases)
-{
-  return 
-  [=cases...] (auto const & tokens)
-  {
-    return 
-    thodd::make_optional_if(
-      tokens, 
-      [&cases...] (auto const & tokens) 
-      { return (thodd::value_of(thodd::begin(tokens)) == cases || ...) ; }, 
-      [] (auto const & tokens) 
-      { return thodd::make_range(thodd::next(thodd::begin(tokens)), thodd::end(tokens)) ; }) ;     
-  } ;
-} ;
-
 
 [[pure]]
-inline constexpr auto
-sequence_of = 
-[] (auto const & ... items)
-{
-  return 
-  [=items...] (auto const & tokens)
-  {
-    return 
-    thodd::make_optional_if(
-      tokens, 
-      [&items...] (auto const & tokens) 
-      { return (thodd::value_of(thodd::begin(tokens)) == items && ...) ; }, 
-      [] (auto const & tokens) 
-      { return thodd::make_range(thodd::next(thodd::begin(tokens)), thodd::end(tokens)) ; }) ;     
-  } ;
-} ;
-
 inline constexpr auto 
 advance_tokens_if =
 [] (auto const & tokens, auto predicate) 
@@ -113,7 +137,7 @@ advance_tokens_if =
     }) ;
 } ;
 
-
+[[pure]]
 inline constexpr auto 
 is_pure_impure_builder =
 [] (auto const & tokens) 
@@ -123,7 +147,6 @@ is_pure_impure_builder =
     tokens,
     [] (auto const & tokens) {
       auto const & token = thodd::value_of(thodd::begin(tokens)) ; 
-      
       return 
       token == thodd_term::purekw 
       || token == thodd_term::impurekw
@@ -131,23 +154,36 @@ is_pure_impure_builder =
     }) ;
 } ;
 
-//pure __add (l : int, r : int) -> int
+[[pure]]
+inline constexpr auto 
+is_identifier = 
+[] (auto const & tokens) 
+{
+  return 
+  advance_tokens_if (
+    tokens, 
+    [] (auto const & tokens) {
+      return 
+      thodd::value_of(thodd::begin(tokens)) == thodd_term::identifier ; 
+    }) ;
+} ;
+
 [[pure]]
 inline constexpr auto
 is_function_declaration = 
 [] (auto const & tokens) 
-{
-  constexpr auto declaration = 
-  (thodd_term::purekw|thodd_term::impurekw|thodd_term::builderkw) 
-  > thodd_term::identifier > thodd_term::lbracket > 
-    *(thodd_term::identifier > thodd_term::twopoints > thodd_term::identifier) > thodd_term::rbracket ;
-  
-  
-  
-
+{ 
   return 
-  is_pure_impure_builder(tokens) ;
-} 
+  thodd::if_exists(
+    is_pure_impure_builder(tokens), 
+    [] (auto && tokens) {
+      return thodd::if_exists(
+        is_identifier(tokens), 
+        [] (auto && tokens) {
+          return make_optional(tokens) ;
+        });
+    }) ;
+} ;
 
 // pure pow (val : int, exp : int) -> int
 //   __add (l, r)
@@ -155,6 +191,12 @@ is_function_declaration =
 
 int main(int argc, char** argv)
 {
+  constexpr auto func_tokens = thodd::make_array (thodd_term::purekw, thodd_term::identifier) ;
+  thodd::if_exists(
+    identifier_rx(thodd::make_array('a', 'b', '_')), 
+    [] (auto&&) { std::cout << "ca match !!" << std::endl ; }) ;
+
+
     // std::vector<std::string> args { argv, argv + argc } ;
     // thodd::for_each(
     //     args, [](auto const & item){std::cout << item << std::endl ; }) ;

@@ -1,12 +1,15 @@
 #include <iostream>
 #include <thodd/range.hpp>
+#include <thodd/functional.hpp>
 #include <vector>
 #include <string>
 
 using str = std::string ;
 
+/// Basic boolean regex validators
 [[pure]]
-auto is_between = [] (auto min, auto max) {
+auto is_between = 
+[] (auto min, auto max) {
   return 
   [=] (auto const & cursor) {
     return 
@@ -15,38 +18,67 @@ auto is_between = [] (auto min, auto max) {
 } ;
 
 [[pure]]
-auto is_alpha = 
-[] (auto const & cursor) {
-  return
-  is_between ('a', 'z') (cursor)
-  || is_between ('A', 'Z') (cursor)
-  || thodd::value_of(cursor) == '_'  ;
-} ;
-  
-[[pure]]
-auto is_num = 
-[] (auto const & cursor) {
+auto is_exactly = 
+[] (auto sym) {
   return 
-  is_between ('1', '9') (cursor) ;
+  [sym] (auto const & cursor) {
+    return 
+    value_of (cursor) == sym ; 
+  } ;
 } ;
 
+/// Boolean regex validators
 [[pure]]
-auto is_alpha_num =  
-[] (auto const & cursor) {
-  return 
-  is_num (cursor) || is_alpha (cursor) ;
-} ;
+auto is_alpha = thodd::or_(
+  is_between ('a', 'z'), 
+  is_between ('A', 'Z'), 
+  is_exactly ('_')) ;
+
+[[pure]]
+auto is_num = is_between ('1', '9') ;
+
+[[pure]]
+auto is_alpha_num = thodd::or_(is_num, is_alpha) ;
+
+[[pure]]
+auto is_left_bracket = is_exactly('(') ;
+
+[[pure]]
+auto is_right_bracket = is_exactly(')') ;
+
+[[pure]]
+auto is_left_brace = is_exactly('{') ;
+
+[[pure]]
+auto is_right_brace = is_exactly('}') ;
+
+[[pure]]
+auto is_left_sbracket = is_exactly('[') ;
+
+[[pure]]
+auto is_right_sbracket = is_exactly(']') ;
+
+[[pure]]
+auto is_colon = is_exactly(':') ;
+
+[[pure]]
+auto is_semi_colon = is_exactly(';') ;
 
 [[pure]]
 inline constexpr auto 
 identifier_rx = 
-[] (auto const & stream) 
-{
+[] (auto const & stream) {
   [[local]]
   auto cursor = thodd::begin(stream) ; 
 
   thodd::next_if (is_alpha) (cursor, thodd::end(stream)) ;
-  thodd::next_while (is_alpha_num) (cursor, thodd::end(stream)) ;
+  thodd::next_while (
+    thodd::and_(
+      is_alpha_num, 
+      [&stream] (auto const & cursor) {
+        return 
+        thodd::not_equals(cursor, thodd::begin(stream)) ; 
+      })) (cursor, thodd::end(stream)) ;
   
   return  
   thodd::make_optional_if (
@@ -67,8 +99,7 @@ identifier_rx =
 [[pure]]
 inline constexpr auto
 native_types = 
-[] 
-{
+[] {
   return 
   thodd::make_array (
     str("byte"), str("char"), str("int"), str("long"), str("bigint"), 
@@ -81,8 +112,7 @@ native_types =
 [[pure]]
 inline constexpr auto
 is_type = 
-[] (auto const & str, auto const & types)
-{
+[] (auto const & str, auto const & types) {
   return 
   thodd::count (types, str) == 1 ;
 } ;
@@ -90,8 +120,7 @@ is_type =
 [[pure]]
 inline constexpr auto
 native_functions = 
-[] 
-{
+[] {
   return 
   thodd::collect (  
     thodd::project (
@@ -106,8 +135,7 @@ native_functions =
 [[pure]]
 inline constexpr auto
 is_function = 
-[] (auto const & str, auto const & functions)
-{
+[] (auto const & str, auto const & functions) {
   return 
   count (functions, str) == 1 ;
 } ;
@@ -123,8 +151,7 @@ enum class thodd_term
 [[pure]]
 inline constexpr auto 
 advance_tokens_if =
-[] (auto const & tokens, auto predicate) 
-{
+[] (auto const & tokens, auto predicate) {
   return
   thodd::make_optional_if (
     tokens, 
@@ -140,8 +167,7 @@ advance_tokens_if =
 [[pure]]
 inline constexpr auto 
 is_pure_impure_builder =
-[] (auto const & tokens) 
-{
+[] (auto const & tokens) {
   return 
   advance_tokens_if (
     tokens,
@@ -193,7 +219,7 @@ int main(int argc, char** argv)
 {
   constexpr auto func_tokens = thodd::make_array (thodd_term::purekw, thodd_term::identifier) ;
   thodd::if_exists(
-    identifier_rx(thodd::make_array('a', 'b', '_')), 
+    identifier_rx(thodd::make_array('1', 'a', 'b', '_')), 
     [] (auto&&) { std::cout << "ca match !!" << std::endl ; }) ;
 
 

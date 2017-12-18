@@ -11,7 +11,7 @@ using str = std::string ;
 auto is_between = 
 [] (auto min, auto max) {
   return 
-  [=] (auto const & cursor) {
+  [=] (auto & cursor) {
     return 
     min <= thodd::value_of(cursor) && thodd::value_of(cursor) <= max ;
   } ;
@@ -21,7 +21,7 @@ auto is_between =
 auto is_exactly = 
 [] (auto sym) {
   return 
-  [sym] (auto const & cursor) {
+  [sym] (auto & cursor) {
     return 
     value_of (cursor) == sym ; 
   } ;
@@ -71,11 +71,10 @@ identifier_rx =
   [[local]]
   auto cursor = thodd::begin(stream) ; 
 
-  
   thodd::next_while (
     thodd::and_(
       is_alpha_num, 
-      [&stream] (auto const & cursor) {
+      [&stream] (auto & cursor) {
         return 
         thodd::not_equals(cursor, thodd::begin(stream)) ; 
       })) (
@@ -85,17 +84,16 @@ identifier_rx =
   return  
   thodd::make_optional_if (
     cursor, 
-    [&stream] (auto const & cursor) { 
+    [&stream] (auto & cursor) { 
       return 
       thodd::not_equals(cursor, thodd::begin(stream)) ; 
     },
-    [&stream] (auto const & cursor) { 
+    [&stream] (auto & cursor) { 
       return 
       thodd::make_range (
         thodd::begin(stream), 
         cursor) ; 
-    }) ;
-  
+    }) ;  
 } ;
 
 [[pure]]
@@ -220,17 +218,18 @@ is_function_declaration =
 int main(int argc, char** argv)
 {
   constexpr auto func_tokens = thodd::make_array (thodd_term::purekw, thodd_term::identifier) ;
+  
   thodd::if_exists(
     identifier_rx(thodd::make_string("coucou")), 
     [] (auto&&) { std::cout << "ca match !!" << std::endl ; }) ;
 
 
-    // std::vector<std::string> args { argv, argv + argc } ;
-    // thodd::for_each(
-    //     args, [](auto const & item){std::cout << item << std::endl ; }) ;
+  // std::vector<std::string> args { argv, argv + argc } ;
+  // thodd::for_each(
+  //     args, [](auto const & item){std::cout << item << std::endl ; }) ;
 
-    // thodd::for_each(
-    //     thodd::filter(
-    //         args, [] (auto && item) { return item == "--source"; }), 
-    //     [] (auto && item) { std::cout << item << std::endl ; }) ;
+  // thodd::for_each(
+  //     thodd::filter(
+  //         args, [] (auto && item) { return item == "--source"; }), 
+  //     [] (auto && item) { std::cout << item << std::endl ; }) ;
 }

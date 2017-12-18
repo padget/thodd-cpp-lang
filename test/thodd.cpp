@@ -71,14 +71,16 @@ identifier_rx =
   [[local]]
   auto cursor = thodd::begin(stream) ; 
 
-  thodd::next_if (is_alpha) (cursor, thodd::end(stream)) ;
+  
   thodd::next_while (
     thodd::and_(
       is_alpha_num, 
       [&stream] (auto const & cursor) {
         return 
         thodd::not_equals(cursor, thodd::begin(stream)) ; 
-      })) (cursor, thodd::end(stream)) ;
+      })) (
+        thodd::next_if (is_alpha) (cursor, thodd::end(stream)), 
+        thodd::end(stream)) ;
   
   return  
   thodd::make_optional_if (
@@ -219,7 +221,7 @@ int main(int argc, char** argv)
 {
   constexpr auto func_tokens = thodd::make_array (thodd_term::purekw, thodd_term::identifier) ;
   thodd::if_exists(
-    identifier_rx(thodd::make_array('1', 'a', 'b', '_')), 
+    identifier_rx(thodd::make_string("coucou")), 
     [] (auto&&) { std::cout << "ca match !!" << std::endl ; }) ;
 
 

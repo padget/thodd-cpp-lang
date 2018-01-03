@@ -3,6 +3,7 @@
 #include <regex>
 #include <algorithm>
 #include <list>
+#include <optional>
 
 enum class thodd : int {
   identifier, 
@@ -72,25 +73,87 @@ int main(int argc, char** argv) {
 
   std::for_each (
     lexems.cbegin(), lexems.cend(), 
-    [] (auto const & lex) {std::cout << (int) lex.id << ':' << lex.str << std::endl ; }) ;
+    [] (auto const & lex) { 
+      std::cout << (int) lex.id << ':' << lex.str << std::endl ; 
+    }) ;
 
-  const auto is_param = [] (auto & lexem, auto const & end) {
-    if ((*lexem).id == thodd::identifier)
-      if ((*(++lexem)).id == thodd::colon)
-        if ((*(++lexem)).id == thodd::identifier)
-          return true ;
-    
-    return false;
+  auto const is_not_end = 
+    [end = lexems.cend()] (auto lexem) {
+      return lexem != end ;
+    } ;
+
+  auto const to_ids = [] (auto lexem, size_t nb) {
+    std::vector<thodd> ids ;
+    std::transform (
+      lexem, std::next(lexem, nb), 
+      std::back_inserter(ids), 
+      [] (auto lexem) { return lexem.id ; }) ;
+
+    return ids ; 
   } ;
 
-  const auto is_signature = [is_param] (auto lexem, auto const end) {
-    if ((*lexem).id == thodd::identifier)
-      if ((*(++lexem)).id == thodd::lbracket)
-        while (is_param(++lexem, end)) 
-          if ((*(++lexem)).id == thodd::comma) ; 
-    
-    return lexem == (--end) ;
+  auto const is_param = [to_ids] (auto lexem, auto end) {
+    auto const param_ids = { thodd::identifier, thodd::colon, thodd::identifier } ;
+    auto const lexem_ids = to_ids (lexem, param_ids.size()) ;
+
+    return 
+    std::equal(lexem_ids.cbegin(), lexem_ids.cend(), 
+               param_ids.begin(), param_ids.end()) ?
+      std::make_optional(std::next(lexem, param_ids.size())) : 
+      std::make_optional<decltype(lexem)>() ;
   } ;
 
-  std::cout << std::boolalpha << is_signature (lexems.cbegin(), lexems.cend()) << std::endl ;
+  auto const is_signature = [is_param, is_not_end] (auto lexem, auto end) {
+    auto tmp = lexem ;
+    
+    auto const begin_signature_ids = { thodd::identifier, thodd::lbracket } ;
+
+    if (is_not_end(lexem) && (*lexem).id == thodd::identifier) {
+      std::cout << (int) (*lexem).id << std::endl ;
+
+      if (is_not_end(lexem) && (*(tmp = std::next(lexem))).id == thodd::lbracket) {
+        std::swap(lexem, tmp) ;
+        std::cout << (int) (*lexem).id << std::endl ;
+        decltype(is_param(lexem, end)) opt_lexem ;
+
+        while (opt_lexem = is_param(std::next(lexem), end)) {
+          lexem = opt_lexem.value_or(lexem) ;
+          std::cout << (int) (*lexem).id << std::endl ;
+          
+          if (is_not_end(lexem) && (*(tmp = std::next(lexem))).id == thodd::comma) 
+            std::swap(lexem, tmp) ;
+        }
+
+        if (is_not_end(lexem) && (*(tmp = std::next(lexem))).id == thodd::rbracket) {
+          std::swap (lexem, tmp) ;
+          std::cout << (int) (*lexem).id << std::endl ;
+          
+          if (is_not_end(lexem) && (*(tmp = std::next(lexem))).id == thodd::colon) {
+            std::swap (lexem, tmp) ;
+            std::cout << (int) (*lexem).id << std::endl ;
+
+            if (is_not_end(lexem) && (*(tmp = std::next(lexem))).id == thodd::identifier) { 
+              std::swap (lexem, tmp) ;
+              std::cout << (int) (*lexem).id << std::endl ;
+          
+              if (is_not_end(lexem) && (*(tmp = std::next(lexem))).id == thodd::semi_colon) { 
+                std::swap (lexem, tmp) ;
+                std::cout << (int) (*lexem).id << std::endl ;
+                
+                return 
+                std::make_optional (lexem) ;
+              }
+            }
+          }
+        }
+      }
+    }
+    
+    return 
+    std::make_optional<decltype(lexem)>() ;
+  } ;
+
+  std::cout << std::boolalpha 
+            << is_signature (lexems.begin(), lexems.end()).has_value() 
+            << std::endl ;
 }

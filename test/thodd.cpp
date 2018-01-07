@@ -91,7 +91,7 @@ to_ids (auto begin, auto end, size_t nb) {
 inline bool
 ids_equal(auto begin, auto end, auto const & ids) {
   auto mapped_ids = to_ids(begin, end, ids.size()) ;
-  
+
   return 
   std::equal(
     mapped_ids.begin(), mapped_ids.end(), 
@@ -138,14 +138,27 @@ is_signature (auto begin, auto end) {
 } ;
 
 inline auto 
-is_identifier_or_number(auto begin, auto end) {
+is_identifier (auto begin, auto end) {
   auto const identifier_ids = { thodd::identifier } ;
-  auto const number_ids = { thodd::number } ;
-  if (ids_equal(begin, end, identifier_ids) 
-    || ids_equal(begin, end, number_ids))
-    return std::make_optional(std::next(begin)) ;
 
-  return std::make_empty_optional(begin) ;
+  return ids_equal(begin, end, identifier_ids) ?
+    std::make_optional(std::next(begin)) :
+    std::make_empty_optional(begin) ;
+}
+
+inline auto 
+is_number (auto begin, auto end) {
+  auto const number_ids = { thodd::number } ;
+
+  return ids_equal(begin, end, number_ids) ?
+    std::make_optional(std::next(begin)) :
+    std::make_empty_optional(begin) ;
+}
+
+inline auto 
+is_identifier_or_number(auto begin, auto end) {
+  auto && res = is_identifier(begin, end) ;
+  return res.has_value() ? res : is_number(begin, end) ;
 }
 
 inline auto 
@@ -164,18 +177,12 @@ is_function_call (auto begin, auto end) {
   bool has_parameter = false ;
 
   do {
-    auto && param = is_identifier_or_number(cursor, end) ;
-
-    if (param.has_value()) {
+    if (auto && expression = is_function_call(cursor, end); expression.has_value()) {
+      has_parameter = true ;
+      cursor = expression.value() ;
+    } else if (auto && param = is_identifier_or_number(cursor, end); param.has_value()) {
       has_parameter = true ;
       cursor = param.value() ;
-    } else {
-      auto && expression = is_function_call(cursor, end) ;
-
-      if (expression.has_value()) {
-        has_parameter = true ;
-        cursor = expression.value() ;
-      }
     }
     
     if (has_parameter)

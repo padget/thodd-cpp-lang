@@ -73,22 +73,25 @@ namespace std {
 }
 
 inline auto const 
-to_ids (auto begin, size_t nb) {
-  std::cout << nb << " ti_ids\n" ;
+to_ids (auto begin, auto end, size_t nb) {
   std::vector<thodd> ids ;
-  std::cout << "ti_ids1\n" ;
-  std::transform (
-    begin, std::next(begin, nb), 
-    std::back_inserter(ids), 
-    [] (auto lexem) { std::cout << (int)lexem.id << std::endl; return lexem.id ; }) ;
-  std::cout << "ti_ids2\n" ;
+  auto cpt = 0u ; 
+  auto local_end = begin ;
+  
+  while (local_end != end && cpt < nb) {
+    local_end = std::next (local_end) ; 
+    ++cpt ;
+  }
+  
+  std::transform (begin, local_end, std::back_inserter(ids), [] (auto lexem) { return lexem.id ; }) ;
+
   return ids ; 
 } ;
 
 inline bool
-ids_equal(auto begin, auto const & ids) {
-  auto mapped_ids = to_ids(begin, ids.size()) ;
-  std::cout << "ids_equal \n" ;
+ids_equal(auto begin, auto end, auto const & ids) {
+  auto mapped_ids = to_ids(begin, end, ids.size()) ;
+  
   return 
   std::equal(
     mapped_ids.begin(), mapped_ids.end(), 
@@ -97,14 +100,14 @@ ids_equal(auto begin, auto const & ids) {
 
 
 inline auto 
-while_with_separator (auto begin, auto ids, auto sep_ids) {
+while_with_separator (auto begin, auto end, auto ids, auto sep_ids) {
   auto cursor = begin ;
   bool can_continue = true ;
   
   do 
-    if (can_continue = ids_equal(cursor, ids)) {
+    if (can_continue = ids_equal(cursor, end, ids)) {
       cursor = std::next(cursor, ids.size()) ;
-      can_continue = ids_equal(cursor, sep_ids) ? 
+      can_continue = ids_equal(cursor, end, sep_ids) ? 
                       (cursor = std::next(cursor), true) : false ;
     }
   while (can_continue) ;
@@ -113,7 +116,7 @@ while_with_separator (auto begin, auto ids, auto sep_ids) {
 }
 
 inline auto
-is_signature (auto begin) {
+is_signature (auto begin, auto end) {
   auto const begin_signature_ids = { thodd::identifier, thodd::lbracket } ;
   auto const param_ids           = { thodd::identifier, thodd::colon, thodd::identifier } ;
   auto const param_separator_ids = { thodd::comma } ;
@@ -121,61 +124,54 @@ is_signature (auto begin) {
   
   auto cursor = begin ; 
 
-  if (ids_equal(cursor, begin_signature_ids)) 
+  if (ids_equal(cursor, end, begin_signature_ids)) 
     cursor = std::next(cursor, begin_signature_ids.size()) ;
   else 
     return std::make_empty_optional(cursor) ;
 
-  cursor = while_with_separator(cursor, param_ids, param_separator_ids).value_or(cursor) ;
+  cursor = while_with_separator(cursor, end, param_ids, param_separator_ids).value_or(cursor) ;
 
   return 
-  ids_equal(cursor, end_signature_ids) ? 
+  ids_equal(cursor, end, end_signature_ids) ? 
     std::make_optional(std::next(cursor, end_signature_ids.size())) : 
     std::make_empty_optional(cursor) ; 
 } ;
 
 inline auto 
-is_identifier_or_number(auto begin) {
+is_identifier_or_number(auto begin, auto end) {
   auto const identifier_ids = { thodd::identifier } ;
   auto const number_ids = { thodd::number } ;
-  if (ids_equal(begin, identifier_ids) 
-    || ids_equal(begin, number_ids))
+  if (ids_equal(begin, end, identifier_ids) 
+    || ids_equal(begin, end, number_ids))
     return std::make_optional(std::next(begin)) ;
 
   return std::make_empty_optional(begin) ;
 }
 
 inline auto 
-is_function_call (auto begin) {
-  std::cout << "is_function_call" << std::endl ;
+is_function_call (auto begin, auto end) {
   auto const begin_function_call_ids = { thodd::identifier, thodd::lbracket } ;
   auto const param_separator_ids = { thodd::comma } ; 
   auto const end_function_call_ids = { thodd::rbracket } ;
 
   auto cursor = begin ; 
-  std::cout << "coucou0\n" ;
-  if (ids_equal (cursor, begin_function_call_ids)) {
-    std::cout << "coucou00\n" ;
+  
+  if (ids_equal (cursor, end, begin_function_call_ids)) 
     cursor = std::next(cursor, begin_function_call_ids.size()) ;
-    std::cout << "coucou01\n" ;
-  } else { 
-    std::cout << "coucou02\n" ;
+  else 
     return std::make_empty_optional(cursor) ;
-  } 
-  std::cout << "coucou1\n" ;
+
   bool has_parameter = false ;
 
   do {
-    auto && param = is_identifier_or_number(cursor) ;
-    std::cout << "coucou2\n" ;
+    auto && param = is_identifier_or_number(cursor, end) ;
+
     if (param.has_value()) {
-      std::cout << "coucou3\n" ;
       has_parameter = true ;
       cursor = param.value() ;
     } else {
-      std::cout << "coucou4\n" ;
-      auto && expression = is_function_call(cursor) ;
-      std::cout << "coucou5\n" ;
+      auto && expression = is_function_call(cursor, end) ;
+
       if (expression.has_value()) {
         has_parameter = true ;
         cursor = expression.value() ;
@@ -183,10 +179,10 @@ is_function_call (auto begin) {
     }
     
     if (has_parameter)
-      has_parameter = ids_equal(cursor, param_separator_ids) ? (cursor = std::next(cursor), true) : false ;
+      has_parameter = ids_equal(cursor, end, param_separator_ids) ? (cursor = std::next(cursor), true) : false ;
   } while (has_parameter) ;
   
-  return ids_equal(cursor, end_function_call_ids) ? 
+  return ids_equal(cursor, end, end_function_call_ids) ? 
     std::make_optional(std::next(cursor, end_function_call_ids.size())) : 
     std::make_empty_optional(cursor) ;
 }
@@ -203,6 +199,8 @@ int main(int argc, char** argv) {
   auto const comma_rx = rx { std::regex ("^,"), thodd::comma } ;
   auto const number_rx = rx { std::regex ("^[0-9]+(\\.[0-9]+){0,1}"), thodd::number } ;
   auto const ignored_rx = rx { std::regex ("^[ \\n\\t]+"), thodd::ignored } ;
+
+  std::cout << "ignored id : " <<(int) thodd::ignored << std::endl ;
 
   // Constitution du stream de lexem.
   auto && lexems = 
@@ -227,10 +225,10 @@ int main(int argc, char** argv) {
   std::cout << std::endl ;
   
   std::cout << std::boolalpha 
-            << is_signature (lexems_filtered.begin()).has_value() 
+            << is_signature (lexems_filtered.begin(), lexems_filtered.end()).has_value() 
             << std::endl ;
 
-  stream = std::string ("__add ( ) ");
+  stream = std::string ("__add ( __add (1,2), 2,5,6,3) ");
 
   // Constitution du stream de lexem.
   auto && lexems_fcall = 
@@ -253,6 +251,6 @@ int main(int argc, char** argv) {
   std::cout << std::endl ;
 
   std::cout << std::boolalpha
-            << is_function_call(lexems_filtered.begin()).has_value() 
+            << is_function_call(lexems_filtered.begin(), lexems_filtered.end()).has_value() 
             << std::endl ;
 }

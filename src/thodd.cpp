@@ -146,12 +146,12 @@ struct identifier {
 } ;
 
 inline extracted<auto, identifier> 
-next_identifier2 (auto begin, auto const end) {
+next_identifier (auto begin, auto const end) {
   auto const identifier_ids = { thodd::identifier } ;
   
   if (auto && ident_opt = next_ids (begin, end, identifier_ids) ;
       ident_opt.has_value()) {
-    return make_extracted (ident_opt.value(), identifier { *ident_opt.value() }) ;
+    return make_extracted (ident_opt.value(), identifier { *begin }) ;
   } else {
     return make_extracted (begin, identifier {}, false) ;
   }
@@ -161,19 +161,13 @@ struct number {
   lexem num ;
 } ;
 
-inline std::optional<auto>
-next_number (auto begin, auto end) {
-  auto const number_ids = { thodd::number } ;
-  return next_ids(begin, end, number_ids) ;
-}
-
 inline extracted<auto, number> 
-next_number2 (auto begin, auto const end) {
+next_number (auto begin, auto const end) {
   auto const number_ids = { thodd::number } ;
   
   if (auto && number_opt = next_ids (begin, end, number_ids) ;
       number_opt.has_value()) 
-    return make_extracted (number_opt.value(), number { *number_opt.value() }) ;
+    return make_extracted (number_opt.value(), number { *begin }) ;
   else 
     return make_extracted (begin, number {}, false) ;
 }
@@ -184,23 +178,28 @@ struct parameter {
 
 inline extracted<auto, parameter> 
 next_param(auto begin, auto const end, bool mandatory = true) {
-  auto && function_call_ext = next_function_call2 (begin, end, false) ;
-      
+  auto && function_call_ext = next_function_call (begin, end, false) ;
+  std::vector<lexem> pdata ;
+  auto last = begin ; 
+
   if (!function_call_ext.unit.has_value()) {    
-    auto && ident_ext = next_identifier2 (begin, end) ;
+    auto && ident_ext = next_identifier (begin, end) ;
 
     if (!ident_ext.unit.has_value()) {
-      auto && number_ext = next_number2 (begin, end) ;
+      auto && number_ext = next_number (begin, end) ;
 
       if (!number_ext.unit.has_value()) {
         error (mandatory, "un paramêtre de fonction valide (identifiant, nomber, appel de fonction) est attendu") () ;
         return make_extracted(begin, parameter{}, false) ;
       } else // interpretation number ;
-        return make_extracted(number_ext.last, parameter{{number_ext.unit.value().num}}) ;
+        last = number_ext.last ;
     } else // interpretation identifiant ;
-      return make_extracted(ident_ext.last, parameter{{ident_ext.unit.value().ident}}) ;
+      last = ident_ext.last ;
   } else // interpretation function_call ;
-    return make_extracted(function_call_ext.last, parameter{}) ;
+    last = function_call_ext.last ;
+
+  std::copy(begin, last, std::back_inserter(pdata)) ;
+  return make_extracted(last, parameter{pdata}) ;
 }
 
 struct function_call {
@@ -210,8 +209,8 @@ struct function_call {
 
 
 inline extracted<auto, function_call> 
-next_function_call2 (auto begin, auto const end, bool mandatory = true) {
-  auto && ident_ext = next_identifier2(begin, end) ;
+next_function_call (auto begin, auto const end, bool mandatory = true) {
+  auto && ident_ext = next_identifier(begin, end) ;
   
   if (!ident_ext.unit.has_value()) { 
     error(mandatory, "identifiant attendu") () ;
@@ -265,6 +264,28 @@ next_function_call2 (auto begin, auto const end, bool mandatory = true) {
   }
 }
 
+inline void
+read_parameter (parameter const & fparam) {
+  std::cout << '-' ;
+  std::for_each (
+    fparam.data.begin(), fparam.data.end(), 
+    [] (auto const & part) {
+      std::cout << part.str ;
+    }) ;
+
+  std::cout << '-' << std::endl ;
+}
+
+inline void 
+read_function_call (function_call const & fcall) {
+  std::cout << fcall.name.ident.str << std::endl ;
+  std::for_each(
+    fcall.params.begin(), fcall.params.end(), 
+    [](auto const & param) {
+      read_parameter (param) ;
+    }) ;
+}
+
 
 
 int main(int argc, char** argv) {  
@@ -278,9 +299,10 @@ int main(int argc, char** argv) {
   auto const number_rx = rx { std::regex ("^[0-9]+(\\.[0-9]+){0,1}"), thodd::number } ;
   auto const ignored_rx = rx { std::regex ("^[ \\n\\t]+"), thodd::ignored } ;
 
-  auto const stream = std::string ("__add ( __add (1,2,3,4,5,6), 2,5,__add(25, 65),3) ");
+  auto const stream = std::string ("__add ( __add (1,2,3,4,5,6), 98,5,__add(5, 65),3) ");
 
   std::cout << stream << std::endl ;
+
   auto && lexems_instruction = 
     make_thodd_lexems(
       stream.cbegin(), stream.cend(), 
@@ -290,6 +312,7 @@ int main(int argc, char** argv) {
   std::vector<lexem> lexems_filtered ;
   filter_lexems (lexems_instruction, lexems_filtered) ;
     
-  auto && add_call = next_function_call2 (lexems_filtered.begin(), lexems_filtered.end()) ;
-  std::cout << add_call.unit.value().params.size() << std::endl ;
+  auto && add_call_ext = next_function_call (lexems_filtered.begin(), lexems_filtered.end()) ;
+  std::cout << add_call_ext.unit.value().params.size() << std::endl ;
+  read_function_call(add_call_ext.unit.value()) ;
 }

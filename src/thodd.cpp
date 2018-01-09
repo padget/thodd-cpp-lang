@@ -239,7 +239,7 @@ next_identifier_or_number(auto begin, auto end) {
 }
 
 struct parameter {
-
+  std::vector<lexem> data ;
 } ;
 
 
@@ -258,17 +258,14 @@ next_param(auto begin, auto const end, bool mandatory = true) {
         return make_extracted(begin, parameter{}, false) ;
       } else {
         // interpretation number ;
-        std::cout << "je suis un number" << std::endl ;
         return make_extracted(number_ext.last, parameter{}) ;
       }
     } else {
       // interpretation identifiant ;
-      std::cout << "je suis un identifiant" << std::endl ;
       return make_extracted(ident_ext.last, parameter{}) ;
     }
   } else {
     // interpretation function_call ;
-    std::cout << "je suis un appel de fonction" << std::endl ;
     return make_extracted(function_call_ext.last, parameter{}) ;
   }
 }
@@ -294,7 +291,7 @@ next_function_call2 (auto begin, auto const end, bool mandatory = true) {
       error (mandatory, "'(' attendu") () ;
       return make_extracted(begin, function_call{}, false) ;
     } else { // est ce qu'il y a des parametres ?  
-      auto const rbracket_ids = { thodd::lbracket } ;
+      auto const rbracket_ids = { thodd::rbracket } ;
       auto && rbracket_opt = next_ids(lbracket_opt.value(), end, rbracket_ids) ;
       
       if (!rbracket_opt.has_value()) { // apparement oui il y a des parametres.
@@ -307,19 +304,24 @@ next_function_call2 (auto begin, auto const end, bool mandatory = true) {
           
           if (param.unit.has_value()) { 
             params.push_back(param.unit.value()) ;
+            params_cursor = param.last ;
             auto const comma_ids = { thodd::comma } ;
             auto && comma_opt = next_ids(param.last, end, comma_ids) ;
             
             if (comma_opt.has_value()) 
               params_cursor = comma_opt.value() ;
-            else // il n'y a pas de virgule donc plus de parametre
-              has_parameter = false ; 
+            else {// il n'y a pas de virgule donc plus de parametre
+                std::cout << "il n'y a pas de virgule donc plus de parametre" << std::endl ;
+              has_parameter = false ;
+            } 
           } else { // une erreur est survenue donc pas de parametre detecté
+            std::cout << "une erreur est survenue donc pas de parametre detecté" << std::endl ;
             has_parameter = false ;
           }
         } // il n'y a plus de parametre. 
 
         // est ce qu'il y a une parenthèse fermante ?
+        std::cout << (int) (*params_cursor).id << std::endl ;
         auto && final_rbracket_opt = next_ids(params_cursor, end, rbracket_ids) ;
         if (!final_rbracket_opt.has_value()) { // aie ! malformation de l'appel de fonction
           error (mandatory, "Une parenthèse fermante est attendue") () ;
@@ -437,7 +439,7 @@ int main(int argc, char** argv) {
             << next_signature (lexems_filtered.begin(), lexems_filtered.end()).has_value() 
             << std::endl ;
 
-  stream = std::string ("__add ( __add (1,2), 2,5,6,3) ");
+  stream = std::string ("__add ( __add (1,2,3,4,5,6), 2,5,__add(25, 65),3) ");
 
   // Constitution du stream de lexem.
   auto && lexems_fcall = 
@@ -489,5 +491,5 @@ int main(int argc, char** argv) {
             << std::endl ;
   
   auto && add_call = next_function_call2 (lexems_filtered.begin(), lexems_filtered.end()) ;
-  //std::cout << add_call.unit.value().params.size() << std::endl ;
+  std::cout << add_call.unit.value().params.size() << std::endl ;
 }

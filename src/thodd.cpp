@@ -173,6 +173,11 @@ next_number (auto begin, auto const end) {
 }
 
 struct parameter {
+  enum class type_ : size_t {
+    fcall, number, identifier
+  } ;
+
+  type_ type ;
   std::vector<lexem> data ;
 } ;
 
@@ -181,6 +186,7 @@ next_param(auto begin, auto const end, bool mandatory = true) {
   auto && function_call_ext = next_function_call (begin, end, false) ;
   std::vector<lexem> pdata ;
   auto last = begin ; 
+  parameter::type_ ptype ;
 
   if (!function_call_ext.unit.has_value()) {    
     auto && ident_ext = next_identifier (begin, end) ;
@@ -192,14 +198,14 @@ next_param(auto begin, auto const end, bool mandatory = true) {
         error (mandatory, "un paramêtre de fonction valide (identifiant, nomber, appel de fonction) est attendu") () ;
         return make_extracted(begin, parameter{}, false) ;
       } else // interpretation number ;
-        last = number_ext.last ;
+        (last = number_ext.last, ptype = parameter::type_::number) ;
     } else // interpretation identifiant ;
-      last = ident_ext.last ;
+      (last = ident_ext.last, ptype = parameter::type_::identifier) ;
   } else // interpretation function_call ;
-    last = function_call_ext.last ;
+    (last = function_call_ext.last, ptype = parameter::type_::fcall) ;
 
   std::copy(begin, last, std::back_inserter(pdata)) ;
-  return make_extracted(last, parameter{pdata}) ;
+  return make_extracted(last, parameter{ptype, pdata}) ;
 }
 
 struct function_call {
@@ -264,26 +270,63 @@ next_function_call (auto begin, auto const end, bool mandatory = true) {
   }
 }
 
-inline void
-read_parameter (parameter const & fparam) {
-  std::cout << '-' ;
-  std::for_each (
-    fparam.data.begin(), fparam.data.end(), 
-    [] (auto const & part) {
-      std::cout << part.str ;
-    }) ;
+size_t depth = 0u ;
 
-  std::cout << '-' << std::endl ;
+inline std::string indent () {
+  return std::string (2 * depth, ' ') ;
 }
 
-inline void 
-read_function_call (function_call const & fcall) {
-  std::cout << fcall.name.ident.str << std::endl ;
+inline std::string const
+transpile_function_call (function_call const & fcall) ;
+
+inline std::string const
+transpile_number (number const & fnum) {
+  return fnum.num.str ;
+}
+
+inline std::string const 
+transpile_identifier (identifier const & fident) {
+  return fident.ident.str ;
+}
+
+inline std::string const
+transpile_parameter (parameter const & fparam) {  
+  switch (fparam.type) {
+    case parameter::type_::number : 
+      return 
+      transpile_number(
+        next_number(
+          fparam.data.begin(), 
+          fparam.data.end()).unit.value()) ; 
+    case parameter::type_::identifier : 
+      return 
+      transpile_identifier(
+        next_identifier(
+          fparam.data.begin(), 
+          fparam.data.end()).unit.value()) ; 
+    case parameter::type_::fcall : 
+      return
+      transpile_function_call(
+        next_function_call(
+          fparam.data.begin(), 
+          fparam.data.end()).unit.value()) ; 
+  }
+}
+
+inline std::string const  
+transpile_function_call (function_call const & fcall) {
+  std::string cpp = fcall.name.ident.str + "(" ;
+  
   std::for_each(
     fcall.params.begin(), fcall.params.end(), 
-    [](auto const & param) {
-      read_parameter (param) ;
+    [&cpp] (auto const & param) {
+      cpp += transpile_parameter (param) + ", " ;
     }) ;
+
+  cpp.pop_back() ; cpp.pop_back() ;  
+  cpp += ")" ;
+
+  return cpp ;
 }
 
 
@@ -299,7 +342,14 @@ int main(int argc, char** argv) {
   auto const number_rx = rx { std::regex ("^[0-9]+(\\.[0-9]+){0,1}"), thodd::number } ;
   auto const ignored_rx = rx { std::regex ("^[ \\n\\t]+"), thodd::ignored } ;
 
-  auto const stream = std::string ("__add ( __add (1,2,3,4,5,6), 98,5,__add(5, 65),3) ");
+  auto const stream = std::string (
+    "__add (" 
+      "__add (1,2,3,     4,5,6)," 
+      "prout,"
+      "5,"
+      "__add(5, 65),"
+      "3"
+    ") ");
 
   std::cout << stream << std::endl ;
 
@@ -312,7 +362,11 @@ int main(int argc, char** argv) {
   std::vector<lexem> lexems_filtered ;
   filter_lexems (lexems_instruction, lexems_filtered) ;
     
-  auto && add_call_ext = next_function_call (lexems_filtered.begin(), lexems_filtered.end()) ;
-  std::cout << add_call_ext.unit.value().params.size() << std::endl ;
-  read_function_call(add_call_ext.unit.value()) ;
+  auto cpp = 
+    transpile_function_call(
+      next_function_call (
+        lexems_filtered.begin(), 
+        lexems_filtered.end()).unit.value()) ;
+
+  std::cout << cpp << std::endl ;
 }

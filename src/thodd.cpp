@@ -141,60 +141,6 @@ next_ids(auto begin, auto end, auto const & ids) {
   std::make_empty_optional(begin) ;
 } 
 
-
-
-
-inline std::optional<auto>
-while_with_separator (auto begin, auto end, auto ids, auto sep_ids) {
-  auto cursor = begin ;
-  bool can_continue = true ;
-  
-  do 
-    std:if_exists(
-      next_ids(cursor, end, ids), 
-      [&] (auto && local_cursor) {
-        can_continue = true ;
-        cursor = local_cursor ;
-        std::if_exists(
-          next_ids(cursor, end, sep_ids), 
-          [&] (auto && sep_cursor) {
-            can_continue = true ; 
-            cursor = sep_cursor ;
-          }, 
-          [&] { can_continue = false ; }) ;
-      }) ;
-  while (can_continue) ;
-
-  return std::make_optional(cursor) ;
-}
-
-inline std::optional<auto>
-next_signature (auto begin, auto end) {
-  auto const begin_signature_ids = { thodd::identifier, thodd::lbracket } ;
-  auto const param_ids           = { thodd::identifier, thodd::colon, thodd::identifier } ;
-  auto const param_separator_ids = { thodd::comma } ;
-  auto const end_signature_ids   = { thodd::rbracket, thodd::colon, thodd::identifier, thodd::semi_colon } ;
-  
-  auto cursor = begin ; 
-
-  if (auto && next_begin = next_ids(cursor, end, begin_signature_ids) ; 
-      next_begin.has_value()) 
-    cursor = next_begin.value() ;
-  else 
-    return std::make_empty_optional(cursor) ;
-
-  cursor = while_with_separator(cursor, end, param_ids, param_separator_ids).value_or(cursor) ;
-
-  return 
-  next_ids(cursor, end, end_signature_ids) ;
-} ;
-
-inline std::optional<auto>
-next_identifier (auto begin, auto end) {
-  auto const identifier_ids = { thodd::identifier } ;
-  return next_ids(begin, end, identifier_ids) ;
-}
-
 struct identifier {
   lexem ident ;
 } ;
@@ -232,16 +178,9 @@ next_number2 (auto begin, auto const end) {
     return make_extracted (begin, number {}, false) ;
 }
 
-inline std::optional<auto>
-next_identifier_or_number(auto begin, auto end) {
-  auto && res = next_identifier(begin, end) ;
-  return res.has_value() ? res : next_number(begin, end) ;
-}
-
 struct parameter {
   std::vector<lexem> data ;
 } ;
-
 
 inline extracted<auto, parameter> 
 next_param(auto begin, auto const end, bool mandatory = true) {
@@ -256,18 +195,12 @@ next_param(auto begin, auto const end, bool mandatory = true) {
       if (!number_ext.unit.has_value()) {
         error (mandatory, "un paramêtre de fonction valide (identifiant, nomber, appel de fonction) est attendu") () ;
         return make_extracted(begin, parameter{}, false) ;
-      } else {
-        // interpretation number ;
-        return make_extracted(number_ext.last, parameter{}) ;
-      }
-    } else {
-      // interpretation identifiant ;
-      return make_extracted(ident_ext.last, parameter{}) ;
-    }
-  } else {
-    // interpretation function_call ;
+      } else // interpretation number ;
+        return make_extracted(number_ext.last, parameter{{number_ext.unit.value().num}}) ;
+    } else // interpretation identifiant ;
+      return make_extracted(ident_ext.last, parameter{{ident_ext.unit.value().ident}}) ;
+  } else // interpretation function_call ;
     return make_extracted(function_call_ext.last, parameter{}) ;
-  }
 }
 
 struct function_call {
@@ -310,21 +243,18 @@ next_function_call2 (auto begin, auto const end, bool mandatory = true) {
             
             if (comma_opt.has_value()) 
               params_cursor = comma_opt.value() ;
-            else {// il n'y a pas de virgule donc plus de parametre
-                std::cout << "il n'y a pas de virgule donc plus de parametre" << std::endl ;
+            else // il n'y a pas de virgule donc plus de parametre
               has_parameter = false ;
-            } 
           } else { // une erreur est survenue donc pas de parametre detecté
-            std::cout << "une erreur est survenue donc pas de parametre detecté" << std::endl ;
+            error(mandatory, "la détection de paramètre à echouer") () ;
             has_parameter = false ;
           }
         } // il n'y a plus de parametre. 
 
         // est ce qu'il y a une parenthèse fermante ?
-        std::cout << (int) (*params_cursor).id << std::endl ;
         auto && final_rbracket_opt = next_ids(params_cursor, end, rbracket_ids) ;
         if (!final_rbracket_opt.has_value()) { // aie ! malformation de l'appel de fonction
-          error (mandatory, "Une parenthèse fermante est attendue") () ;
+          error (mandatory, "')' est attendue") () ;
           return make_extracted (begin, function_call{}) ;
         } else // il y a une parenthèse fermante, donc tout s'est bien passé. 
           return make_extracted(final_rbracket_opt.value(), function_call{ident_ext.unit.value(), params}) ;
@@ -335,74 +265,9 @@ next_function_call2 (auto begin, auto const end, bool mandatory = true) {
   }
 }
 
-inline auto
-next_function_call (auto begin, auto end) {
-  auto const begin_function_call_ids = { thodd::identifier, thodd::lbracket } ;
-  auto const param_separator_ids = { thodd::comma } ; 
-  auto const end_function_call_ids = { thodd::rbracket } ;
 
-  auto cursor = begin ; 
-  
-  if (auto && next_begin = next_ids (cursor, end, begin_function_call_ids) ; 
-      next_begin.has_value()) 
-    cursor = next_begin.value() ;
-  else 
-    return std::make_empty_optional(cursor) ;
 
-  bool has_parameter = false ;
-
-  do {
-    if (auto && expression = next_function_call(cursor, end) ; 
-        expression.has_value()) {
-      has_parameter = true ;
-      cursor = expression.value() ;
-    } else if (auto && parameter = next_identifier_or_number(cursor, end) ; 
-               parameter.has_value()) {
-      has_parameter = true ;
-      cursor = parameter.value() ;
-    }
-    
-    if (has_parameter) {
-      auto && next_separator = next_ids(cursor, end, param_separator_ids) ;
-      has_parameter = next_separator.has_value() ? (cursor = next_separator.value(), true) : false ;
-    }
-  } while (has_parameter) ;
-  
-  return next_ids(cursor, end, end_function_call_ids) ;
-}
-
-inline std::optional<auto>
-next_expression (auto begin, auto const end) {
-  return next_function_call(begin, end) ;
-}
-
-inline std::optional<auto>
-next_instruction (auto begin, auto const end) {
-  auto const end_instruction_ids = { thodd::semi_colon } ;
-
-  if (auto && expression = next_expression (begin, end); 
-      expression.has_value())  
-    return next_ids(expression.value(), end, end_instruction_ids) ;
-  else 
-    return std::make_empty_optional(begin) ;
-}
-
-inline std::optional<std::string>
-interpret_expresion (auto begin, auto end) {
-  // ici begin et end sont des iterator sur des lexem => (*begin).id/str est valide
-  if (begin != end) {
-    if (auto && function_call_end = next_function_call (begin, end) ; 
-        function_call_end.has_value()) {
-      // ici on sait qu'on affaire à un appel de fonction. 
-      // Il faut donc savoir s'il y a des paramêtres ou non.
-      
-    }
-  }
-}
-
-int main(int argc, char** argv) {
-  auto stream = std::string ("__add (a: int, b: int): int  ; ");
-  
+int main(int argc, char** argv) {  
   // Bibliothèque des regex.
   auto const identifier_rx = rx { std::regex("^[a-z_]+"), thodd::identifier } ;
   auto const lbracket_rx = rx { std::regex ("^\\("), thodd::lbracket } ;
@@ -413,59 +278,8 @@ int main(int argc, char** argv) {
   auto const number_rx = rx { std::regex ("^[0-9]+(\\.[0-9]+){0,1}"), thodd::number } ;
   auto const ignored_rx = rx { std::regex ("^[ \\n\\t]+"), thodd::ignored } ;
 
-  std::cout << "ignored id : " << (int) thodd::ignored << std::endl ;
+  auto const stream = std::string ("__add ( __add (1,2,3,4,5,6), 2,5,__add(25, 65),3) ");
 
-  // Constitution du stream de lexem.
-  auto && lexems = 
-    make_thodd_lexems(
-      stream.cbegin(), stream.cend(), 
-      identifier_rx, lbracket_rx, rbracket_rx, 
-      colon_rx, semi_colon_rx, comma_rx, ignored_rx) ;  
-
-  std::for_each(
-    lexems.cbegin(), lexems.cend(), 
-    [] (auto const & lexem) { std::cout << (int) lexem.id << '-' ; }) ;
-  std::cout << std::endl ;
-
-  std::list<lexem> lexems_filtered ; 
-  filter_lexems(lexems, lexems_filtered) ;
-
-  std::for_each(
-    lexems_filtered.cbegin(), lexems_filtered.cend(), 
-    [] (auto const & lexem) { std::cout << (int) lexem.id << '-' ; }) ;
-  std::cout << std::endl ;
-  
-  std::cout << std::boolalpha 
-            << next_signature (lexems_filtered.begin(), lexems_filtered.end()).has_value() 
-            << std::endl ;
-
-  stream = std::string ("__add ( __add (1,2,3,4,5,6), 2,5,__add(25, 65),3) ");
-
-  // Constitution du stream de lexem.
-  auto && lexems_fcall = 
-    make_thodd_lexems(
-      stream.cbegin(), stream.cend(), 
-      identifier_rx, lbracket_rx, rbracket_rx, 
-      comma_rx, ignored_rx, number_rx) ;  
-  
-  std::for_each(
-    lexems_fcall.cbegin(), lexems_fcall.cend(), 
-    [] (auto const & lexem) { std::cout << (int) lexem.id << '-' ; }) ;
-  std::cout << std::endl ;
-  
-  lexems_filtered.clear() ;
-  filter_lexems (lexems_fcall, lexems_filtered) ;
-  
-  std::for_each(
-    lexems_filtered.cbegin(), lexems_filtered.cend(), 
-    [] (auto const & lexem) { std::cout << (int) lexem.id << '-' ; }) ;
-  std::cout << std::endl ;
-
-  std::cout << std::boolalpha
-            << next_function_call(lexems_filtered.begin(), lexems_filtered.end()).has_value() 
-            << std::endl ;
-
-  stream += ";" ;
   std::cout << stream << std::endl ;
   auto && lexems_instruction = 
     make_thodd_lexems(
@@ -473,23 +287,9 @@ int main(int argc, char** argv) {
       identifier_rx, lbracket_rx, rbracket_rx, 
       comma_rx, ignored_rx, number_rx, semi_colon_rx) ;  
   
-  std::for_each(
-    lexems_instruction.cbegin(), lexems_instruction.cend(), 
-    [] (auto const & lexem) { std::cout << (int) lexem.id << '-' ; }) ;
-  std::cout << std::endl ;
-  
-  lexems_filtered.clear() ;
+  std::vector<lexem> lexems_filtered ;
   filter_lexems (lexems_instruction, lexems_filtered) ;
-  
-  std::for_each(
-    lexems_filtered.cbegin(), lexems_filtered.cend(), 
-    [] (auto const & lexem) { std::cout << (int) lexem.id << '-' ; }) ;
-  std::cout << std::endl ;
-
-  std::cout << std::boolalpha
-            << next_instruction(lexems_filtered.begin(), lexems_filtered.end()).has_value() 
-            << std::endl ;
-  
+    
   auto && add_call = next_function_call2 (lexems_filtered.begin(), lexems_filtered.end()) ;
   std::cout << add_call.unit.value().params.size() << std::endl ;
 }

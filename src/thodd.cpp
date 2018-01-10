@@ -39,7 +39,8 @@ enum class thodd : int {
   lbracket, rbracket,
   lsbracket, rsbracket,
   colon, semi_colon, 
-  point, comma, ignored 
+  point, comma, ignored, 
+  pure_kw, impure_kw
 } ;
 
 struct rx {
@@ -303,8 +304,12 @@ next_argument (auto begin, auto const end, bool mandatory = true) {
 }
 
 struct function_signature {
+  enum class purity_ { pure, impure } ;
+
   identifier name ;
+  identifier type ;
   std::vector<argument> args ;
+  purity_ purity ;
 } ;
 
 inline extracted<auto, function_signature> 
@@ -355,14 +360,55 @@ next_function_signature (auto begin, auto const end, bool mandatory = true) {
         if (!final_rbracket_opt.has_value()) { // aie ! malformation de l'appel de fonction
           error (mandatory, "')' est attendue") () ;
           return make_extracted (begin, function_signature{}) ;
-        } else // il y a une parenthèse fermante, donc tout s'est bien passé. 
-          return make_extracted(final_rbracket_opt.value(), function_signature{name_ext.unit.value(), args}) ;
-      } else { // parenthèse fermante detectée donc pas de parametre.
-        return make_extracted(rbracket_opt.value(), function_signature{name_ext.unit.value()}) ;
+        } else  {
+          auto const colon_ids = { thodd::colon } ;
+          auto && colon_opt = next_ids (final_rbracket_opt.value(), end, colon_ids) ;
+
+          if (!colon_opt.has_value()) {
+            error (mandatory, "':' attendu") () ;
+            return make_extracted(begin, function_signature{}, false) ;
+          } else {
+            auto && type_ext = next_identifier(colon_opt.value(), end) ;
+            
+            if (!type_ext.unit.has_value()) {
+              error (mandatory, "identifiant attendu") () ;
+              return make_extracted(begin, function_signature{}, false) ;
+            } else 
+              return make_extracted (type_ext.last, function_signature { name_ext.unit.value(), type_ext.unit.value(), args }) ;
+          }
+        }
+      } else {
+        auto const colon_ids = { thodd::colon } ;
+        auto && colon_opt = next_ids (name_ext.last, end, colon_ids) ;
+
+        if (!colon_opt.has_value()) {
+          error (mandatory, "':' attendu") () ;
+          return make_extracted(begin, function_signature{}, false) ;
+        } else {
+          auto && type_ext = next_identifier(colon_opt.value(), end) ;
+          
+          if (!type_ext.unit.has_value()) {
+            error (mandatory, "identifiant attendu") () ;
+            return make_extracted(begin, function_signature{}, false) ;
+          } else 
+            return make_extracted (type_ext.last, function_signature { name_ext.unit.value(), type_ext.unit.value() }) ;
+        }
       }
     } 
   }
 }
+
+struct instruction {
+  enum class type_ { return_fcall, return_number, return_identifier } ;
+
+  type_ type ;
+  std::vector<lexem> data ;
+} ;
+
+struct function_definition {
+  function_signature sig ;
+  std::vector<instruction> insts; 
+} ;
 
 size_t depth = 0u ;
 
@@ -370,82 +416,114 @@ inline std::string indent () {
   return std::string (2 * depth, ' ') ;
 }
 
-inline std::string const
-transpile_function_call (function_call const & fcall) ;
+namespace cpp {
+  inline std::string const
+  transpile_function_call (function_call const & fcall) ;
 
-inline std::string const
-transpile_number (number const & fnum) {
-  return fnum.num.str ;
-}
+  inline std::string const
+  transpile_number (number const & fnum) {
+    return fnum.num.str ;
+  }
 
-inline std::string const 
-transpile_identifier (identifier const & fident) {
-  return fident.ident.str ;
-}
+  inline std::string const 
+  transpile_identifier (identifier const & fident) {
+    return fident.ident.str ;
+  }
 
-inline std::string const
-transpile_parameter (parameter const & fparam) {  
-  switch (fparam.type) {
-    case parameter::type_::number : 
-      return 
-      transpile_number(
-        next_number(
-          fparam.data.begin(), 
-          fparam.data.end()).unit.value()) ; 
-    case parameter::type_::identifier : 
-      return 
-      transpile_identifier(
-        next_identifier(
-          fparam.data.begin(), 
-          fparam.data.end()).unit.value()) ; 
-    case parameter::type_::fcall : 
-      return
-      transpile_function_call(
-        next_function_call(
-          fparam.data.begin(), 
-          fparam.data.end()).unit.value()) ; 
+  inline std::string const
+  transpile_parameter (parameter const & fparam) {  
+    switch (fparam.type) {
+      case parameter::type_::number : 
+        return 
+        transpile_number(
+          next_number(
+            fparam.data.begin(), 
+            fparam.data.end()).unit.value()) ; 
+      case parameter::type_::identifier : 
+        return 
+        transpile_identifier(
+          next_identifier(
+            fparam.data.begin(), 
+            fparam.data.end()).unit.value()) ; 
+      case parameter::type_::fcall : 
+        return
+        transpile_function_call(
+          next_function_call(
+            fparam.data.begin(), 
+            fparam.data.end()).unit.value()) ; 
+    }
+  }
+
+  inline std::string const  
+  transpile_function_call (function_call const & fcall) {
+    std::string cpp = transpile_identifier(fcall.name) + "(" ;
+    
+    std::for_each(
+      fcall.params.begin(), fcall.params.end(), 
+      [&cpp] (auto const & param) {
+        cpp += transpile_parameter (param) + ", " ;
+      }) ;
+
+    cpp.pop_back() ; cpp.pop_back() ;  
+    cpp += ")" ;
+
+    return cpp ;
+  }
+
+  inline std::string const 
+  transpile_argument(argument const & arg) {
+    return 
+    transpile_identifier(arg.type) + " " + 
+    transpile_identifier(arg.name) ;
+  }
+
+  inline std::string const 
+  transpile_function_signature (function_signature const & fsignature) {
+    std::string cpp = transpile_identifier(fsignature.name) + "(" ;
+    
+    std::for_each(
+      fsignature.args.begin(), fsignature.args.end(), 
+      [&cpp] (auto const & arg) {
+        cpp += transpile_argument (arg) + ", " ;
+      }) ;
+
+    cpp.pop_back() ; cpp.pop_back() ;  
+    cpp += ") : " + transpile_identifier(fsignature.type) ;
+
+    return cpp ;  
+  }
+
+  inline std::string const
+  transpile_instruction (instruction const & inst) {
+    switch (inst.type) {
+      case instruction::type_::return_fcall : 
+        return 
+        transpile_function_call(
+          next_function_call(
+            inst.data.begin(), 
+            inst.data.end()).unit.value()) + " ;" ; 
+      case instruction::type_::return_number : 
+        return 
+        transpile_number(
+          next_number(
+            inst.data.begin(), 
+            inst.data.end()).unit.value()) + " ;" ; 
+      case instruction::type_::return_identifier :
+        return
+        transpile_identifier(
+          next_identifier(
+            inst.data.begin(), 
+            inst.data.end()).unit.value()) + " ;" ;  
+    }
+  }
+
+  inline std::string const 
+  transpile_function_definition (function_definition const & fdef) {
+    return 
+    transpile_function_signature(fdef.sig) + " {\n" +
+    transpile_// instruction
   }
 }
-
-inline std::string const  
-transpile_function_call (function_call const & fcall) {
-  std::string cpp = fcall.name.ident.str + "(" ;
-  
-  std::for_each(
-    fcall.params.begin(), fcall.params.end(), 
-    [&cpp] (auto const & param) {
-      cpp += transpile_parameter (param) + ", " ;
-    }) ;
-
-  cpp.pop_back() ; cpp.pop_back() ;  
-  cpp += ")" ;
-
-  return cpp ;
-}
-
-inline std::string const 
-transpile_argument(argument const & arg) {
-  return 
-  transpile_identifier(arg.type) + " " + 
-  transpile_identifier(arg.name) ;
-}
-
-inline std::string const 
-transpile_function_signature (function_signature const & fsignature) {
-  std::string cpp = fsignature.name.ident.str + "(" ;
-  
-  std::for_each(
-    fsignature.args.begin(), fsignature.args.end(), 
-    [&cpp] (auto const & arg) {
-      cpp += transpile_argument (arg) + ", " ;
-    }) ;
-
-  cpp.pop_back() ; cpp.pop_back() ;  
-  cpp += ")" ;
-
-  return cpp ;  
-}
-
 
 
 int main(int argc, char** argv) {  
@@ -458,22 +536,25 @@ int main(int argc, char** argv) {
   auto const comma_rx = rx { std::regex ("^,"), thodd::comma } ;
   auto const number_rx = rx { std::regex ("^[0-9]+(\\.[0-9]+){0,1}"), thodd::number } ;
   auto const ignored_rx = rx { std::regex ("^[ \\n\\t]+"), thodd::ignored } ;
+  auto const pure_rx = rx { std::regex ("^pure"), thodd::pure_kw } ;
+  auto const impure_rx = rx { std::regex ("^impure"), thodd::impure_kw } ;
 
-  auto const stream = std::string ("__add (a     : int  , b  :int)");
+  auto const stream = std::string ("__add (a     : int  , b  :int):int");
 
   std::cout << stream << std::endl ;
 
   auto && lexems_instruction = 
     make_thodd_lexems(
-      stream.cbegin(), stream.cend(), 
+      stream.cbegin(), stream.cend(),
+      pure_rx, impure_rx, 
       identifier_rx, lbracket_rx, rbracket_rx, colon_rx,
       comma_rx, ignored_rx, number_rx, semi_colon_rx) ;  
   
   std::vector<lexem> lexems_filtered ;
   filter_lexems (lexems_instruction, lexems_filtered) ;
-    
+    // TODO faire la purité d'une signature de fonction.
   std::cout << 
-    transpile_function_signature(
+    cpp::transpile_function_signature(
     next_function_signature (
       lexems_filtered.begin(), 
       lexems_filtered.end()).unit.value()) << std::endl ;

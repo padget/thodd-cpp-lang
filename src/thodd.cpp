@@ -222,53 +222,53 @@ next_function_call (auto begin, auto const end, bool mandatory = true) {
   if (!ident_ext.unit.has_value()) { 
     error(mandatory, "identifiant attendu") () ;
     return make_extracted(begin, function_call{}, false) ;  
-  } else {
-    auto const lbracket_ids = { thodd::lbracket } ;
-    auto && lbracket_opt = next_ids(ident_ext.last, end, lbracket_ids) ;
+  } 
+
+  auto const lbracket_ids = { thodd::lbracket } ;
+  auto && lbracket_opt = next_ids(ident_ext.last, end, lbracket_ids) ;
+  
+  if (!lbracket_opt.has_value()) { 
+    error (mandatory, "'(' attendu") () ;
+    return make_extracted(begin, function_call{}, false) ;
+  } 
+   // est ce qu'il y a des parametres ?  
+  auto const rbracket_ids = { thodd::rbracket } ;
+  auto && rbracket_opt = next_ids(lbracket_opt.value(), end, rbracket_ids) ;
+  
+  if (rbracket_opt.has_value()) 
+    return make_extracted(rbracket_opt.value(), function_call{ident_ext.unit.value()}) ;
+
+  std::vector<parameter> params ;
+  bool has_parameter = true ;
+  auto params_cursor = lbracket_opt.value() ;
+
+  while (has_parameter) {
+    auto && param = next_param (params_cursor, end) ;
     
-    if (!lbracket_opt.has_value()) { 
-      error (mandatory, "'(' attendu") () ;
-      return make_extracted(begin, function_call{}, false) ;
-    } else { // est ce qu'il y a des parametres ?  
-      auto const rbracket_ids = { thodd::rbracket } ;
-      auto && rbracket_opt = next_ids(lbracket_opt.value(), end, rbracket_ids) ;
+    if (param.unit.has_value()) { 
+      params.push_back(param.unit.value()) ;
+      params_cursor = param.last ;
+      auto const comma_ids = { thodd::comma } ;
+      auto && comma_opt = next_ids(param.last, end, comma_ids) ;
       
-      if (!rbracket_opt.has_value()) { // apparement oui il y a des parametres.
-        std::vector<parameter> params ;
-        bool has_parameter = true ;
-        auto params_cursor = lbracket_opt.value() ;
+      if (comma_opt.has_value()) 
+        params_cursor = comma_opt.value() ;
+      else // il n'y a pas de virgule donc plus de parametre
+        has_parameter = false ;
+    } else { // une erreur est survenue donc pas de parametre detecté
+      error(mandatory, "la détection de paramètre à echouer") () ;
+      has_parameter = false ;
+    }
+  }  
 
-        while (has_parameter) {
-          auto && param = next_param (params_cursor, end) ;
-          
-          if (param.unit.has_value()) { 
-            params.push_back(param.unit.value()) ;
-            params_cursor = param.last ;
-            auto const comma_ids = { thodd::comma } ;
-            auto && comma_opt = next_ids(param.last, end, comma_ids) ;
-            
-            if (comma_opt.has_value()) 
-              params_cursor = comma_opt.value() ;
-            else // il n'y a pas de virgule donc plus de parametre
-              has_parameter = false ;
-          } else { // une erreur est survenue donc pas de parametre detecté
-            error(mandatory, "la détection de paramètre à echouer") () ;
-            has_parameter = false ;
-          }
-        } // il n'y a plus de parametre. 
-
-        // est ce qu'il y a une parenthèse fermante ?
-        auto && final_rbracket_opt = next_ids(params_cursor, end, rbracket_ids) ;
-        if (!final_rbracket_opt.has_value()) { // aie ! malformation de l'appel de fonction
-          error (mandatory, "')' est attendue") () ;
-          return make_extracted (begin, function_call{}) ;
-        } else // il y a une parenthèse fermante, donc tout s'est bien passé. 
-          return make_extracted(final_rbracket_opt.value(), function_call{ident_ext.unit.value(), params}) ;
-      } else { // parenthèse fermante detectée donc pas de parametre.
-        return make_extracted(rbracket_opt.value(), function_call{ident_ext.unit.value()}) ;
-      } 
-    } 
+  auto && final_rbracket_opt = next_ids(params_cursor, end, rbracket_ids) ;
+  
+  if (!final_rbracket_opt.has_value()) { // aie ! malformation de l'appel de fonction
+    error (mandatory, "')' est attendue") () ;
+    return make_extracted (begin, function_call{}) ;
   }
+
+  return make_extracted(final_rbracket_opt.value(), function_call{ident_ext.unit.value(), params}) ;  
 }
 
 
@@ -284,23 +284,27 @@ next_argument (auto begin, auto const end, bool mandatory = true) {
   if (!name_ext.unit.has_value()) {
     error (mandatory, "identifiant attendu") () ;
     return make_extracted(begin, argument{}, false) ;
-  } else {
-    auto const colon_ids = { thodd::colon } ;
-    auto && colon_opt = next_ids (name_ext.last, end, colon_ids) ;
-
-    if (!colon_opt.has_value()) {
-       error (mandatory, "':' attendu") () ;
-       return make_extracted(begin, argument{}, false) ;
-    } else {
-      auto && type_ext = next_identifier(colon_opt.value(), end) ;
-      
-      if (!type_ext.unit.has_value()) {
-        error (mandatory, "identifiant attendu") () ;
-        return make_extracted(begin, argument{}, false) ;
-      } else 
-        return make_extracted (type_ext.last, argument { name_ext.unit.value(), type_ext.unit.value() }) ;
-    }
   }
+
+  auto const colon_ids = { thodd::colon } ;
+  auto && colon_opt = next_ids (name_ext.last, end, colon_ids) ;
+
+  if (!colon_opt.has_value()) {
+      error (mandatory, "':' attendu") () ;
+      return make_extracted(begin, argument{}, false) ;
+  } 
+
+  auto && type_ext = next_identifier(colon_opt.value(), end) ;
+  
+  if (!type_ext.unit.has_value()) {
+    error (mandatory, "identifiant attendu") () ;
+    return make_extracted(begin, argument{}, false) ;
+  }  
+
+  return 
+  make_extracted (
+    type_ext.last, 
+    argument { name_ext.unit.value(), type_ext.unit.value() }) ;
 }
 
 struct function_signature {
@@ -309,7 +313,7 @@ struct function_signature {
   identifier name ;
   identifier type ;
   std::vector<argument> args ;
-  purity_ purity ;
+  purity_ purity ; // TODO capture the purity
 } ;
 
 inline extracted<auto, function_signature> 
@@ -520,8 +524,8 @@ namespace cpp {
   inline std::string const 
   transpile_function_definition (function_definition const & fdef) {
     return 
-    transpile_function_signature(fdef.sig) + " {\n" +
-    transpile_// instruction
+    transpile_function_signature(fdef.sig) + " {\n" ; // +
+    //transpile_// instruction
   }
 }
 

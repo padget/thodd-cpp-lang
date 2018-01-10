@@ -270,6 +270,100 @@ next_function_call (auto begin, auto const end, bool mandatory = true) {
   }
 }
 
+
+struct argument {
+  identifier name ;
+  identifier type ;
+} ;
+
+inline extracted<auto, argument> 
+next_argument (auto begin, auto const end, bool mandatory = true) {
+  auto && name_ext = next_identifier (begin, end) ;
+
+  if (!name_ext.unit.has_value()) {
+    error (mandatory, "identifiant attendu") () ;
+    return make_extracted(begin, argument{}, false) ;
+  } else {
+    auto const colon_ids = { thodd::colon } ;
+    auto && colon_opt = next_ids (name_ext.last, end, colon_ids) ;
+
+    if (!colon_opt.has_value()) {
+       error (mandatory, "':' attendu") () ;
+       return make_extracted(begin, argument{}, false) ;
+    } else {
+      auto && type_ext = next_identifier(colon_opt.value(), end) ;
+      
+      if (!type_ext.unit.has_value()) {
+        error (mandatory, "identifiant attendu") () ;
+        return make_extracted(begin, argument{}, false) ;
+      } else 
+        return make_extracted (type_ext.last, argument { name_ext.unit.value(), type_ext.unit.value() }) ;
+    }
+  }
+}
+
+struct function_signature {
+  identifier name ;
+  std::vector<argument> args ;
+} ;
+
+inline extracted<auto, function_signature> 
+next_function_signature (auto begin, auto const end, bool mandatory = true) {
+  auto && name_ext = next_identifier (begin, end) ;
+
+  if (!name_ext.unit.has_value()) {
+    error (mandatory, "identifiant attendu") () ;
+    return make_extracted(begin, function_signature{}, false) ;
+  } else {
+    auto const lbracket_ids = { thodd::lbracket } ;
+    auto && lbracket_opt = next_ids(name_ext.last, end, lbracket_ids) ;
+    
+    if (!lbracket_opt.has_value()) { 
+      error (mandatory, "'(' attendu") () ;
+      return make_extracted(begin, function_signature{}, false) ;
+    } else {
+      auto const rbracket_ids = { thodd::rbracket } ;
+      auto && rbracket_opt = next_ids(lbracket_opt.value(), end, rbracket_ids) ;
+      
+      if (!rbracket_opt.has_value()) { // apparement oui il y a des parametres.
+        std::vector<argument> args ;
+        bool has_argument = true ;
+        auto args_cursor = lbracket_opt.value() ;
+
+        while (has_argument) {
+          auto && arg = next_argument (args_cursor, end, mandatory) ;
+          
+          if (arg.unit.has_value()) { 
+            args.push_back(arg.unit.value()) ;
+            args_cursor = arg.last ;
+            auto const comma_ids = { thodd::comma } ;
+            auto && comma_opt = next_ids(arg.last, end, comma_ids) ;
+            
+            if (comma_opt.has_value()) 
+              args_cursor = comma_opt.value() ;
+            else // il n'y a pas de virgule donc plus de parametre
+              has_argument = false ;
+          } else { // une erreur est survenue donc pas de parametre detecté
+            error(mandatory, "la détection d'argument à echouer") () ;
+            has_argument = false ;
+          }
+        } // il n'y a plus de parametre. 
+
+        // est ce qu'il y a une parenthèse fermante ?
+        auto && final_rbracket_opt = next_ids(args_cursor, end, rbracket_ids) ;
+        
+        if (!final_rbracket_opt.has_value()) { // aie ! malformation de l'appel de fonction
+          error (mandatory, "')' est attendue") () ;
+          return make_extracted (begin, function_signature{}) ;
+        } else // il y a une parenthèse fermante, donc tout s'est bien passé. 
+          return make_extracted(final_rbracket_opt.value(), function_signature{name_ext.unit.value(), args}) ;
+      } else { // parenthèse fermante detectée donc pas de parametre.
+        return make_extracted(rbracket_opt.value(), function_signature{name_ext.unit.value()}) ;
+      }
+    } 
+  }
+}
+
 size_t depth = 0u ;
 
 inline std::string indent () {
@@ -329,6 +423,29 @@ transpile_function_call (function_call const & fcall) {
   return cpp ;
 }
 
+inline std::string const 
+transpile_argument(argument const & arg) {
+  return 
+  transpile_identifier(arg.type) + " " + 
+  transpile_identifier(arg.name) ;
+}
+
+inline std::string const 
+transpile_function_signature (function_signature const & fsignature) {
+  std::string cpp = fsignature.name.ident.str + "(" ;
+  
+  std::for_each(
+    fsignature.args.begin(), fsignature.args.end(), 
+    [&cpp] (auto const & arg) {
+      cpp += transpile_argument (arg) + ", " ;
+    }) ;
+
+  cpp.pop_back() ; cpp.pop_back() ;  
+  cpp += ")" ;
+
+  return cpp ;  
+}
+
 
 
 int main(int argc, char** argv) {  
@@ -342,31 +459,22 @@ int main(int argc, char** argv) {
   auto const number_rx = rx { std::regex ("^[0-9]+(\\.[0-9]+){0,1}"), thodd::number } ;
   auto const ignored_rx = rx { std::regex ("^[ \\n\\t]+"), thodd::ignored } ;
 
-  auto const stream = std::string (
-    "__add (" 
-      "__add (1,2,3,     4,5,6)," 
-      "prout,"
-      "5,"
-      "__add(5, 65),"
-      "3"
-    ") ");
+  auto const stream = std::string ("__add (a     : int  , b  :int)");
 
   std::cout << stream << std::endl ;
 
   auto && lexems_instruction = 
     make_thodd_lexems(
       stream.cbegin(), stream.cend(), 
-      identifier_rx, lbracket_rx, rbracket_rx, 
+      identifier_rx, lbracket_rx, rbracket_rx, colon_rx,
       comma_rx, ignored_rx, number_rx, semi_colon_rx) ;  
   
   std::vector<lexem> lexems_filtered ;
   filter_lexems (lexems_instruction, lexems_filtered) ;
     
-  auto cpp = 
-    transpile_function_call(
-      next_function_call (
-        lexems_filtered.begin(), 
-        lexems_filtered.end()).unit.value()) ;
-
-  std::cout << cpp << std::endl ;
+  std::cout << 
+    transpile_function_signature(
+    next_function_signature (
+      lexems_filtered.begin(), 
+      lexems_filtered.end()).unit.value()) << std::endl ;
 }

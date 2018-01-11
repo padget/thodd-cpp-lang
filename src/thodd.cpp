@@ -7,6 +7,14 @@
 #include <type_traits>
 #include <functional>
 
+inline auto 
+error (bool mandatory, std::string const & message) {
+  return [&] {
+    if (mandatory)
+      std::cout << "error : " << message << std::endl ;
+  } ;
+}
+
 namespace std {
   inline auto 
   make_empty_optional (auto && v) {
@@ -66,6 +74,29 @@ make_extracted (auto last, auto && unit, bool exists = true) {
                    std::make_empty_optional(std::forward<decltype(unit)>(unit)) } ;
 }
 
+inline auto 
+has_no_value (
+  std::optional<auto> const & opt, 
+  std::string const & err_mess, 
+  bool mandatory = true) {
+
+  if (!opt.has_value()) {
+    error (mandatory, err_mess) () ;
+    return true ;
+  }
+
+  return false ;
+}
+
+inline auto 
+has_no_value (
+  extracted<auto, auto> const & ext, 
+  std::string const & err_mess, 
+  bool mandatory = true) {
+  return has_no_value(ext.unit, err_mess, mandatory) ;
+}
+
+
 inline auto
 make_thodd_lexems (auto begin, auto const end, auto const & ... regexs) {
   std::smatch matched ; 
@@ -122,14 +153,6 @@ namespace std {
   start_with (auto begin, auto const end, auto sbegin, auto send) {
     return start_with(begin, end, sbegin, send, std::equal_to {}) ;
   }
-}
-
-inline auto 
-error (bool mandatory, std::string const & message) {
-  return [&] {
-    if (mandatory)
-      std::cout << "error : " << message << std::endl ;
-  } ;
 }
 
 inline std::optional<auto>
@@ -308,30 +331,41 @@ next_argument (auto begin, auto const end, bool mandatory = true) {
 }
 
 struct function_signature {
-  enum class purity_ { pure, impure } ;
+  enum class purity_ { pure, impure, unknown } ;
 
+  purity_ purity ; // TODO capture the purity
   identifier name ;
   identifier type ;
   std::vector<argument> args ;
-  purity_ purity ; // TODO capture the purity
 } ;
 
 inline extracted<auto, function_signature> 
 next_function_signature (auto begin, auto const end, bool mandatory = true) {
+  auto const pure_ids = { thodd::pure_kw } ;
+  auto && pure_opt = next_ids (begin, end, pure_ids) ;
+
+  auto const impure_ids = { thodd::impure_kw } ;
+  auto && impure_opt = next_ids (begin, end, impure_ids) ;
+
+  function_signature::purity_ purity ;
+
+  if (pure_opt.has_value())
+    (purity = function_signature::purity_::pure, begin = pure_opt.value()) ;
+  else if (impure_opt.has_value()) 
+    (purity = function_signature::purity_::impure, begin = pure_opt.value()) ;
+  else 
+    purity = function_signature::purity_::unknown ;
+
   auto && name_ext = next_identifier (begin, end) ;
 
-  if (!name_ext.unit.has_value()) {
-    error (mandatory, "identifiant attendu") () ;
+  if (has_no_value (name_ext, "identifiant attendu", mandatory))
     return make_extracted(begin, function_signature{}, false) ;
-  } 
 
   auto const lbracket_ids = { thodd::lbracket } ;
   auto && lbracket_opt = next_ids(name_ext.last, end, lbracket_ids) ;
   
-  if (!lbracket_opt.has_value()) { 
-    error (mandatory, "'(' attendu") () ;
+  if (has_no_value(lbracket_opt, "'(' attendu", mandatory)) 
     return make_extracted(begin, function_signature{}, false) ;
-  }
 
   auto const rbracket_ids = { thodd::rbracket } ;
   auto && rbracket_opt = next_ids(lbracket_opt.value(), end, rbracket_ids) ;
@@ -344,7 +378,9 @@ next_function_signature (auto begin, auto const end, bool mandatory = true) {
     while (has_argument) {
       auto && arg = next_argument (args_cursor, end, mandatory) ;
       
-      if (arg.unit.has_value()) { 
+      if (has_no_value(arg, "la détection d'argument à echouer", mandatory))
+        has_argument = false ;
+      else {
         args.push_back(arg.unit.value()) ;
         args_cursor = arg.last ;
         auto const comma_ids = { thodd::comma } ;
@@ -354,36 +390,27 @@ next_function_signature (auto begin, auto const end, bool mandatory = true) {
           args_cursor = comma_opt.value() ;
         else // il n'y a pas de virgule donc plus de parametre
           has_argument = false ;
-      } else { // une erreur est survenue donc pas de parametre detecté
-        error(mandatory, "la détection d'argument à echouer") () ;
-        has_argument = false ;
       }
     } // il n'y a plus de parametre. 
 
     // est ce qu'il y a une parenthèse fermante ?
     auto && final_rbracket_opt = next_ids(args_cursor, end, rbracket_ids) ;
     
-    if (!final_rbracket_opt.has_value()) { // aie ! malformation de l'appel de fonction
-      error (mandatory, "')' est attendue") () ;
-      return make_extracted (begin, function_signature{}) ;
-    }
+    if (has_no_value(final_rbracket_opt, "')' est attendue", mandatory))
+      return make_extracted(begin, function_signature{}, false) ;
 
     auto const colon_ids = { thodd::colon } ;
     auto && colon_opt = next_ids (final_rbracket_opt.value(), end, colon_ids) ;
 
-    if (!colon_opt.has_value()) {
-      error (mandatory, "':' attendu") () ;
+    if (has_no_value(colon_opt, "':' attendu", mandatory))
       return make_extracted(begin, function_signature{}, false) ;
-    }
 
     auto && type_ext = next_identifier(colon_opt.value(), end) ;
     
-    if (!type_ext.unit.has_value()) {
-      error (mandatory, "identifiant attendu") () ;
+    if (has_no_value(type_ext,  "identifiant attendu", mandatory))
       return make_extracted(begin, function_signature{}, false) ;
-    } 
 
-    return make_extracted (type_ext.last, function_signature { name_ext.unit.value(), type_ext.unit.value(), args }) ;
+    return make_extracted (type_ext.last, function_signature { purity, name_ext.unit.value(), type_ext.unit.value(), args }) ;
   }
   
   auto const colon_ids = { thodd::colon } ;
@@ -401,7 +428,7 @@ next_function_signature (auto begin, auto const end, bool mandatory = true) {
     return make_extracted(begin, function_signature{}, false) ;
   }  
   
-  return make_extracted (type_ext.last, function_signature { name_ext.unit.value(), type_ext.unit.value() }) ;
+  return make_extracted (type_ext.last, function_signature { purity, name_ext.unit.value(), type_ext.unit.value() }) ;
   
 }
 
@@ -485,8 +512,24 @@ namespace cpp {
   }
 
   inline std::string const 
+  transpile_purity (function_signature::purity_ purity) {
+    using fpurity = function_signature::purity_ ;
+    
+    std::string cpp = "[[" ;
+    
+    switch (purity) {
+      case fpurity::pure : cpp += "pure]]" ; break ;
+      case fpurity::impure : cpp += "imppure]]" ; break ;
+      case fpurity::unknown : cpp = "" ; break ;
+    }
+
+    return cpp ;
+  }
+
+  inline std::string const 
   transpile_function_signature (function_signature const & fsignature) {
-    std::string cpp = transpile_identifier(fsignature.name) + "(" ;
+    std::string cpp = transpile_purity(fsignature.purity) + "\n" + 
+                      transpile_identifier(fsignature.name) + "(" ;
     
     std::for_each(
       fsignature.args.begin(), fsignature.args.end(), 
@@ -546,7 +589,7 @@ int main(int argc, char** argv) {
   auto const pure_rx = rx { std::regex ("^pure"), thodd::pure_kw } ;
   auto const impure_rx = rx { std::regex ("^impure"), thodd::impure_kw } ;
 
-  auto const stream = std::string ("__add (a     : int  , b  :int):int");
+  auto const stream = std::string ("pure __add (a     : int  , b  :int):int");
 
   std::cout << stream << std::endl ;
 

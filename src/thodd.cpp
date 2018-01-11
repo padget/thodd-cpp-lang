@@ -333,7 +333,7 @@ next_argument (auto begin, auto const end, bool mandatory = true) {
 struct function_signature {
   enum class purity_ { pure, impure, unknown } ;
 
-  purity_ purity ; // TODO capture the purity
+  purity_ purity ; 
   identifier name ;
   identifier type ;
   std::vector<argument> args ;
@@ -602,7 +602,7 @@ int main(int argc, char** argv) {
   
   std::vector<lexem> lexems_filtered ;
   filter_lexems (lexems_instruction, lexems_filtered) ;
-    // TODO faire la purité d'une signature de fonction.
+  
   std::cout << 
     cpp::transpile_function_signature(
     next_function_signature (

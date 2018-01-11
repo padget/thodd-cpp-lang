@@ -323,83 +323,86 @@ next_function_signature (auto begin, auto const end, bool mandatory = true) {
   if (!name_ext.unit.has_value()) {
     error (mandatory, "identifiant attendu") () ;
     return make_extracted(begin, function_signature{}, false) ;
-  } else {
-    auto const lbracket_ids = { thodd::lbracket } ;
-    auto && lbracket_opt = next_ids(name_ext.last, end, lbracket_ids) ;
-    
-    if (!lbracket_opt.has_value()) { 
-      error (mandatory, "'(' attendu") () ;
-      return make_extracted(begin, function_signature{}, false) ;
-    } else {
-      auto const rbracket_ids = { thodd::rbracket } ;
-      auto && rbracket_opt = next_ids(lbracket_opt.value(), end, rbracket_ids) ;
-      
-      if (!rbracket_opt.has_value()) { // apparement oui il y a des parametres.
-        std::vector<argument> args ;
-        bool has_argument = true ;
-        auto args_cursor = lbracket_opt.value() ;
+  } 
 
-        while (has_argument) {
-          auto && arg = next_argument (args_cursor, end, mandatory) ;
-          
-          if (arg.unit.has_value()) { 
-            args.push_back(arg.unit.value()) ;
-            args_cursor = arg.last ;
-            auto const comma_ids = { thodd::comma } ;
-            auto && comma_opt = next_ids(arg.last, end, comma_ids) ;
-            
-            if (comma_opt.has_value()) 
-              args_cursor = comma_opt.value() ;
-            else // il n'y a pas de virgule donc plus de parametre
-              has_argument = false ;
-          } else { // une erreur est survenue donc pas de parametre detecté
-            error(mandatory, "la détection d'argument à echouer") () ;
-            has_argument = false ;
-          }
-        } // il n'y a plus de parametre. 
-
-        // est ce qu'il y a une parenthèse fermante ?
-        auto && final_rbracket_opt = next_ids(args_cursor, end, rbracket_ids) ;
-        
-        if (!final_rbracket_opt.has_value()) { // aie ! malformation de l'appel de fonction
-          error (mandatory, "')' est attendue") () ;
-          return make_extracted (begin, function_signature{}) ;
-        } else  {
-          auto const colon_ids = { thodd::colon } ;
-          auto && colon_opt = next_ids (final_rbracket_opt.value(), end, colon_ids) ;
-
-          if (!colon_opt.has_value()) {
-            error (mandatory, "':' attendu") () ;
-            return make_extracted(begin, function_signature{}, false) ;
-          } else {
-            auto && type_ext = next_identifier(colon_opt.value(), end) ;
-            
-            if (!type_ext.unit.has_value()) {
-              error (mandatory, "identifiant attendu") () ;
-              return make_extracted(begin, function_signature{}, false) ;
-            } else 
-              return make_extracted (type_ext.last, function_signature { name_ext.unit.value(), type_ext.unit.value(), args }) ;
-          }
-        }
-      } else {
-        auto const colon_ids = { thodd::colon } ;
-        auto && colon_opt = next_ids (name_ext.last, end, colon_ids) ;
-
-        if (!colon_opt.has_value()) {
-          error (mandatory, "':' attendu") () ;
-          return make_extracted(begin, function_signature{}, false) ;
-        } else {
-          auto && type_ext = next_identifier(colon_opt.value(), end) ;
-          
-          if (!type_ext.unit.has_value()) {
-            error (mandatory, "identifiant attendu") () ;
-            return make_extracted(begin, function_signature{}, false) ;
-          } else 
-            return make_extracted (type_ext.last, function_signature { name_ext.unit.value(), type_ext.unit.value() }) ;
-        }
-      }
-    } 
+  auto const lbracket_ids = { thodd::lbracket } ;
+  auto && lbracket_opt = next_ids(name_ext.last, end, lbracket_ids) ;
+  
+  if (!lbracket_opt.has_value()) { 
+    error (mandatory, "'(' attendu") () ;
+    return make_extracted(begin, function_signature{}, false) ;
   }
+
+  auto const rbracket_ids = { thodd::rbracket } ;
+  auto && rbracket_opt = next_ids(lbracket_opt.value(), end, rbracket_ids) ;
+  
+  if (!rbracket_opt.has_value()) { // apparement oui il y a des parametres.
+    std::vector<argument> args ;
+    bool has_argument = true ;
+    auto args_cursor = lbracket_opt.value() ;
+
+    while (has_argument) {
+      auto && arg = next_argument (args_cursor, end, mandatory) ;
+      
+      if (arg.unit.has_value()) { 
+        args.push_back(arg.unit.value()) ;
+        args_cursor = arg.last ;
+        auto const comma_ids = { thodd::comma } ;
+        auto && comma_opt = next_ids(arg.last, end, comma_ids) ;
+        
+        if (comma_opt.has_value()) 
+          args_cursor = comma_opt.value() ;
+        else // il n'y a pas de virgule donc plus de parametre
+          has_argument = false ;
+      } else { // une erreur est survenue donc pas de parametre detecté
+        error(mandatory, "la détection d'argument à echouer") () ;
+        has_argument = false ;
+      }
+    } // il n'y a plus de parametre. 
+
+    // est ce qu'il y a une parenthèse fermante ?
+    auto && final_rbracket_opt = next_ids(args_cursor, end, rbracket_ids) ;
+    
+    if (!final_rbracket_opt.has_value()) { // aie ! malformation de l'appel de fonction
+      error (mandatory, "')' est attendue") () ;
+      return make_extracted (begin, function_signature{}) ;
+    }
+
+    auto const colon_ids = { thodd::colon } ;
+    auto && colon_opt = next_ids (final_rbracket_opt.value(), end, colon_ids) ;
+
+    if (!colon_opt.has_value()) {
+      error (mandatory, "':' attendu") () ;
+      return make_extracted(begin, function_signature{}, false) ;
+    }
+
+    auto && type_ext = next_identifier(colon_opt.value(), end) ;
+    
+    if (!type_ext.unit.has_value()) {
+      error (mandatory, "identifiant attendu") () ;
+      return make_extracted(begin, function_signature{}, false) ;
+    } 
+
+    return make_extracted (type_ext.last, function_signature { name_ext.unit.value(), type_ext.unit.value(), args }) ;
+  }
+  
+  auto const colon_ids = { thodd::colon } ;
+  auto && colon_opt = next_ids (name_ext.last, end, colon_ids) ;
+
+  if (!colon_opt.has_value()) {
+    error (mandatory, "':' attendu") () ;
+    return make_extracted(begin, function_signature{}, false) ;
+  }
+
+  auto && type_ext = next_identifier(colon_opt.value(), end) ;
+  
+  if (!type_ext.unit.has_value()) {
+    error (mandatory, "identifiant attendu") () ;
+    return make_extracted(begin, function_signature{}, false) ;
+  }  
+  
+  return make_extracted (type_ext.last, function_signature { name_ext.unit.value(), type_ext.unit.value() }) ;
+  
 }
 
 struct instruction {

@@ -439,6 +439,45 @@ struct instruction {
   std::vector<lexem> data ;
 } ;
 
+inline std::vector<lexem>
+copy_lexems (auto begin, auto end) {
+  std::vector<lexem> lexems ;
+  std::copy (begin, end, std::back_inserter(lexems)) ;
+  return lexems ;
+}
+
+inline extracted<auto, instruction>
+next_instruction (auto begin, auto const end, bool mandatory = true) {
+  auto && fcall_ext = next_function_call(begin, end, mandatory) ;
+  
+  if (fcall_ext.unit.has_value())
+    return make_extracted(
+      fcall_ext.last, 
+      instruction{
+        instruction::type_::return_fcall, 
+        copy_lexems(begin, fcall_ext.last)}) ;
+  
+  auto && ident_ext = next_identifier(begin, end, mandatory) ;
+
+  if (ident_ext.unit.has_value())
+    return make_extracted(
+      ident_ext.last, 
+      instruction{
+        instruction::type_::return_identifier,
+        copy_lexems(begin, fcall_ext.last)}) ;
+
+  auto && number_ext = next_number(begin, end, mandatory) ;
+
+  if (number_ext.unit.has_value())
+    return make_extracted(
+      number_ext.last, 
+      instruction{
+        instruction::type_::return_number, 
+        copy_lexems(begin, fcall_ext.last)}) ;
+
+  return make_extracted(begin, instruction{}, false) ;
+}
+
 struct function_definition {
   function_signature sig ;
   std::vector<instruction> insts; 

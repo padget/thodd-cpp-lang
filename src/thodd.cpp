@@ -396,7 +396,7 @@ next_function_signature (auto begin, auto const end, bool mandatory = true) {
     // est ce qu'il y a une parenthèse fermante ?
     auto && final_rbracket_opt = next_ids(args_cursor, end, rbracket_ids) ;
     
-    if (has_no_value(final_rbracket_opt, "')' est attendue", mandatory))
+    if (has_no_value(final_rbracket_opt, "')' est attendue1", mandatory))
       return make_extracted(begin, function_signature{}, false) ;
 
     auto const colon_ids = { thodd::colon } ;
@@ -457,7 +457,7 @@ next_instruction (auto begin, auto const end, bool mandatory = true) {
         instruction::type_::return_fcall, 
         copy_lexems(begin, fcall_ext.last)}) ;
   
-  auto && ident_ext = next_identifier(begin, end, mandatory) ;
+  auto && ident_ext = next_identifier(begin, end) ;
 
   if (ident_ext.unit.has_value())
     return make_extracted(
@@ -466,7 +466,7 @@ next_instruction (auto begin, auto const end, bool mandatory = true) {
         instruction::type_::return_identifier,
         copy_lexems(begin, fcall_ext.last)}) ;
 
-  auto && number_ext = next_number(begin, end, mandatory) ;
+  auto && number_ext = next_number(begin, end) ;
 
   if (number_ext.unit.has_value())
     return make_extracted(
@@ -482,6 +482,31 @@ struct function_definition {
   function_signature sig ;
   std::vector<instruction> insts; 
 } ;
+
+inline extracted<auto, function_definition>
+next_function_definition (auto begin, auto const end, bool mandatory = true) {
+  auto && fsig_ext = next_function_signature(begin, end, mandatory) ;
+
+  if (has_no_value(fsig_ext, "une signature de fonction est attendu", mandatory))
+    return make_extracted(begin, function_definition{}, false) ;
+
+  std::vector<instruction> insts ;
+  bool has_instruction = true ;
+  auto inst_cursor = fsig_ext.last ;
+
+  while (has_instruction) {
+    auto && inst_ext = next_instruction(inst_cursor, end, mandatory) ;
+
+    if (!inst_ext.unit.has_value())
+      has_instruction = false ;
+    else {
+      inst_cursor = inst_ext.last ;
+      insts.push_back(inst_ext.unit.value()) ;
+    }
+  }
+
+  return make_extracted(inst_cursor, function_definition{fsig_ext.unit.value(), insts}) ;
+}
 
 size_t depth = 0u ;
 
@@ -608,9 +633,12 @@ namespace cpp {
 
   inline std::string const 
   transpile_function_definition (function_definition const & fdef) {
-    return 
-    transpile_function_signature(fdef.sig) + " {\n" ; // +
-    //transpile_// instruction
+    std::string cpp = transpile_function_signature(fdef.sig) + " {\n" ;
+  
+    for(auto const & inst : fdef.insts)
+      cpp += transpile_instruction(inst) ;
+    
+    return cpp+="\n}\n" ;
   }
 }
 
@@ -628,7 +656,7 @@ int main(int argc, char** argv) {
   auto const pure_rx = rx { std::regex ("^pure"), thodd::pure_kw } ;
   auto const impure_rx = rx { std::regex ("^impure"), thodd::impure_kw } ;
 
-  auto const stream = std::string ("pure __add (a     : int  , b  :int):int");
+  auto const stream = std::string ("pure __add (a     : int  , b  :int):int __add ()");
 
   std::cout << stream << std::endl ;
 
@@ -643,8 +671,8 @@ int main(int argc, char** argv) {
   filter_lexems (lexems_instruction, lexems_filtered) ;
   
   std::cout << 
-    cpp::transpile_function_signature(
-    next_function_signature (
+    cpp::transpile_function_definition(
+    next_function_definition (
       lexems_filtered.begin(), 
       lexems_filtered.end()).unit.value()) << std::endl ;
 }

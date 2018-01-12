@@ -448,8 +448,9 @@ copy_lexems (auto begin, auto end) {
 
 inline extracted<auto, instruction>
 next_instruction (auto begin, auto const end, bool mandatory = true) {
-  auto && fcall_ext = next_function_call(begin, end, mandatory) ;
-  
+  std::cout << "couocu\n" ;
+  auto && fcall_ext = next_function_call(begin, end, false) ;
+  std::cout << "couocu2\n" ;
   if (fcall_ext.unit.has_value())
     return make_extracted(
       fcall_ext.last, 
@@ -464,7 +465,7 @@ next_instruction (auto begin, auto const end, bool mandatory = true) {
       ident_ext.last, 
       instruction{
         instruction::type_::return_identifier,
-        copy_lexems(begin, fcall_ext.last)}) ;
+        copy_lexems(begin, ident_ext.last)}) ;
 
   auto && number_ext = next_number(begin, end) ;
 
@@ -473,7 +474,7 @@ next_instruction (auto begin, auto const end, bool mandatory = true) {
       number_ext.last, 
       instruction{
         instruction::type_::return_number, 
-        copy_lexems(begin, fcall_ext.last)}) ;
+        copy_lexems(begin, number_ext.last)}) ;
 
   return make_extracted(begin, instruction{}, false) ;
 }
@@ -556,13 +557,12 @@ namespace cpp {
   transpile_function_call (function_call const & fcall) {
     std::string cpp = transpile_identifier(fcall.name) + "(" ;
     
-    std::for_each(
-      fcall.params.begin(), fcall.params.end(), 
-      [&cpp] (auto const & param) {
-        cpp += transpile_parameter (param) + ", " ;
-      }) ;
+    for (auto const & param : fcall.params)
+      cpp += transpile_parameter(param) ;
 
-    cpp.pop_back() ; cpp.pop_back() ;  
+    if (!fcall.params.empty())
+      (cpp.pop_back(), cpp.pop_back()) ;  
+    
     cpp += ")" ;
 
     return cpp ;

@@ -479,21 +479,23 @@ next_instruction (auto begin, auto const end, bool mandatory = true) {
   return make_extracted(begin, instruction{}, false) ;
 }
 
-struct function_definition {
-  function_signature sig ;
-  std::vector<instruction> insts; 
-} ;
 
-inline extracted<auto, function_definition>
-next_function_definition (auto begin, auto const end, bool mandatory = true) {
-  auto && fsig_ext = next_function_signature(begin, end, mandatory) ;
 
-  if (has_no_value(fsig_ext, "une signature de fonction est attendu", mandatory))
-    return make_extracted(begin, function_definition{}, false) ;
+struct function_context {
+  std::vector<instruction> insts;
+}
+
+inline extracted<auto, function_context> 
+next_function_context (auto begin, auto const end, bool mandatory = true) {
+  auto const lbrace_ids = { thodd::lbrace } ;
+  auto && lbrace_opt = next_ids(begin, end, lbrace_ids) ;
+
+  if (has_no_value(lbrace_opt))
+    return make_extracted(begin, function_context{}, false) ;
 
   std::vector<instruction> insts ;
   bool has_instruction = true ;
-  auto inst_cursor = fsig_ext.last ;
+  auto inst_cursor = lbrace_opt.value() ;
 
   while (has_instruction) {
     auto && inst_ext = next_instruction(inst_cursor, end, mandatory) ;
@@ -505,8 +507,33 @@ next_function_definition (auto begin, auto const end, bool mandatory = true) {
       insts.push_back(inst_ext.unit.value()) ;
     }
   }
+  
+  auto const rbrace_ids = { thodd::rbrace } ;
+  auto && rbrace_opt = next_ids(inst_cursor, end, lbrace_ids) ;
 
-  return make_extracted(inst_cursor, function_definition{fsig_ext.unit.value(), insts}) ;
+  if (has_no_value(rbrace_opt))
+    return make_extracted(begin, function_context{}, false) ;
+
+  return make_extracted(rbrace.value(), function_context{insts}) ;
+}
+
+struct function_definition {
+  function_signature sig ;
+  function_context ctx ;
+} ;
+
+inline extracted<auto, function_definition>
+next_function_definition (auto begin, auto const end, bool mandatory = true) {
+  auto && fsig_ext = next_function_signature(begin, end, mandatory) ;
+
+  if (has_no_value(fsig_ext, "une signature de fonction est attendu", mandatory))
+    return make_extracted(begin, function_definition{}, false) ;
+
+  auto && fctxt_ext = next_function_context(fsig_ext.last, end, mandatory) ;
+  if (has_no_value(fctxt_ext, "un contexte de fonction est attendu", mandatory))
+    return make_extracted(begin, function_definition{}, false) ;
+
+  return make_extracted(fctxt_ext.last, function_definition{fsig_ext.unit.value(), insts}) ;
 }
 
 size_t depth = 0u ;
@@ -646,13 +673,19 @@ namespace cpp {
 int main(int argc, char** argv) {  
   // Bibliothèque des regex.
   auto const identifier_rx = rx { std::regex("^[a-z_]+"), thodd::identifier } ;
+
   auto const lbracket_rx = rx { std::regex ("^\\("), thodd::lbracket } ;
   auto const rbracket_rx = rx { std::regex ("^\\)"), thodd::rbracket } ;
+
+  auto const lbrace_rx = rx { std::regex ("^\\{"), thodd::lbrace } ;
+  auto const rbrace_rx = rx { std::regex ("^\\}"), thodd::rbrace } ;
+
   auto const colon_rx = rx { std::regex ("^:"), thodd::colon } ;
   auto const semi_colon_rx = rx { std::regex ("^;"), thodd::semi_colon } ;
   auto const comma_rx = rx { std::regex ("^,"), thodd::comma } ;
   auto const number_rx = rx { std::regex ("^[0-9]+(\\.[0-9]+){0,1}"), thodd::number } ;
   auto const ignored_rx = rx { std::regex ("^[ \\n\\t]+"), thodd::ignored } ;
+
   auto const pure_rx = rx { std::regex ("^pure"), thodd::pure_kw } ;
   auto const impure_rx = rx { std::regex ("^impure"), thodd::impure_kw } ;
 
@@ -663,7 +696,7 @@ int main(int argc, char** argv) {
   auto && lexems_instruction = 
     make_thodd_lexems(
       stream.cbegin(), stream.cend(),
-      pure_rx, impure_rx, 
+      pure_rx, impure_rx, lbrace_rx, rbrace_rx,
       identifier_rx, lbracket_rx, rbracket_rx, colon_rx,
       comma_rx, ignored_rx, number_rx, semi_colon_rx) ;  
   

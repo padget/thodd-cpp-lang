@@ -1,9 +1,9 @@
 # thodd-cpp-lang
 
 feuille de route :
- - fonction main
- - ouverture fermeture de fonction
- - check type, identifiant
+ x ouverture fermeture de fonction 
  - déclaration de type
+ - check type, identifiant
+ - fonction main
  - if while for switch engine
  

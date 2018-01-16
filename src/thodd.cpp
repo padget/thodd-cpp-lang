@@ -663,6 +663,47 @@ next_pod (auto begin, auto const end, bool mandatory = true) {
   return make_extracted(rbrace_opt.value(), pod_declaration{name_ext.unit.value(), members}) ;
 }
 
+struct declaration {
+  std::vector<lexem> data ;
+} ;
+
+extracted<auto, declaration> 
+next_declaration (auto begin, auto const end, bool mandatory = true) {
+  auto && pod_declaration_ext = next_pod (begin, end, false) ;
+
+  if (pod_declaration_ext.unit.has_value()) 
+    return make_extracted (pod_declaration_ext.last, declaration{copy_lexems(begin, pod_declaration_ext.last)}) ;
+
+  auto && function_definition_ext = next_function_definition (begin, end, false) ;
+
+  if (function_definition_ext.unit.has_value())
+    return make_extracted (function_definition_ext.last, declaration {copy_lexems (begin, function_definition_ext.last)}) ;
+
+  return make_extracted (begin, declaration{}, false) ;
+}
+
+struct declarations {
+  std::vector<declaration> decls ;
+} ;
+
+extracted<auto, declarations>
+next_declarations (auto begin, auto const end, bool mandatory = true) {
+  bool has_declaration = true ; 
+  std::vector<declaration> decls ;
+  auto decl_cursor = begin ;
+
+  while (has_declaration) {
+    auto && declaration_ext = next_declaration (decl_cursor, end, false) ;
+    
+    if (declaration_ext.unit.has_value())
+      (decl_cursor = declaration_ext.last, decls.push_back(declaration_ext.unit.value())) ;
+    else 
+      has_declaration = false ;
+  }
+
+  return make_extracted (decl_cursor, declarations{decls}) ;
+}
+
 size_t depth = 0u ;
 
  std::string indent () {
@@ -879,12 +920,12 @@ int main(int argc, char** argv) {
     std::vector<lexem> lexems_filtered ;
     filter_lexems (lexems_instruction, lexems_filtered) ;
     
-    auto const && fdef = next_function_definition(lexems_filtered.begin(), lexems_filtered.end()) ;
+    auto const && fdef = next_declarations(lexems_filtered.begin(), lexems_filtered.end()) ;
     
     if (has_no_value(fdef, "la definition de fonction est incorrecte"))
         return EXIT_FAILURE ;
     
-    std::cout << cpp::transpile_function_definition(fdef.unit.value()) << std::endl ;  
+    //std::cout << cpp::transpile_function_definition(fdef.unit.value()) << std::endl ;  
   } 
 
   return EXIT_SUCCESS ;

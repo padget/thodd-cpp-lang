@@ -1,4 +1,3 @@
-#include <iostream>
 #include <string>
 #include <regex>
 #include <algorithm>
@@ -6,8 +5,10 @@
 #include <optional>
 #include <type_traits>
 #include <functional>
+#include <iostream>
+#include <fstream>
 
- auto 
+auto 
 error (bool mandatory, std::string const & message) {
   return [&] {
     if (mandatory)
@@ -16,25 +17,25 @@ error (bool mandatory, std::string const & message) {
 }
 
 namespace std {
-   auto 
+  auto 
   make_empty_optional (auto && v) {
     return optional<std::decay_t<decltype(v)>>() ;
   }
 
-   auto 
+  auto 
   if_exists (auto && opt, auto then) {
     if (std::forward<decltype(opt)>(opt).has_value()) 
       then(std::forward<decltype(opt)>(opt).value()) ;
   }
 
-   auto 
+  auto 
   if_exists (auto && opt, auto fthen, auto felse) {
     if (std::forward<decltype(opt)>(opt).has_value()) 
       fthen(std::forward<decltype(opt)>(opt).value()) ;
     else felse() ;
   }
 
-   auto 
+  auto 
   if_not_exists (auto && opt, auto fthen) {
     if (!opt.has_value()) fthen() ; 
   }
@@ -48,7 +49,8 @@ enum class thodd : int {
   lsbracket, rsbracket,
   colon, semi_colon, 
   point, comma, ignored, 
-  pure_kw, impure_kw
+  pure_kw, impure_kw, pod_kw,
+  weak, strengh, alias
 } ;
 
 struct rx {
@@ -67,14 +69,14 @@ struct extracted {
   std::optional<unit_t> unit ;
 } ;
 
- auto 
+auto 
 make_extracted (auto last, auto && unit, bool exists = true) {
   return extracted<decltype(last), std::decay_t<decltype(unit)>> 
   { last, exists ? std::make_optional (std::forward<decltype(unit)>(unit)) : 
                    std::make_empty_optional(std::forward<decltype(unit)>(unit)) } ;
 }
 
- auto 
+auto 
 has_no_value (
   std::optional<auto> const & opt, 
   std::string const & err_mess, 
@@ -97,7 +99,7 @@ has_no_value (
 }
 
 
- auto
+auto
 make_thodd_lexems (auto begin, auto const end, auto const & ... regexs) {
   std::smatch matched ; 
   std::list<lexem> lexems ;
@@ -119,7 +121,7 @@ make_thodd_lexems (auto begin, auto const end, auto const & ... regexs) {
         return l.str.size() < r.str.size() ; 
       }) ;
     
-    std::advance (begin, (*max).str.size() == 0 ? 1 : (*max).str.size()) ;
+    begin = std::next (begin, (*max).str.size() == 0 ? 1 : (*max).str.size()) ;
     
     if ((*max).str.size() != 0)
       lexems.push_back(*max) ;
@@ -128,7 +130,7 @@ make_thodd_lexems (auto begin, auto const end, auto const & ... regexs) {
   return lexems ;
 }
 
- void 
+void 
 filter_lexems (auto const & lexems, auto & lexems_filtered) {
   std::copy_if(
     lexems.cbegin(), lexems.cend(), 
@@ -155,7 +157,7 @@ namespace std {
   }
 }
 
- std::optional<auto>
+std::optional<auto>
 next_ids(auto begin, auto end, auto const & ids) {
   return 
   std::start_with(
@@ -185,7 +187,7 @@ struct number {
   lexem num ;
 } ;
 
- extracted<auto, number> 
+extracted<auto, number> 
 next_number (auto begin, auto const end) {
   auto const number_ids = { thodd::number } ;
   
@@ -205,7 +207,7 @@ struct parameter {
   std::vector<lexem> data ;
 } ;
 
- extracted<auto, parameter> 
+extracted<auto, parameter> 
 next_param(auto begin, auto const end, bool mandatory = true) {
   auto && function_call_ext = next_function_call (begin, end, false) ;
   std::vector<lexem> pdata ;
@@ -238,7 +240,7 @@ struct function_call {
 } ;
 
 
- extracted<auto, function_call> 
+extracted<auto, function_call> 
 next_function_call (auto begin, auto const end, bool mandatory = true) {
   auto && ident_ext = next_identifier(begin, end) ;
   
@@ -300,7 +302,7 @@ struct argument {
   identifier type ;
 } ;
 
- extracted<auto, argument> 
+extracted<auto, argument> 
 next_argument (auto begin, auto const end, bool mandatory = true) {
   auto && name_ext = next_identifier (begin, end) ;
 
@@ -339,7 +341,7 @@ struct function_signature {
   std::vector<argument> args ;
 } ;
 
- extracted<auto, function_signature> 
+extracted<auto, function_signature> 
 next_function_signature (auto begin, auto const end, bool mandatory = true) {
   auto const pure_ids = { thodd::pure_kw } ;
   auto && pure_opt = next_ids (begin, end, pure_ids) ;
@@ -439,41 +441,64 @@ struct instruction {
   std::vector<lexem> data ;
 } ;
 
- std::vector<lexem>
+
+std::vector<lexem>
 copy_lexems (auto begin, auto end) {
   std::vector<lexem> lexems ;
   std::copy (begin, end, std::back_inserter(lexems)) ;
   return lexems ;
 }
 
- extracted<auto, instruction>
+extracted<auto, instruction>
 next_instruction (auto begin, auto const end, bool mandatory = true) {
   auto && fcall_ext = next_function_call(begin, end, false) ;
   
-  if (fcall_ext.unit.has_value())
+  if (fcall_ext.unit.has_value()) {
+    auto const semi_colon_ids = { thodd::semi_colon } ;
+    auto && semi_colon_opt = next_ids(fcall_ext.last, end, semi_colon_ids) ;
+    
+    if (has_no_value (semi_colon_opt, "; attendu", mandatory))
+      return make_extracted(begin, instruction{}, false) ;
+
     return make_extracted(
-      fcall_ext.last, 
+      semi_colon_opt.value(), 
       instruction{
         instruction::type_::return_fcall, 
-        copy_lexems(begin, fcall_ext.last)}) ;
-  
+        copy_lexems(begin, semi_colon_opt.value())}) ;
+  }
+
   auto && ident_ext = next_identifier(begin, end) ;
 
-  if (ident_ext.unit.has_value())
+  if (ident_ext.unit.has_value()) {
+    auto const semi_colon_ids = { thodd::semi_colon } ;
+    auto && semi_colon_opt = next_ids(ident_ext.last, end, semi_colon_ids) ;
+    
+    if (has_no_value (semi_colon_opt, "; attendu", mandatory))
+      return make_extracted(begin, instruction{}, false) ;
+
     return make_extracted(
-      ident_ext.last, 
+      semi_colon_opt.value(), 
       instruction{
         instruction::type_::return_identifier,
-        copy_lexems(begin, ident_ext.last)}) ;
-
+        copy_lexems(begin, semi_colon_opt.value())}) ;
+  }
+  
   auto && number_ext = next_number(begin, end) ;
 
-  if (number_ext.unit.has_value())
+  if (number_ext.unit.has_value()) {
+    auto const semi_colon_ids = { thodd::semi_colon } ;
+    auto && semi_colon_opt = next_ids(number_ext.last, end, semi_colon_ids) ;
+    
+    if (has_no_value (semi_colon_opt, "; attendu", mandatory))
+      return make_extracted(begin, instruction{}, false) ;
+
     return make_extracted(
-      number_ext.last, 
+      semi_colon_opt.value(), 
       instruction{
         instruction::type_::return_number, 
-        copy_lexems(begin, number_ext.last)}) ;
+        copy_lexems(semi_colon_opt.value(), semi_colon_opt.value())}) ;
+  }
+    
 
   return make_extracted(begin, instruction{}, false) ;
 }
@@ -482,7 +507,7 @@ struct function_context {
   std::vector<instruction> insts;
 } ;
 
- extracted<auto, function_context> 
+extracted<auto, function_context> 
 next_function_context (auto begin, auto const end, bool mandatory = true) {
   auto const lbrace_ids = { thodd::lbrace } ;
   auto && lbrace_opt = next_ids(begin, end, lbrace_ids) ;
@@ -507,9 +532,12 @@ next_function_context (auto begin, auto const end, bool mandatory = true) {
   
   auto const rbrace_ids = { thodd::rbrace } ;
   auto && rbrace_opt = next_ids(inst_cursor, end, rbrace_ids) ;
-
-  if (has_no_value(rbrace_opt, "} attendue pour fermer le contexte", mandatory))
+  std::cout  << "coucou" << std::endl ;
+  
+  if (has_no_value(rbrace_opt, "} attendue pour fermer le contexte", mandatory)) {
+    std::cout  << "coucou" << std::endl ;
     return make_extracted(begin, function_context{}, false) ;
+  }
 
   return make_extracted(rbrace_opt.value(), function_context{insts}) ;
 }
@@ -547,15 +575,30 @@ next_member (auto begin, auto const end, bool mandatory = true) {
 
   if (has_no_value (name_ext, "identifiant attendu", mandatory))
       return make_extracted(begin, member{}, false) ;
-  
+
   auto const colon_ids = { thodd::colon } ;
   auto && colon_opt = next_ids (name_ext.last, end, colon_ids) ;
   
   if (has_no_value (colon_opt, ": attendu", mandatory))
       return make_extracted(begin, member{}, false) ;
 
-  // TODO Valeur, Référence faible(#), Référence forte([#]), Alias (##)
-  auto && type_ext = next_identifier(colon_opt.value(), end) ;
+  auto link = member::link_::value ;
+  auto link_cursor = colon_opt.value() ;
+  auto const alias_ids = { thodd::alias } ;
+  auto && alias_opt = next_ids (link_cursor, end, alias_ids) ;
+  auto const weak_ids = { thodd::weak } ;
+  auto && weak_opt = next_ids (link_cursor, end, weak_ids) ;
+  auto const strengh_ids = { thodd::strengh } ;
+  auto && strengh_opt = next_ids (link_cursor, end, strengh_ids) ;
+
+  if (alias_opt.has_value())
+    (link = member::link_::alias, link_cursor = alias_opt.value()) ;
+  else if (weak_opt.has_value())
+    (link = member::link_::weak, link_cursor = weak_opt.value()) ;
+  else if (strengh_opt.has_value())
+    (link = member::link_::strengh, link_cursor = strengh_opt.value()) ;
+
+  auto && type_ext = next_identifier(link_cursor, end) ;
   
   if (has_no_value (type_ext, "identifiant attendu", mandatory))
       return make_extracted(begin, member{}, false) ;
@@ -569,16 +612,56 @@ next_member (auto begin, auto const end, bool mandatory = true) {
   return 
   make_extracted (
     semi_colon_opt.value(), 
-    member { name_ext.unit.value(), type_ext.unit.value() }) ;
+    member { name_ext.unit.value(), type_ext.unit.value(), link }) ;
 }
 
-
-// pod person { name : string ; firstname : string ; } 
-
-struct type_declaration {
+struct pod_declaration {
   identifier name ;
   std::vector<member> members;
 } ;
+
+extracted<auto, pod_declaration>
+next_pod (auto begin, auto const end, bool mandatory = true) {
+  auto const pod_kw_ids = { thodd::pod_kw } ;
+  auto && pod_kw_opt = next_ids(begin, end, pod_kw_ids) ;
+
+  if (has_no_value(pod_kw_opt, "le mot clé 'pod' est attendu", mandatory))
+    return make_extracted(begin, pod_declaration{}, false) ;
+
+  auto && name_ext = next_identifier (pod_kw_opt.value(), end) ;
+
+  if (has_no_value (name_ext, "name identifiant attendu", mandatory))
+    return make_extracted(begin, pod_declaration{}, false) ;
+
+  auto const lbrace_ids = { thodd::lbrace } ;
+  auto && lbrace_opt = next_ids(name_ext.last, end, lbrace_ids) ;
+
+  if (has_no_value(lbrace_opt, "{ attendu pour ouvrir un contexte", mandatory))
+    return make_extracted(begin, pod_declaration{}, false) ;
+
+  std::vector<member> members ;
+  bool has_member = true ;
+  auto mbr_cursor = lbrace_opt.value() ;
+
+  while (has_member) {
+    auto && mbr_ext = next_member(mbr_cursor, end, false) ;
+
+    if (!mbr_ext.unit.has_value())
+      has_member = false ;
+    else {
+      mbr_cursor = mbr_ext.last ;
+      members.push_back(mbr_ext.unit.value()) ;
+    }
+  }
+  
+  auto const rbrace_ids = { thodd::rbrace } ;
+  auto && rbrace_opt = next_ids(mbr_cursor, end, rbrace_ids) ;
+
+  if (has_no_value(rbrace_opt, "} attendue pour fermer le contexte", mandatory))
+    return make_extracted(begin, pod_declaration{}, false) ;
+
+  return make_extracted(rbrace_opt.value(), pod_declaration{name_ext.unit.value(), members}) ;
+}
 
 size_t depth = 0u ;
 
@@ -587,20 +670,20 @@ size_t depth = 0u ;
 }
 
 namespace cpp {
-   std::string const
+  std::string const
   transpile_function_call (function_call const & fcall) ;
 
-   std::string const
+  std::string const
   transpile_number (number const & fnum) {
     return fnum.num.str ;
   }
 
-   std::string const 
+  std::string const 
   transpile_identifier (identifier const & fident) {
     return fident.ident.str ;
   }
 
-   std::string const
+  std::string const
   transpile_parameter (parameter const & fparam) {  
     switch (fparam.type) {
       case parameter::type_::number : 
@@ -624,7 +707,7 @@ namespace cpp {
     }
   }
 
-   std::string const  
+  std::string const  
   transpile_function_call (function_call const & fcall) {
     std::string cpp = transpile_identifier(fcall.name) + "(" ;
     
@@ -639,14 +722,14 @@ namespace cpp {
     return cpp ;
   }
 
-   std::string const 
+  std::string const 
   transpile_argument(argument const & arg) {
     return 
     transpile_identifier(arg.type) + " " + 
     transpile_identifier(arg.name) ;
   }
 
-   std::string const 
+  std::string const 
   transpile_purity (function_signature::purity_ purity) {
     using fpurity = function_signature::purity_ ;
     
@@ -661,9 +744,10 @@ namespace cpp {
     return cpp ;
   }
 
-   std::string const 
+  std::string const 
   transpile_function_signature (function_signature const & fsignature) {
     std::string cpp = transpile_purity(fsignature.purity) + "\n" + 
+                      transpile_identifier(fsignature.type) + " " +
                       transpile_identifier(fsignature.name) + "(" ;
     
     std::for_each(
@@ -673,12 +757,12 @@ namespace cpp {
       }) ;
 
     cpp.pop_back() ; cpp.pop_back() ;  
-    cpp += ") : " + transpile_identifier(fsignature.type) ;
+    cpp += ")"  ;
 
     return cpp ;  
   }
 
-   std::string const
+  std::string const
   transpile_instruction (instruction const & inst) {
     switch (inst.type) {
       case instruction::type_::return_fcall : 
@@ -702,19 +786,50 @@ namespace cpp {
     }
   }
 
-   std::string const 
+  std::string const 
   transpile_function_context(function_context const & fctxt) {
     std::string cpp = " {\n" ;
   
     for(auto const & inst : fctxt.insts)
-      cpp += "    " + transpile_instruction(inst) ;
-    
+      cpp += "    " + transpile_instruction(inst) + "\n" ;
+
+    if (!fctxt.insts.empty())
+      cpp.pop_back() ;
+
     return cpp += "\n}\n" ;
   }
 
-   std::string const 
+  std::string const 
   transpile_function_definition (function_definition const & fdef) {
     return transpile_function_signature(fdef.sig) + transpile_function_context(fdef.ctx) ;
+  }
+
+  std::string const 
+  transpile_member (member const & mbr) {
+    std::string cpp = transpile_identifier(mbr.name) + " : " ;
+    
+    switch (mbr.link) {
+      case member::link_::value : break ;
+      case member::link_::weak : cpp += "# " ; break ;
+      case member::link_::strengh : cpp += "[#] " ; break ;
+      case member::link_::alias : cpp += "## " ; break ; 
+    }
+    
+    return cpp += transpile_identifier(mbr.tname) + " ;"; 
+  }
+
+  std::string const 
+  transpile_pod (pod_declaration const & pod) {
+    std::string cpp = "struct " ;
+    cpp += transpile_identifier(pod.name) + " {\n" ; 
+
+    for(auto const & mbr : pod.members)
+      cpp += "    " + transpile_member(mbr) + "\n";
+    
+    if (!pod.members.empty())
+      cpp.pop_back() ;
+
+    return cpp + "\n}\n" ;
   }
 }
 
@@ -732,32 +847,45 @@ int main(int argc, char** argv) {
   auto const colon_rx = rx { std::regex ("^:"), thodd::colon } ;
   auto const semi_colon_rx = rx { std::regex ("^;"), thodd::semi_colon } ;
   auto const comma_rx = rx { std::regex ("^,"), thodd::comma } ;
+  auto const alias_rx = rx { std::regex ("^##"), thodd::alias } ;
+  auto const strengh_rx = rx { std::regex ("^\\[#\\]"), thodd::strengh } ;
+  auto const weak_rx = rx { std::regex ("^#"), thodd::weak } ;
   auto const number_rx = rx { std::regex ("^[0-9]+(\\.[0-9]+){0,1}"), thodd::number } ;
   auto const ignored_rx = rx { std::regex ("^[ \\n\\t]+"), thodd::ignored } ;
 
   auto const pure_rx = rx { std::regex ("^pure"), thodd::pure_kw } ;
   auto const impure_rx = rx { std::regex ("^impure"), thodd::impure_kw } ;
+  auto const pod_rx = rx { std::regex ("^pod"), thodd::pod_kw } ;
 
-  auto const stream = std::string ("pure __add (a     : int  , b  :int):int {__add ()");
+  std::fstream thodd_file ("main.thodd", std::ios::in) ;
 
-  std::cout << stream << "\n" << std::endl ;
+  if (!thodd_file.is_open())
+    std::cerr << "fichier inexistant ou non ouvert" << std::endl ;
+  else {
+    std::cout << "fichier ouvert" << std::endl ;
 
-  auto && lexems_instruction = 
+    std::string stream = std::string (std::istreambuf_iterator<char> (thodd_file), std::istreambuf_iterator<char> ());
+
+    auto && lexems_instruction = 
     make_thodd_lexems(
       stream.cbegin(), stream.cend(),
-      pure_rx, impure_rx, lbrace_rx, rbrace_rx,
+      alias_rx, weak_rx, strengh_rx,
+      pure_rx, impure_rx, pod_rx, 
+      lbrace_rx, rbrace_rx,
       identifier_rx, lbracket_rx, rbracket_rx, colon_rx,
       comma_rx, ignored_rx, number_rx, semi_colon_rx) ;  
-  
-  std::vector<lexem> lexems_filtered ;
-  filter_lexems (lexems_instruction, lexems_filtered) ;
-  
-  auto const && fdef = next_function_definition(lexems_filtered.begin(), lexems_filtered.end()) ;
-  
-  if (has_no_value(fdef, "la definition de fonction est incorrecte"))
-      return EXIT_FAILURE ;
-  
-  std::cout << cpp::transpile_function_definition(fdef.unit.value()) << std::endl ; 
-  
+ 
+     
+    std::vector<lexem> lexems_filtered ;
+    filter_lexems (lexems_instruction, lexems_filtered) ;
+    
+    auto const && fdef = next_function_definition(lexems_filtered.begin(), lexems_filtered.end()) ;
+    
+    if (has_no_value(fdef, "la definition de fonction est incorrecte"))
+        return EXIT_FAILURE ;
+    
+    std::cout << cpp::transpile_function_definition(fdef.unit.value()) << std::endl ;  
+  } 
+
   return EXIT_SUCCESS ;
 }

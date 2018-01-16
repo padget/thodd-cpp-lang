@@ -2,7 +2,8 @@
 
 feuille de route :
  x ouverture fermeture de fonction 
- - déclaration de type
+ x déclaration de type
+ x Compilation d'un fichier
  - check type, identifiant
  - fonction main
  - if while for switch engine

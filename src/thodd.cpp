@@ -69,6 +69,8 @@ struct extracted {
   std::optional<unit_t> unit ;
 } ;
 
+
+
 auto 
 make_extracted (auto last, auto && unit, bool exists = true) {
   return extracted<decltype(last), std::decay_t<decltype(unit)>> 
@@ -171,7 +173,7 @@ struct identifier {
   lexem ident ;
 } ;
 
- extracted<auto, identifier> 
+extracted<auto, identifier> 
 next_identifier (auto begin, auto const end) {
   auto const identifier_ids = { thodd::identifier } ;
   
@@ -333,7 +335,9 @@ next_argument (auto begin, auto const end, bool mandatory = true) {
 }
 
 struct function_signature {
-  enum class purity_ { pure, impure, unknown } ;
+  enum class purity_ { 
+    pure, impure, unknown 
+  } ;
 
   purity_ purity ; 
   identifier name ;
@@ -435,7 +439,9 @@ next_function_signature (auto begin, auto const end, bool mandatory = true) {
 }
 
 struct instruction {
-  enum class type_ { return_fcall, return_number, return_identifier } ;
+  enum class type_ { 
+    return_fcall, return_number, return_identifier 
+  } ;
 
   type_ type ;
   std::vector<lexem> data ;
@@ -532,12 +538,9 @@ next_function_context (auto begin, auto const end, bool mandatory = true) {
   
   auto const rbrace_ids = { thodd::rbrace } ;
   auto && rbrace_opt = next_ids(inst_cursor, end, rbrace_ids) ;
-  std::cout  << "coucou" << std::endl ;
   
-  if (has_no_value(rbrace_opt, "} attendue pour fermer le contexte", mandatory)) {
-    std::cout  << "coucou" << std::endl ;
+  if (has_no_value(rbrace_opt, "} attendue pour fermer le contexte", mandatory))
     return make_extracted(begin, function_context{}, false) ;
-  }
 
   return make_extracted(rbrace_opt.value(), function_context{insts}) ;
 }
@@ -664,7 +667,12 @@ next_pod (auto begin, auto const end, bool mandatory = true) {
 }
 
 struct declaration {
+  enum class type_ {
+    pod, func
+  } ;
+
   std::vector<lexem> data ;
+  type_ type ;
 } ;
 
 extracted<auto, declaration> 
@@ -672,12 +680,12 @@ next_declaration (auto begin, auto const end, bool mandatory = true) {
   auto && pod_declaration_ext = next_pod (begin, end, false) ;
 
   if (pod_declaration_ext.unit.has_value()) 
-    return make_extracted (pod_declaration_ext.last, declaration{copy_lexems(begin, pod_declaration_ext.last)}) ;
+    return make_extracted (pod_declaration_ext.last, declaration{copy_lexems(begin, pod_declaration_ext.last), declaration::type_::pod}) ;
 
   auto && function_definition_ext = next_function_definition (begin, end, false) ;
 
   if (function_definition_ext.unit.has_value())
-    return make_extracted (function_definition_ext.last, declaration {copy_lexems (begin, function_definition_ext.last)}) ;
+    return make_extracted (function_definition_ext.last, declaration {copy_lexems (begin, function_definition_ext.last), declaration::type_::func}) ;
 
   return make_extracted (begin, declaration{}, false) ;
 }
@@ -753,7 +761,7 @@ namespace cpp {
     std::string cpp = transpile_identifier(fcall.name) + "(" ;
     
     for (auto const & param : fcall.params)
-      cpp += transpile_parameter(param) ;
+      cpp += transpile_parameter(param) + ", ";
 
     if (!fcall.params.empty())
       (cpp.pop_back(), cpp.pop_back()) ;  
@@ -791,16 +799,13 @@ namespace cpp {
                       transpile_identifier(fsignature.type) + " " +
                       transpile_identifier(fsignature.name) + "(" ;
     
-    std::for_each(
-      fsignature.args.begin(), fsignature.args.end(), 
-      [&cpp] (auto const & arg) {
+    for(auto const & arg : fsignature.args) 
         cpp += transpile_argument (arg) + ", " ;
-      }) ;
 
-    cpp.pop_back() ; cpp.pop_back() ;  
-    cpp += ")"  ;
+    if (!fsignature.args.empty())
+      (cpp.pop_back(), cpp.pop_back()) ;  
 
-    return cpp ;  
+    return cpp + ")" ;  
   }
 
   std::string const
@@ -847,16 +852,8 @@ namespace cpp {
 
   std::string const 
   transpile_member (member const & mbr) {
-    std::string cpp = transpile_identifier(mbr.name) + " : " ;
-    
-    switch (mbr.link) {
-      case member::link_::value : break ;
-      case member::link_::weak : cpp += "# " ; break ;
-      case member::link_::strengh : cpp += "[#] " ; break ;
-      case member::link_::alias : cpp += "## " ; break ; 
-    }
-    
-    return cpp += transpile_identifier(mbr.tname) + " ;"; 
+    return transpile_identifier(mbr.tname) + " " +
+      transpile_identifier(mbr.name) ;
   }
 
   std::string const 
@@ -865,14 +862,247 @@ namespace cpp {
     cpp += transpile_identifier(pod.name) + " {\n" ; 
 
     for(auto const & mbr : pod.members)
-      cpp += "    " + transpile_member(mbr) + "\n";
+      cpp += "    " + transpile_member(mbr) + " ;\n";
     
     if (!pod.members.empty())
       cpp.pop_back() ;
 
     return cpp + "\n}\n" ;
   }
+
+  std::string const 
+  transpile_declaration(declaration const & decl) {
+    switch (decl.type) {
+      case declaration::type_::func : return transpile_function_definition(next_function_definition(decl.data.begin(), decl.data.end(), false).unit.value()) ;
+      case declaration::type_::pod : return transpile_pod(next_pod(decl.data.begin(), decl.data.end(), false).unit.value()) ;
+    }
+  }
+
+  std::string const 
+  transpile_declarations (declarations const & decls) {
+    std::string cpp ;
+  
+    for (auto const & decl : decls.decls) 
+      cpp += transpile_declaration(decl) + "\n";
+
+    return cpp ;
+  }
 }
+
+/*
+{
+  "std" : {
+    "main" : {
+      "a" : {} 
+    }
+  }
+}
+=> 
+{
+  "std" : ["main"],
+  "std::main" : ["a"] ;
+}
+=> 
+{
+  "std", 
+  "std::main", 
+  "std::main::a",
+  "std::main::b"
+}
+=> 
+{
+  "std": ["std::main"], 
+  "std::main": ["std::main::a", "std::main::b"]s
+}
+*/
+
+
+namespace ctx {
+  struct context {
+    std::map<std::string, std::vector<std::string>> identfiers ;
+  } ;
+
+  context 
+  merge_context(context const & ctxt, context const & ctxt2) {
+    context merged = ctxt ;
+
+    for (auto const & entry : ctxt2) 
+      std::copy(entry.second.begin(), entry.second.end(), std::back_inserter(merged[entry.first])) ;
+
+    return merged ;
+  }
+
+  context const
+  transpile_function_call (function_call const & fcall) ;
+
+  context const
+  transpile_number (number const & fnum) {
+    return fnum.num.str ;
+  }
+
+  context const 
+  transpile_identifier (identifier const & fident) {
+    return fident.ident.str ;
+  }
+
+  context const
+  transpile_parameter (parameter const & fparam) {  
+    switch (fparam.type) {
+      case parameter::type_::number : 
+        return 
+        transpile_number(
+          next_number(
+            fparam.data.begin(), 
+            fparam.data.end()).unit.value()) ; 
+      case parameter::type_::identifier : 
+        return 
+        transpile_identifier(
+          next_identifier(
+            fparam.data.begin(), 
+            fparam.data.end()).unit.value()) ; 
+      case parameter::type_::fcall : 
+        return
+        transpile_function_call(
+          next_function_call(
+            fparam.data.begin(), 
+            fparam.data.end()).unit.value()) ; 
+    }
+  }
+
+  context const  
+  transpile_function_call (function_call const & fcall) {
+    std::string cpp = transpile_identifier(fcall.name) + "(" ;
+    
+    for (auto const & param : fcall.params)
+      cpp += transpile_parameter(param) + ", ";
+
+    if (!fcall.params.empty())
+      (cpp.pop_back(), cpp.pop_back()) ;  
+    
+    cpp += ")" ;
+
+    return cpp ;
+  }
+
+  context const 
+  transpile_argument(argument const & arg) {
+    return 
+    transpile_identifier(arg.type) + " " + 
+    transpile_identifier(arg.name) ;
+  }
+
+  context const 
+  transpile_purity (function_signature::purity_ purity) {
+    using fpurity = function_signature::purity_ ;
+    
+    std::string cpp = "[[" ;
+    
+    switch (purity) {
+      case fpurity::pure : cpp += "pure]]" ; break ;
+      case fpurity::impure : cpp += "imppure]]" ; break ;
+      case fpurity::unknown : cpp = "" ; break ;
+    }
+
+    return cpp ;
+  }
+
+  context const 
+  transpile_function_signature (function_signature const & fsignature) {
+    std::string cpp = transpile_purity(fsignature.purity) + "\n" + 
+                      transpile_identifier(fsignature.type) + " " +
+                      transpile_identifier(fsignature.name) + "(" ;
+    
+    for(auto const & arg : fsignature.args) 
+        cpp += transpile_argument (arg) + ", " ;
+
+    if (!fsignature.args.empty())
+      (cpp.pop_back(), cpp.pop_back()) ;  
+
+    return cpp + ")" ;  
+  }
+
+  context const
+  transpile_instruction (instruction const & inst) {
+    switch (inst.type) {
+      case instruction::type_::return_fcall : 
+        return 
+        transpile_function_call(
+          next_function_call(
+            inst.data.begin(), 
+            inst.data.end()).unit.value()) + " ;" ; 
+      case instruction::type_::return_number : 
+        return 
+        transpile_number(
+          next_number(
+            inst.data.begin(), 
+            inst.data.end()).unit.value()) + " ;" ; 
+      case instruction::type_::return_identifier :
+        return
+        transpile_identifier(
+          next_identifier(
+            inst.data.begin(), 
+            inst.data.end()).unit.value()) + " ;" ;  
+    }
+  }
+
+  context const 
+  transpile_function_context(function_context const & fctxt) {
+    std::string cpp = " {\n" ;
+  
+    for(auto const & inst : fctxt.insts)
+      cpp += "    " + transpile_instruction(inst) + "\n" ;
+
+    if (!fctxt.insts.empty())
+      cpp.pop_back() ;
+
+    return cpp += "\n}\n" ;
+  }
+
+  context const 
+  transpile_function_definition (function_definition const & fdef) {
+    return transpile_function_signature(fdef.sig) + transpile_function_context(fdef.ctx) ;
+  }
+
+  context const 
+  transpile_member (member const & mbr) {
+    return transpile_identifier(mbr.tname) + " " +
+      transpile_identifier(mbr.name) ;
+  }
+
+  context const 
+  transpile_pod (pod_declaration const & pod) {
+    std::string cpp = "struct " ;
+    cpp += transpile_identifier(pod.name) + " {\n" ; 
+
+    for(auto const & mbr : pod.members)
+      cpp += "    " + transpile_member(mbr) + " ;\n";
+    
+    if (!pod.members.empty())
+      cpp.pop_back() ;
+
+    return cpp + "\n}\n" ;
+  }
+
+  context const 
+  transpile_declaration(declaration const & decl) {
+    switch (decl.type) {
+      case declaration::type_::func : return transpile_function_definition(next_function_definition(decl.data.begin(), decl.data.end(), false).unit.value()) ;
+      case declaration::type_::pod : return transpile_pod(next_pod(decl.data.begin(), decl.data.end(), false).unit.value()) ;
+    }
+  }
+
+  context const 
+  transpile_declarations (declarations const & decls) {
+    context ctxt ;
+  
+    for (auto const & decl : decls.decls) 
+      merge_context(ctxt, transpile_declaration(decl));
+
+    return ctxt ;
+  }
+}
+
+
 
 
 int main(int argc, char** argv) {  
@@ -920,12 +1150,14 @@ int main(int argc, char** argv) {
     std::vector<lexem> lexems_filtered ;
     filter_lexems (lexems_instruction, lexems_filtered) ;
     
-    auto const && fdef = next_declarations(lexems_filtered.begin(), lexems_filtered.end()) ;
+    auto const && decls = next_declarations(lexems_filtered.begin(), lexems_filtered.end()) ;
     
-    if (has_no_value(fdef, "la definition de fonction est incorrecte"))
+    if (has_no_value(decls, "la definition de fonction est incorrecte"))
         return EXIT_FAILURE ;
     
-    //std::cout << cpp::transpile_function_definition(fdef.unit.value()) << std::endl ;  
+    std::fstream cpp_file ("main.cpp", std::ios::out) ;
+
+    cpp_file << cpp::transpile_declarations(decls.unit.value()) << std::endl ;  
   } 
 
   return EXIT_SUCCESS ;

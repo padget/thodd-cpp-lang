@@ -71,13 +71,13 @@ struct if_statement {
   std::vector<instruction> instructions ;
 } ;
 
-struct return_statement {
-  expression expr ;
-} ;
-
 struct while_statement {
   expression test ;
   std::vector<instruction> instructions ;
+} ;
+
+struct return_statement {
+  expression expr ;
 } ;
 
 struct for_statement {

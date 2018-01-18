@@ -141,23 +141,6 @@ filter_lexems (auto const & lexems, auto & lexems_filtered) {
 }
 
 
-namespace std {
-   bool
-  start_with (auto begin, auto const end, auto sbegin, auto send, auto comparator) {
-    while (begin != end && sbegin != send 
-           && comparator(*begin, *sbegin)) {
-      ++ begin ; ++ sbegin ;   
-    }
-
-    return 
-    sbegin == send ;
-  }
-
-   bool
-  start_with (auto begin, auto const end, auto sbegin, auto send) {
-    return start_with(begin, end, sbegin, send, std::equal_to {}) ;
-  }
-}
 
 std::optional<auto>
 next_ids(auto begin, auto end, auto const & ids) {

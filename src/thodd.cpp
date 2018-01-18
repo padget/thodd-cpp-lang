@@ -99,7 +99,6 @@ struct function_call {
   std::vector<expression> params ; 
 } ;
 
-
 struct const_declaration {
   identifier name ;
   identifier type ;
@@ -167,8 +166,54 @@ struct thodd {
 } ;
 
 /**
+ * Fonction d'extraction des lexems
+ */ 
+std::vector<lexem> const
+extract_lexems (auto begin, auto const end, std::vector<rx> rxs) {
+  std::smatch matched ; 
+  std::vector<lexem> lexems ;
+
+  while (std::not_equal_to{}(begin, end)) {
+    std::vector<lexem> matchs ;
+    
+    for (auto const & rx : rxs) {
+      std::regex_search(begin, end, matched, rx.reg) ;
+      matchs.push_back(lexem{rx.type, matched.str()}) ;
+    }
+
+    auto max = std::max_element (
+      matchs.cbegin(), matchs.cend(), 
+      [] (auto const & l, auto const & r) { 
+        return l.data.size() < r.data.size() ; 
+      }) ;
+    
+    begin = std::next (begin, (*max).data.size() == 0 ? 1 : (*max).data.size()) ;
+    
+    if ((*max).data.size() != 0)
+      lexems.push_back(*max) ;
+  } 
+
+  return lexems ;
+}
+
+std::vector<lexem>
+filter_lexems (auto const & lexems) {
+  std::vector<lexem> filtered ;
+  std::copy_if(
+    lexems.cbegin(), lexems.cend(), 
+    std::back_inserter(filtered), 
+    [] (auto const & lexem) { return lexem.type != lexem::type_::ignored ; }) ;
+  return filtered ;
+}
+
+
+/**
  * Fonctions d'extraction des structures 
  */
 
 
-int main () {}
+int main () {
+  std::string const stream = "" ;
+  auto && lexems = extract_lexems(stream.begin(), stream.end(), thodd_rxs()) ;
+  auto && filterd = filter_lexems (lexems) ;
+}

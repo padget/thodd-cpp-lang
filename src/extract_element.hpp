@@ -84,12 +84,14 @@ bool has_expression (auto begin, auto end) {
     has_identifier(begin, end) ;
 }
 
+#include <iostream>
 auto next_expression (auto begin, auto end) {
   auto cursor = begin ;
-  
-  if (has_function_call(begin, end))
+  std::cout << (*cursor).data << std::endl ;
+  if (has_function_call(begin, end)) {
     cursor = next_function_call(begin, end) ;
-  else if (has_identifier(begin, end))
+    std::cout << (*cursor).data << std::endl ;
+  } else if (has_identifier(begin, end))
     cursor = next_identifier(begin, end) ;
   else if (has_number(begin, end)) 
     cursor = next_number(begin, end) ;
@@ -148,8 +150,14 @@ bool has_function_call (auto begin, auto const end) {
 auto next_function_call (auto begin, auto end) -> decltype(begin) {
   auto cursor = std::next(next_identifier(begin, end)) ;
 
-  while (has_expression(cursor, end))
+  while (has_expression(cursor, end)) {
     cursor = next_expression(cursor, end) ;
+    
+    if (has_next(cursor, end, {lexem::type_::comma})) 
+      cursor = std::next(cursor) ;
+    else 
+      break ;
+  }
 
   return std::next(cursor) ;
 }
@@ -292,14 +300,14 @@ extract_while_statement (auto begin, auto end) {
 // } ;
 #include <iostream>
 bool has_const_declaration (auto begin, auto end) {
-  std::cout << (*std::next(begin, 3u)).data << std::endl ;
-  std::cout << (*next_expression(std::next(begin, 3u), end)).data << std::endl ;
+  std::for_each(begin, end, [](auto && lx){std::cout << lx.data << ' ' ;});
+  
+  std::cout << '"' << (int) (*next_expression(std::next(begin, 3u), end)).type <<'"'<< std::endl ;
   return has_identifier(begin, end) && 
     has_next(std::next(begin), end, {lexem::type_::colon}) &&
     has_identifier(std::next(begin, 2u), end) && 
-    has_expression(std::next(begin, 3u), end) ;/*&& 
+    has_expression(std::next(begin, 3u), end) && 
     has_next(next_expression(std::next(begin, 3u), end), end, {lexem::type_::semi_colon}) ;
-*/
 
 }
 

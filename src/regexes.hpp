@@ -28,6 +28,7 @@ thodd_rxs () {
     make_rx(std::regex("^while"), lexem::type_::while_kw),
     make_rx(std::regex("^switch"), lexem::type_::switch_kw),
     make_rx(std::regex("^case"), lexem::type_::case_kw),
+    make_rx(std::regex("^return"), lexem::type_::return_kw),
     make_rx(std::regex("^[a-z_]+"), lexem::type_::identifier),
     make_rx(std::regex("^\\("), lexem::type_::lbracket),
     make_rx(std::regex("^\\)"), lexem::type_::rbracket),

@@ -87,10 +87,9 @@ bool has_expression (auto begin, auto end) {
 #include <iostream>
 auto next_expression (auto begin, auto end) {
   auto cursor = begin ;
-  std::cout << (*cursor).data << std::endl ;
+
   if (has_function_call(begin, end)) {
     cursor = next_function_call(begin, end) ;
-    std::cout << (*cursor).data << std::endl ;
   } else if (has_identifier(begin, end))
     cursor = next_identifier(begin, end) ;
   else if (has_number(begin, end)) 
@@ -121,7 +120,7 @@ extract_expression (auto begin, auto const end) {
 
 bool has_function_call (auto begin, auto const end) {
   auto cursor = begin ;
- 
+  
   if (!has_identifier(cursor, end))
     return false ;
 
@@ -187,6 +186,7 @@ bool has_instruction (auto begin, auto end) ;
 auto next_instruction (auto begin, auto end) -> decltype(begin) ;
 extracted<instruction> extract_instruction (auto begin, auto end) ;
 
+#include <iostream>
 bool has_if_statement (auto begin, auto end) {
   auto cursor = begin ;
   
@@ -196,11 +196,11 @@ bool has_if_statement (auto begin, auto end) {
   cursor = std::next(cursor) ;
   if (!has_expression(cursor, end)) return false ;
   cursor = next_expression(cursor, end) ;
-  if (!has_next(cursor, end, {lexem::type_::lbracket})) return false ;
+  if (!has_next(cursor, end, {lexem::type_::rbracket})) return false ;
   cursor = std::next(cursor) ;
   if (!has_next(cursor, end, {lexem::type_::lbrace})) return false ;
   cursor = std::next(cursor) ;
-
+  
   while (has_instruction(cursor, end)) 
     cursor = next_instruction (cursor, end) ;  
 
@@ -300,33 +300,85 @@ extract_while_statement (auto begin, auto end) {
 // } ;
 #include <iostream>
 bool has_const_declaration (auto begin, auto end) {
-  std::for_each(begin, end, [](auto && lx){std::cout << lx.data << ' ' ;});
-  
-  std::cout << '"' << (int) (*next_expression(std::next(begin, 3u), end)).type <<'"'<< std::endl ;
   return has_identifier(begin, end) && 
     has_next(std::next(begin), end, {lexem::type_::colon}) &&
     has_identifier(std::next(begin, 2u), end) && 
     has_expression(std::next(begin, 3u), end) && 
     has_next(next_expression(std::next(begin, 3u), end), end, {lexem::type_::semi_colon}) ;
-
 }
 
 auto next_const_declaration (auto begin, auto end) {
-
+  return std::next(next_expression(std::next(begin, 3u), end)) ; 
 }
 
 extracted<const_declaration> 
 extract_const_declaration (auto begin, auto end) {
+  auto && name_ext = extract_identifier(begin, end) ;
+  auto && type_ext = extract_identifier(std::next(name_ext.last), end) ;
+  auto && expression_ext = extract_expression(type_ext.last, end) ;
 
+  return make_extracted(
+    std::next(expression_ext.last), 
+    const_declaration{name_ext.ext, type_ext.ext, expression_ext.ext}) ;
 }
+
+/**
+ * Return statement
+ */
+
+// struct return_statement {
+//   expression value ;
+// } ;
+
+bool has_return_statement (auto begin, auto end) {
+  return has_next(begin, end, {lexem::type_::return_kw}) &&
+    has_expression(std::next(begin), end) && 
+    has_next(next_expression(std::next(begin), end), end, {lexem::type_::semi_colon}) ;
+}
+
+auto next_return_statement (auto begin, auto end) {
+  return std::next(next_expression(std::next(begin), end)) ;
+}
+
+extracted<return_statement> 
+extract_return_statement (auto begin, auto end) {
+  auto && [value, last] = extract_expression(std::next(begin), end) ;
+  return make_extracted(std::next(last), value) ;
+}
+
+
 
 /**
  * Instruction
  */ 
 
-bool has_instruction (auto begin, auto end) {}
-auto next_instruction (auto begin, auto end) -> decltype(begin) {}
-extracted<instruction> extract_instruction (auto begin, auto end) {}
+bool has_instruction (auto begin, auto end) {
+  // TODO add for and switch statement ;
+  return has_const_declaration(begin, end) ||
+    has_if_statement(begin, end) ||
+    has_while_statement(begin, end) ||
+    has_return_statement(begin, end) ;
+
+}
+
+auto next_instruction (auto begin, auto end) -> decltype(begin) {
+  auto cursor = begin ;
+
+  if (has_const_declaration(begin, end))
+    cursor =  next_const_declaration(begin, end) ;
+  else if (has_if_statement(begin, end))
+    cursor = next_if_statement(begin, end) ;
+  else if (has_while_statement(begin, end))
+    cursor = next_while_statement(begin, end) ;
+  else if (has_return_statement(begin, end))
+    cursor = next_return_statement(begin, end) ;
+  
+  return cursor ;
+}
+
+extracted<instruction> extract_instruction (auto begin, auto end) {
+
+}
 
  
 #endif

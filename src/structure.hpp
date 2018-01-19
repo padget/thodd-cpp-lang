@@ -14,7 +14,7 @@ struct lexem {
     point, comma, ignored, 
     pure_kw, impure_kw, pod_kw,
     weak, strengh, alias, 
-    if_kw, for_kw, switch_kw, while_kw, case_kw
+    if_kw, for_kw, switch_kw, while_kw, case_kw, return_kw
   } ;
 
   type_ type ;
@@ -36,7 +36,8 @@ struct expression {
 
 struct instruction {
   enum class type_ {
-    return_statement, if_statement, while_statement, for_statement, const_declaration
+    return_statement, if_statement, while_statement, 
+    for_statement, const_declaration, switch_statement
   } ;
 
   type_ type ;

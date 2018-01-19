@@ -97,10 +97,15 @@ struct switch_statement {
   std::vector<case_statement> cases ;
 } ;
 
+struct parameter {
+  identifier name ;
+  identifier type ;
+} ;
 
 struct function_declaration {
   identifier name ;
   identifier type ;
+  std::vector<parameter> parameters ;
   std::vector<instruction> instructions ;
 } ;
 
@@ -110,6 +115,7 @@ struct pod_member {
 } ;
 
 struct pod_declaration {
+  identifier name ;
   std::vector<pod_member> members ;
 } ;
 

@@ -11,5 +11,8 @@ int main () {
   auto && lexems   = extract_lexems(stream.begin(), stream.end(), thodd_rxs()) ;
   auto && filtered = filter_lexems(lexems.begin(), lexems.end()) ;
 
-  std::cout << std::boolalpha << has_if_statement(filtered.begin(), filtered.end()) ;
+  if (has_function_declaration(filtered.begin(), filtered.end())) {
+    std::cout << extract_function_declaration(filtered.begin(), filtered.end()).ext.name.data ;
+    std::cout << "prpout" << std::endl ;
+  }
 }

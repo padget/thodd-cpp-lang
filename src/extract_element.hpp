@@ -84,7 +84,6 @@ bool has_expression (auto begin, auto end) {
     has_identifier(begin, end) ;
 }
 
-#include <iostream>
 auto next_expression (auto begin, auto end) {
   auto cursor = begin ;
 
@@ -186,10 +185,9 @@ bool has_instruction (auto begin, auto end) ;
 auto next_instruction (auto begin, auto end) -> decltype(begin) ;
 extracted<instruction> extract_instruction (auto begin, auto end) ;
 
-#include <iostream>
 bool has_if_statement (auto begin, auto end) {
   auto cursor = begin ;
-  
+
   if (!has_next(begin, end, {lexem::type_::if_kw})) return false ;
   cursor = std::next(cursor) ;
   if (!has_next(cursor, end, {lexem::type_::lbracket})) return false ;
@@ -249,7 +247,7 @@ bool has_while_statement (auto begin, auto end) {
   cursor = std::next(cursor) ;
   if (!has_expression(cursor, end)) return false ;
   cursor = next_expression(cursor, end) ;
-  if (!has_next(cursor, end, {lexem::type_::lbracket})) return false ;
+  if (!has_next(cursor, end, {lexem::type_::rbracket})) return false ;
   cursor = std::next(cursor) ;
   if (!has_next(cursor, end, {lexem::type_::lbrace})) return false ;
   cursor = std::next(cursor) ;
@@ -346,8 +344,6 @@ extract_return_statement (auto begin, auto end) {
   return make_extracted(std::next(last), value) ;
 }
 
-
-
 /**
  * Instruction
  */ 
@@ -377,8 +373,210 @@ auto next_instruction (auto begin, auto end) -> decltype(begin) {
 }
 
 extracted<instruction> extract_instruction (auto begin, auto end) {
-
+  instruction::type_ type = 
+    has_const_declaration(begin, end) ?
+      instruction::type_::const_declaration :
+    has_if_statement(begin, end) ?
+      instruction::type_::if_statement :
+    has_while_statement(begin, end) ?
+      instruction::type_::while_statement :
+    has_return_statement(begin, end) ?
+      instruction::type_::return_statement : 
+      instruction::type_::return_statement ;
+  auto const last = next_instruction(begin, end) ;
+  
+  return make_extracted(last, instruction{type, copy_lexems(begin, last)}) ;  
 }
 
- 
+/**
+ * Function parameter
+ */  
+
+bool has_parameter (auto begin, auto end) {
+  return has_identifier(begin, end) &&
+    has_next(std::next(begin), end, {lexem::type_::colon}) && 
+    has_identifier(std::next(begin, 2u), end) ;
+}
+
+auto next_parameter (auto begin, auto end) {
+  return next_identifier(std::next(next_identifier(begin, end)), end) ;
+}
+
+extracted<parameter> 
+extract_parameter (auto begin, auto end) {
+  auto && name_ext = extract_identifier(begin, end) ;
+  auto && type_ext = extract_identifier(std::next(name_ext.last), end) ;
+  return make_extracted(type_ext.last, parameter{name_ext.ext, type_ext.ext}) ;
+}
+
+/**
+ * Function declaration
+ */
+
+bool has_function_declaration (auto begin, auto end) {
+  auto cursor = begin ;
+
+  if (!has_identifier(cursor, end)) 
+    return false ; 
+
+  cursor = next_identifier(cursor, end) ;
+
+  if (!has_next(cursor, end, {lexem::type_::lbracket}))
+    return false ;
+
+  cursor = std::next(cursor) ;
+
+  while (has_parameter(cursor, end)) {
+    cursor = next_parameter(cursor, end) ;
+    
+    if (has_next(cursor, end, {lexem::type_::comma}))
+      cursor = std::next(cursor) ;
+    else 
+      break ;
+  }
+  
+  if (!has_next(cursor, end, {lexem::type_::rbracket, lexem::type_::colon}))
+    return false ;
+
+  cursor = std::next(cursor, 2u) ;
+
+  if (!has_identifier(cursor, end))
+    return false ;
+
+  cursor = next_identifier(cursor, end) ;
+  
+  if (!has_next(cursor, end, {lexem::type_::lbrace}))
+    return false ;
+
+  cursor = std::next(cursor) ;
+
+  while (has_instruction(cursor, end)) 
+    cursor = next_instruction(cursor, end) ;
+  
+  if (!has_next(cursor, end, {lexem::type_::rbrace}))
+    return false ;
+
+  return true ;
+}
+
+auto next_function_declaration (auto begin, auto end) {
+  auto cursor = std::next(next_identifier(begin, end)) ;
+  
+  while (has_parameter(cursor, end)) {
+    cursor = next_parameter(cursor, end) ;
+    
+    if (has_next(cursor, end, {lexem::type_::comma}))
+      cursor = std::next(cursor) ;
+    else 
+      break ;
+  }
+
+  cursor = std::next(next_identifier(std::next(cursor, 2u), end));
+  
+  while(has_instruction(cursor, end))
+    cursor = next_instruction(cursor, end) ;
+
+  return std::next(cursor) ;
+}
+
+extracted<function_declaration>
+extract_function_declaration (auto begin, auto end) {
+  auto && name_ext = extract_identifier(begin, end) ;
+  auto cursor = std::next(name_ext.last) ;
+  std::vector<parameter> parameters ;
+
+  while (has_parameter(cursor, end)) {
+    auto && param_ext = extract_parameter(cursor, end) ;
+    parameters.push_back(param_ext.ext) ;
+
+    if (has_next(param_ext.last, end, {lexem::type_::comma}))
+      cursor = std::next(param_ext.last) ;
+    else 
+      break ;
+  }
+  
+  cursor = std::next(cursor, 2u) ;
+  auto && type_ext = extract_identifier(cursor, end) ; 
+  cursor = std::next(cursor) ;
+  std::vector<instruction> instructions ;
+
+  while (has_instruction(cursor, end)) {
+    auto && inst_ext = extract_instruction(cursor, end) ;
+    cursor = inst_ext.last ;
+    instructions.push_back(inst_ext.ext) ;
+  }
+  
+  return make_extracted(
+    std::next(cursor), 
+    function_declaration{name_ext.ext, type_ext.ext, parameters, instructions}) ;
+}
+
+/**
+ * Pod member
+ */
+
+bool has_pod_member (auto begin, auto end) {
+  return has_identifier(begin, end) &&
+    has_next(std::next(begin), end, {lexem::type_::colon}) && 
+    has_identifier(std::next(begin, 2u), end) && 
+    has_next(next_identifier(std::next(begin, 2u), end), end, {lexem::type_::semi_colon}) ;
+}
+
+auto next_pod_member (auto begin, auto end) {
+  return std::next(next_identifier(std::next(next_identifier(begin, end)), end)) ;
+}
+
+extracted<pod_member> 
+extract_pod_member (auto begin, auto end) {
+  auto && name_ext = extract_identifier(begin, end) ;
+  auto && type_ext = extract_identifier(std::next(name_ext.last), end) ;
+  return make_extracted(std::next(type_ext.last), pod_member{name_ext.ext, type_ext.ext}) ;
+}
+
+/**
+ * Pod declaration 
+ */
+
+bool has_pod_declaration (auto begin, auto end) {
+  auto cursor = begin ;
+
+  if (!has_next(cursor, end, {lexem::type_::pod_kw}))
+    return false ;
+  
+  cursor = std::next(cursor) ;
+
+  if (!has_identifier(cursor, end))
+    return false ;
+
+  cursor = next_identifier(cursor, end) ;
+
+  if (!has_next(cursor, end, {lexem::type_::lbrace}))
+    return false ;
+
+  cursor = std::next(cursor) ;
+
+  while (has_pod_member(cursor, end))
+    cursor = next_pod_member(cursor, end) ;
+
+  if (!has_next(cursor, end, {lexem::type_::rbrace})) 
+    return false ;
+
+  return true ;
+}
+
+auto next_pod_declaration (auto begin, auto end) {
+  auto cursor = std::next(next_identifier(std::next(begin), end)) ;
+
+  while (has_pod_member(cursor, end))
+    cursor = next_pod_member(cursor, end) ;
+
+  return std::next(cursor) ;
+}
+
+extracted<pod_declaration> // TODO HERE
+extract_pod_declaration (auto begin, auto end) {
+  auto && name_ext = extract_identifier(begin, end) ;
+  auto && type_ext = extract_identifier(std::next(name_ext.last), end) ;
+  return make_extracted(std::next(type_ext.last), pod_member{name_ext.ext, type_ext.ext}) ;
+}
 #endif

@@ -130,7 +130,7 @@ struct declaration {
 
 struct thodd {
   std::string filename ;
-  std::vector<declaration> decls ;
+  std::vector<declaration> declarations ;
 } ;
 
 #endif

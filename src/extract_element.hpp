@@ -5,8 +5,12 @@
 #  include <functional>
 #  include <type_traits>
 
-bool
-start_with (auto begin, auto const end, auto sbegin, auto send, auto comparator) {
+#  include "extract_lexems.hpp"
+
+bool start_with (
+  auto begin, auto const end, 
+  auto sbegin, auto send, 
+  auto comparator) {
   while (begin != end && sbegin != send 
           && comparator(*begin, *sbegin)) {
     ++ begin ; ++ sbegin ;   
@@ -15,16 +19,16 @@ start_with (auto begin, auto const end, auto sbegin, auto send, auto comparator)
   return sbegin == send ;
 }
 
+using lexems_it = typename std::vector<lexem>::const_iterator ;
+
 template <
   typename extract_t>
 struct extracted {
-  using lexems_it = typename std::vector<lexem>::iterator ;
-
   extract_t ext ;
   lexems_it last ;
 } ;
 
-auto make_extracted (auto last, auto const & ext) {
+auto make_extracted (auto && last, auto const & ext) {
   return extracted <std::decay_t<decltype(ext)>> {ext, last} ;
 }
 
@@ -291,12 +295,6 @@ extract_while_statement (auto begin, auto end) {
  * Const déclaration 
  */
 
-// struct const_declaration {
-//   identifier name ;
-//   identifier type ;
-//   expression value ;
-// } ;
-#include <iostream>
 bool has_const_declaration (auto begin, auto end) {
   return has_identifier(begin, end) && 
     has_next(std::next(begin), end, {lexem::type_::colon}) &&
@@ -573,10 +571,77 @@ auto next_pod_declaration (auto begin, auto end) {
   return std::next(cursor) ;
 }
 
-extracted<pod_declaration> // TODO HERE
+extracted<pod_declaration>
 extract_pod_declaration (auto begin, auto end) {
-  auto && name_ext = extract_identifier(begin, end) ;
-  auto && type_ext = extract_identifier(std::next(name_ext.last), end) ;
-  return make_extracted(std::next(type_ext.last), pod_member{name_ext.ext, type_ext.ext}) ;
+  auto && name_ext = extract_identifier(std::next(begin), end) ;
+  auto cursor = std::next(name_ext.last) ;
+  std::vector<pod_member> members ;
+
+  while (has_pod_member(cursor, end)) {
+    auto && member_ext = extract_pod_member(cursor, end) ;
+    cursor = member_ext.last ;
+    members.push_back(member_ext.ext) ;
+  } 
+
+  return make_extracted(std::next(cursor), pod_declaration{name_ext.ext, members}) ;
 }
+
+
+bool has_declaration (auto begin, auto end) {
+  return has_pod_declaration(begin, end) ||
+    has_function_declaration(begin, end) ;
+}
+
+auto next_declaration (auto begin, auto end) {
+  auto cursor = begin ;
+
+  if (has_pod_declaration(begin, end))
+    cursor = next_pod_declaration(begin, end) ;
+  else if (has_function_declaration(begin, end))
+    cursor = next_function_declaration(begin, end) ;
+  
+  return cursor ;
+}
+
+extracted<declaration> 
+extract_declaration (auto begin, auto end) {
+  declaration::type_ type = 
+    has_pod_declaration(begin, end) ?
+      declaration::type_::pod :
+    has_function_declaration(begin, end) ?
+      declaration::type_::function :
+      declaration::type_::function ;
+  auto const last = next_declaration(begin, end) ;
+  
+  return make_extracted(last, declaration{type, copy_lexems(begin, last)}) ;  
+}
+
+
+bool has_thodd (auto begin, auto end) {
+  auto cursor = begin ;
+  
+  while (has_declaration (cursor, end))
+    cursor = next_declaration(cursor, end) ;
+  
+  return cursor == end ;
+}
+
+auto next_thodd (auto begin, auto end) {
+  return end ;
+}
+
+extracted<thodd> 
+extract_thodd (std::string const & filename, auto begin, auto end) {
+  std::vector<declaration> declarations ;
+  auto cursor = begin ;
+
+  while (has_declaration(cursor, end)) {
+    auto && decl_ext = extract_declaration(cursor, end) ;
+    cursor = decl_ext.last ;
+    declarations.push_back(decl_ext.ext) ;
+  }
+
+  return make_extracted(cursor, thodd{filename, declarations}) ;
+}
+
 #endif

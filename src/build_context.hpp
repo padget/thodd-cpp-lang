@@ -20,6 +20,9 @@ std::vector<std::string>
 build_context(std::string const &, function_declaration const &) ;
 
 std::vector<std::string>
+build_context(std::string const &, parameter const &) ;
+
+std::vector<std::string>
 build_context(std::string const &, pod_declaration const &) ;
 
 std::vector<std::string>
@@ -53,7 +56,5 @@ build_context(std::string const &, identifier const &) ;
 // std::chrono::now
 // => {{std, [chrono]}, {std::chrono, [now]}}
 std::map<std::string, std::vector<std::string>>
-merge_context(
-  std::vector<std::string> const &, 
-  std::vector<std::string> const &) ;
+merge_context(std::vector<std::string> const &) ;
 #endif

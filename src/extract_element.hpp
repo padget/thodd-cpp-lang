@@ -610,7 +610,7 @@ extract_declaration (auto begin, auto end) {
       declaration::type_::pod :
     has_function_declaration(begin, end) ?
       declaration::type_::function :
-      declaration::type_::function ;
+      declaration::type_::import ;
   auto const last = next_declaration(begin, end) ;
   
   return make_extracted(last, declaration{type, copy_lexems(begin, last)}) ;  

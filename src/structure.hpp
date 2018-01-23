@@ -6,8 +6,9 @@
 
 struct lexem {
   enum class type_ : int {
-    identifier, number,
-    lbrace, rbrace, string, 
+    identifier, identifiers, 
+    number, string, 
+    lbrace, rbrace, 
     lbracket, rbracket,
     lsbracket, rsbracket,
     colon, semi_colon, 

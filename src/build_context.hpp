@@ -21,13 +21,13 @@ build_context(std::string const &, declaration const &) ;
 std::vector<context_identifier>
 build_context(std::string const &, function_declaration const &) ;
 
-std::vector<context_identifier>
+context_identifier
 build_context(std::string const &, parameter const &) ;
 
 std::vector<context_identifier>
 build_context(std::string const &, pod_declaration const &) ;
 
-std::vector<context_identifier>
+context_identifier
 build_context(std::string const &, pod_member const &) ;
 
 std::vector<context_identifier>
@@ -42,14 +42,8 @@ build_context(std::string const &, while_statement const &) ;
 std::vector<context_identifier>
 build_context(std::string const &, return_statement const &) ;
 
-std::vector<context_identifier>
+context_identifier
 build_context(std::string const &, const_declaration const &) ;
-
-std::vector<context_identifier>
-build_context(std::string const &, expression const &) ;
-
-std::vector<context_identifier>
-build_context(std::string const &, function_call const &) ;
 
 
 // std::chrono::now

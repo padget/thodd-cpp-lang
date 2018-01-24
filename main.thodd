@@ -1,0 +1,75 @@
+
+pod strings {
+  data : string ;
+  next : strings ;
+}
+
+add (a: int, b: int) : int {
+  c : int 0 ;
+  return if (__sup(a, c), __add(a, b), __add(c, a)) ;
+}
+
+add (as : numbers) : int {
+  [[local]] res : int 0 ;
+  as...((a: int) { res = __add(res, a) ; return res ;}) ;
+  return res ;
+}
+
+max (as: numbers): int {
+  [[impure]] res : int 0 ;
+  as...((a: int) { res = if(sup(a, res), a, res) ; return res ;}) ;
+  return res ;
+}
+
+__add (a: int, b: int) ;
+
+// ici l'opérateur ... permet d'iterer sur une structure iterable.
+// La fonction va être appliquée sur chacun des éléments de la liste à un seul argument.
+// Si la fonction a deux arguments alors le premier est l'élément courant et le 
+// second le resultat du précedent appel
+// Si la fonction a trois arguments alors le premier est l'élément courant, le 2nd
+// le résultat du précedent appel et le 3eme celui d'avant
+// ...
+// Pour initialiser les valeurs de départ on procède en indicant une valeur entre parenthese
+// pour chacun des argument suplémentaire avec un _ pour le premier argument.  
+
+sum (as: numbers) : int {
+  return as...__add(_,0) ;
+}
+
+
+
+max (as: numbers) : int {
+  __max : lambda (l: int, r: int): int { 
+    return if (greater(l, r), l, r) ; 
+  } ;
+
+  return as...__max(_, 0) ;
+}
+
+max (as: numbers) : int {
+  return reduce (as, lambda (a: int, mx: int): int {
+    return if (__sup(a, mx), a, mx) ;
+  }) ;
+}
+
+sum (as: numbers): int {
+  return reduce (as, lambda (a: int, acc: int): int {
+    return __add (a, ac);
+  }) ;
+}
+
+positive (as: numbers): int {
+  return filter (as, lambda (a: int): bool {
+    return sup (a, 0) ;
+  }) ;
+}
+
+positive_v2 (as: numbers): int {
+  return filter (as, lambda __sup(_, 0)) ;
+}
+
+abs (as: numbers): numbers {
+  return map (as, lambda if(sup(_, 0), _, minus(_))) ;
+}
+

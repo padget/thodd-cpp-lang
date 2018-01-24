@@ -14,8 +14,10 @@ struct lexem {
     colon, semi_colon, 
     point, comma, ignored, 
     pure_kw, impure_kw, pod_kw,
+    lambda_kw,
     weak, strengh, alias, 
-    if_kw, for_kw, switch_kw, while_kw, case_kw, return_kw
+    switch_kw, case_kw, return_kw, 
+    iterate_kw, iterate_if_kw
   } ;
 
   type_ type ;

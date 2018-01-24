@@ -10,14 +10,12 @@ std::vector<rx>
 thodd_rxs () {
   return {
     make_rx(std::regex("^pure"), lexem::type_::pure_kw),
+    make_rx(std::regex("^lambda"), lexem::type_::lambda_kw),
     make_rx(std::regex("^impure"), lexem::type_::impure_kw),
     make_rx(std::regex("^pod"), lexem::type_::pod_kw),
-    make_rx(std::regex("^if"), lexem::type_::if_kw),
-    make_rx(std::regex("^for"), lexem::type_::for_kw),
-    make_rx(std::regex("^while"), lexem::type_::while_kw),
-    make_rx(std::regex("^switch"), lexem::type_::switch_kw),
-    make_rx(std::regex("^case"), lexem::type_::case_kw),
     make_rx(std::regex("^return"), lexem::type_::return_kw),
+    make_rx(std::regex("^\\.\\.\\."), lexem::type_::iterate_kw),
+    make_rx(std::regex("^\\.\\.\\.\\?"), lexem::type_::iterate_if_kw),
     make_rx(std::regex("^[a-z_]+"), lexem::type_::identifier),
     make_rx(std::regex("^[a-z_]+(\\.[a-z_]+)*"), lexem::type_::identifiers), // TODO prendre en compte l'introduction des identifiers
     make_rx(std::regex("^\\("), lexem::type_::lbracket),

@@ -73,3 +73,15 @@ abs (as: numbers): numbers {
   return map (as, lambda if(sup(_, 0), _, minus(_))) ;
 }
 
+pod numbers {
+  obj: int ;
+  __next: [@] numbers ;
+}
+
+next (a: numbers): @numbers {
+  return a.__next ;
+}
+
+prev (a: numbers): @numbers {
+  return a.__prev ;
+}

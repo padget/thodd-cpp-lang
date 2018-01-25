@@ -49,3 +49,14 @@ pairs4 : numbers pop (pairs3, at(pairs3, 2)) ;
 pairs5 : numbers reverse (pairs3) ;
 
 
+  obj: int ;
+  __next: [@] numbers ;
+}
+
+next (a: numbers): @numbers {
+  return a.__next ;
+}
+
+prev (a: numbers): @numbers {
+  return a.__prev ;
+}

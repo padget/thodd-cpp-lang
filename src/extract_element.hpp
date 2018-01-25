@@ -3,7 +3,6 @@
 
 #  include <vector>
 #  include <functional>
-#  include <type_traits>
 
 #  include "extract_lexems.hpp"
 
@@ -39,6 +38,10 @@ bool has_next (auto begin, auto end, std::vector<lexem::type_> const ids) {
   return start_with(
     begin, end, ids.begin(), ids.end(), 
     [] (auto const & lexem, auto const & type) { return lexem.type == type ; }) ;
+}
+
+bool has_next (auto begin, auto end, lexem::type_ const id) {
+  return has_next (begin, end,  {id}) ;
 }
 
 /** 
@@ -210,85 +213,6 @@ bool has_if_statement (auto begin, auto end) {
     return false ;
 
   return true ;
-}
-
-auto next_if_statement (auto begin, auto end) {
-  auto cursor = std::next(next_expression(std::next(begin, 2u), end), 2u) ;
-
-  while (has_instruction(cursor, end)) 
-    cursor = next_instruction(cursor, end) ;
-
-  return std::next(cursor) ;
-}
-
-extracted<if_statement>
-extract_if_statement (auto begin, auto end) {
-  auto && test_ext = extract_expression(std::next(begin, 2u), end) ;
-  auto cursor = test_ext.last ;
-  std::vector<instruction> instructions ;
-
-  while (has_instruction(cursor, end)) {
-    auto && inst_ext = extract_instruction(cursor, end) ;
-    instructions.push_back(inst_ext.ext) ;
-    cursor = inst_ext.last ;
-  }
-
-  return make_extracted(
-    std::next(cursor, 2u), 
-    if_statement{test_ext.ext, instructions}) ; 
-}
-
-/**
- * While statement
- */
-
-bool has_while_statement (auto begin, auto end) {
-  auto cursor = begin ;
-  
-  if (!has_next(begin, end, {lexem::type_::while_kw})) return false ;
-  cursor = std::next(cursor) ;
-  if (!has_next(cursor, end, {lexem::type_::lbracket})) return false ;
-  cursor = std::next(cursor) ;
-  if (!has_expression(cursor, end)) return false ;
-  cursor = next_expression(cursor, end) ;
-  if (!has_next(cursor, end, {lexem::type_::rbracket})) return false ;
-  cursor = std::next(cursor) ;
-  if (!has_next(cursor, end, {lexem::type_::lbrace})) return false ;
-  cursor = std::next(cursor) ;
-
-  while (has_instruction(cursor, end)) 
-    cursor = next_instruction (cursor, end) ;  
-
-  if (!has_next(cursor, end, {lexem::type_::rbrace}))
-    return false ;
-
-  return true ;
-}
-
-auto next_while_statement (auto begin, auto end) {
-  auto cursor = std::next(next_expression(std::next(begin, 2u), end), 2u) ;
-
-  while (has_instruction(cursor, end)) 
-    cursor = next_instruction(cursor, end) ;
-
-  return std::next(cursor) ;
-}
-
-extracted<while_statement>
-extract_while_statement (auto begin, auto end) {
-  auto && test_ext = extract_expression(std::next(begin, 2u), end) ;
-  auto cursor = test_ext.last ;
-  std::vector<instruction> instructions ;
-
-  while (has_instruction(cursor, end)) {
-    auto && inst_ext = extract_instruction(cursor, end) ;
-    instructions.push_back(inst_ext.ext) ;
-    cursor = inst_ext.last ;
-  }
-
-  return make_extracted(
-    std::next(cursor, 2u), 
-    while_statement{test_ext.ext, instructions}) ; 
 }
 
 /**

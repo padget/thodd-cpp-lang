@@ -6,6 +6,7 @@
 #  include <type_traits>
 
 # include "structure.hpp"
+# include "signatures.hpp"
 
 bool start_with (auto begin, auto end, 
                  auto sbegin, auto send, 
@@ -17,126 +18,190 @@ bool start_with (auto begin, auto end,
   return sbegin == send ;
 }
 
-bool has_next (auto begin, auto end, std::vector<lexem::type_> const ids) {
+bool has_next (auto begin, auto end, std::vector<lexem::type_> ids) {
   return start_with(
     begin, end, ids.begin(), ids.end(), 
     [] (auto const & lexem, auto const & type) { return lexem.type == type ; }) ;
 }
 
-bool has_next (auto begin, auto end, lexem::type_ const id) {
-  return has_next (begin, end,  {id}) ;
+bool has_lbracket (auto begin, auto end) {
+  return has_next(begin, end, {lexem::type_::lbracket}) ;
+} 
+
+auto next_lbracket (auto begin, auto end) {
+  return std::next(begin) ;
 }
 
-bool has_lbracket (auto begin, auto end) ; // x
-auto next_lbracket (auto begin, auto end) ; //
-bool has_rbracket (auto begin, auto end) ; // x
-auto next_lbracket (auto begin, auto end) ; //
-bool has_lbrace (auto begin, auto end) ; // x
-auto next_lbracket (auto begin, auto end) ; //
-bool has_rbrace (auto begin, auto end) ; // x
-auto next_lbracket (auto begin, auto end) ; //
-bool has_return_kw (auto begin, auto end) ; // x
-auto next_lbracket (auto begin, auto end) ; //
-bool has_colon (auto begin, auto end) ; // x
-auto next_lbracket (auto begin, auto end) ; //
-bool has_comma (auto begin, auto end) ; // x
-auto next_lbracket (auto begin, auto end) ; //
-bool has_pod_kw (auto begin, auto end) ; // x
-auto next_lbracket (auto begin, auto end) ; //
-bool has_lambda_kw (auto begin, auto end) ; // x
-auto next_lbracket (auto begin, auto end) ; // 
-bool has_semi_colon (auto begin, auto end) ; // x
-auto next_lbracket (auto begin, auto end) ; //
-
-bool has_string (auto begin, auto end) ; // x
-auto next_lbracket (auto begin, auto end) ; //
-bool has_identifier (auto begin, auto end) ; // x
-auto next_lbracket (auto begin, auto end) ; //
-bool has_number (auto begin, auto end) ; // x
-auto next_lbracket (auto begin, auto end) ; //
-
-bool has_function_call_expression (auto begin, auto end) ; //
-auto next_lbracket (auto begin, auto end) ; //
-bool has_lambda_expression (auto begin, auto end) ; //
-auto next_lbracket (auto begin, auto end) ; //
-bool has_expression (auto begin, auto end) ; // x
-auto next_lbracket (auto begin, auto end) ; //
-
-bool has_lbracket (auto begin, auto end) {
-  return has_next(begin, end, lexem::type_::lbracket) ;
-} 
-
 bool has_rbracket (auto begin, auto end) {
-  return has_next(begin, end, lexem::type_::rbracket) ;
+  return has_next(begin, end, {lexem::type_::rbracket}) ;
 } 
+
+auto next_rbracket (auto begin, auto end) {
+  return std::next(begin) ;
+}
 
 bool has_lbrace (auto begin, auto end) {
-  return has_next(begin, end, lexem::type_::lbrace) ;
+  return has_next(begin, end, {lexem::type_::lbrace}) ;
 } 
+
+auto next_lbrace (auto begin, auto end) {
+  return std::next(begin) ;
+}
 
 bool has_rbrace (auto begin, auto end) {
-  return has_next(begin, end, lexem::type_::rbrace) ;
+  return has_next(begin, end, {lexem::type_::rbrace}) ;
 } 
 
+auto next_rbrace (auto begin, auto end) {
+  return std::next(begin) ;
+}
+
 bool has_return_kw (auto begin, auto end) {
-  return has_next(begin, end, lexem::type_::return_kw) ;
+  return has_next(begin, end, {lexem::type_::return_kw}) ;
+}
+
+auto next_return_kw (auto begin, auto end) {
+  return std::next(begin) ;
 }
 
 bool has_lambda_kw (auto begin, auto end) {
-  return has_next(begin, end, lexem::type_::lambda_kw) ;
+  return has_next(begin, end, {lexem::type_::lambda_kw}) ;
+}
+
+auto next_lambda_kw (auto begin, auto end) {
+  return std::next(begin) ;
 }
 
 bool has_colon (auto begin, auto end) {
-  return has_next(begin, end, lexem::type_::colon) ;
+  return has_next(begin, end, {lexem::type_::colon}) ;
+}
+
+auto next_colon (auto begin, auto end) {
+  return std::next(begin) ;
 }
 
 bool has_comma (auto begin, auto end) {
-  return has_next(begin, end, lexem::type_::comma) ;
+  return has_next(begin, end, {lexem::type_::comma}) ;
+}
+
+auto next_comma (auto begin, auto end) {
+  return std::next(begin) ;
 }
 
 bool has_pod_kw (auto begin, auto end) {
-  return has_next(begin, end, lexem::type_::pod_kw) ;
+  return has_next(begin, end, {lexem::type_::pod_kw}) ;
+}
+
+auto next_pod_kw (auto begin, auto end) {
+  return std::next(begin) ;
 }
 
 bool has_semi_colon (auto begin, auto end) {
-  return has_next(begin, end, lexem::type_::semi_colon) ;
+  return has_next(begin, end, {lexem::type_::semi_colon}) ;
+}
+
+auto next_semi_colon (auto begin, auto end) {
+  return std::next(begin) ;
 }
 
 bool has_string (auto begin, auto end) {
-  return has_next(begin, end, lexem::type_::string) ;
+  return has_next(begin, end, {lexem::type_::string}) ;
+}
+
+auto next_string (auto begin, auto end) {
+  return std::next(begin) ;
 }
 
 bool has_identifier (auto begin, auto end) {
-  return has_next(begin, end, lexem::type_::identifier) ;
+  return has_next(begin, end, {lexem::type_::identifier}) ;
+}
+
+auto next_identifier (auto begin, auto end) {
+  return std::next(begin) ;
 }
 
 bool has_number (auto begin, auto end) {
-  return has_next(begin, end, lexem::type_::number) ;
+  return has_next(begin, end, {lexem::type_::number}) ;
+}
+
+auto next_number (auto begin, auto end) {
+  return std::next(begin) ;
 }
 
 bool has_function_call_expression (auto begin, auto end) {
   auto cursor = begin ; 
-  if (has_identifier(begin, end) && has_lbracket(std::next(cursor))) cursor = std::next(cursor, 2u) ;
-  else return false ;
   
+  if (has_identifier(cursor, end) && 
+      has_lbracket(next_identifier(cursor, end), end)) 
+    cursor = next_lbracket(next_identifier(cursor, end), end) ;
+  else 
+    return false ;
+
+  bool has_comma_again = false ;
+
   while (has_expression(cursor, end)) {
-    cursor = next_expression(cursor, end) ; // TODO faire next_expression ;
-    if (has_comma(cursor)) cursor = std::next(cursor) ;
+    cursor = next_expression(cursor, end) ;
+   
+    if (has_comma_again = has_comma(cursor, end)) 
+      cursor = next_comma(cursor, end) ;
+    else
+      break ;
+  }
+
+  return !has_comma_again && has_rbracket(cursor, end) ;
+}
+
+auto next_function_call_expression (auto begin, auto end) {
+  auto cursor = begin ; 
+  cursor = next_lbracket(next_identifier(cursor, end), end) ;
+
+  while (has_expression(cursor, end))
+    if (has_comma(cursor = next_expression(cursor, end), end)) 
+      cursor = next_comma(cursor, end) ;
+    else 
+      break ;
+
+  return next_rbracket(cursor, end) ;
+}
+
+bool has_lambda_expression (auto begin, auto end) {
+  auto cursor = begin ;
+
+  if (!has_lambda_kw(cursor, end)) 
+    return false ;
+  
+  cursor = next_lambda_kw(cursor, end) ;
+  
+  if (!has_lbracket(cursor, end))
+    return false ;
+
+  cursor = next_lbracket(cursor, end) ;
+  bool has_comma_again = false ;
+
+  while (has_paremeter(cursor, end)) {
+    cursor = next_parameter(cursor, end) ;
+
+    if (has_comma_again = has_comma(cursor, end))
+      cursor = next_comma(cursor) ;
     else break ;
   }
-  
-  if (has_rbracket(cursor, end)) cursor = std::next(cursor) ;
-  else return false ;
 
-  return true ;
-
+  return !has_comma_again && has_rbracket(cursor, end) ;
 }
 
 bool has_expression (auto begin, auto end) {
   return has_function_call_expression (begin, end) || 
-    has_lambda_expression(begin, end) ||
+    //has_lambda_expression(begin, end) ||
     has_identifier(begin, end) ||
     has_number(begin, end) ;
+}
+
+auto next_expression (auto begin, auto end) -> decltype(begin) {
+  if (has_function_call_expression(begin, end)) return next_function_call_expression(begin, end) ;
+  //if (has_lambda_expression(begin, end)) return next_lambda_expression(begin, end) ;
+  if (has_identifier(begin, end)) return next_identifier(begin, end) ;
+  if (has_number(begin, end)) return next_number(begin, end) ;
+  return begin ;
 }
 
 #endif

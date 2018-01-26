@@ -45,14 +45,14 @@ struct identifier {
 } ;
 
 /**
- * 
+ * [a-z_]+(\\.[a-z_]+)*
  */ 
 struct identifiers {
-  std::vector<std::identifier> idents ;
+  std::vector<identifier> idents ;
 } ;
 
 /**
- * 
+ * [0-9]+(\\.[0-9]+){0,1}
  */
 struct number {
   std::string data ;

@@ -13,4 +13,5 @@ struct rx {
 rx make_rx (std::regex const & reg, lexem::type_ type) ;
 std::vector<rx> thodd_rxs () ;
 
+
 #endif

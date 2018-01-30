@@ -1,6 +1,38 @@
 #ifndef __thodd_signatures_hpp__
 #  define __thodd_signatures_hpp__
 
+
+/// //////////// ///
+/// couche regex ///
+/// //////////// ///
+
+
+auto is_pure_rx (auto begin, auto end) -> decltype(begin) ; //
+auto is_impure_rx (auto begin, auto end) -> decltype(begin) ; //
+auto is_lambda_rx (auto begin, auto end) -> decltype(begin) ; //
+auto is_pod_rx (auto begin, auto end) -> decltype(begin) ; //
+auto is_return_rx (auto begin, auto end) -> decltype(begin) ; //
+auto is_identifier_rx (auto begin, auto end) -> decltype(begin) ; //
+auto is_identifiers_rx (auto begin, auto end) -> decltype(begin) ; //
+auto is_lbracket_rx (auto begin, auto end) -> decltype(begin) ; //
+auto is_rbracket_rx (auto begin, auto end) -> decltype(begin) ; //
+auto is_lbrace_rx (auto begin, auto end) -> decltype(begin) ; //
+auto is_rbrace_rx (auto begin, auto end) -> decltype(begin) ; //
+auto is_colon_rx (auto begin, auto end) -> decltype(begin) ; //
+auto is_semi_colon_rx (auto begin, auto end) -> decltype(begin) ; //
+auto is_comma_rx (auto begin, auto end) -> decltype(begin) ; //
+auto is_alias_rx (auto begin, auto end) -> decltype(begin) ; //
+auto is_strengh_rx (auto begin, auto end) -> decltype(begin) ; //
+auto is_weak_rx (auto begin, auto end) -> decltype(begin) ; //
+auto is_number_rx (auto begin, auto end) -> decltype(begin) ; //
+auto is_ignored_rx (auto begin, auto end) -> decltype(begin) ; //
+
+
+/// //////////// ///
+/// couche lexem ///
+/// //////////// ///
+
+
 bool has_lbracket (auto begin, auto end) ; // x t
 auto next_lbracket (auto begin, auto end) -> decltype(begin) ; // x t
 

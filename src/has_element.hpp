@@ -5,18 +5,11 @@
 #  include <functional>
 #  include <type_traits>
 
-# include "structure.hpp"
-# include "signatures.hpp"
+#  include "start_with.hpp"
+#  include "structure.hpp"
+#  include "signatures.hpp"
 
-bool start_with (auto begin, auto end, 
-                 auto sbegin, auto send, 
-                 auto comparator) {
-  while (begin != end && sbegin != send && comparator(*begin, *sbegin)) {
-    ++ begin ; ++ sbegin ;   
-  }
 
-  return sbegin == send ;
-}
 
 bool has_next (auto begin, auto end, std::vector<lexem::type_> ids) {
   return start_with(
@@ -326,6 +319,95 @@ auto next_pod_declaration (auto begin, auto end) -> decltype(begin) {
 
   return next_rbrace(cursor, end) ;
 }
+
+bool has_function_declaration (auto begin, auto end) {
+  auto cursor = begin ;
+
+  if (!has_identifier(cursor, end)) 
+    return false ;
+  
+  cursor = next_identifier(cursor, end) ;
+  
+  if (!has_lbracket(cursor, end))
+    return false ;
+
+  cursor = next_lbracket(cursor, end) ;
+  bool has_comma_again = false ;
+
+  while (has_parameter(cursor, end)) {
+    cursor = next_parameter(cursor, end) ;
+
+    if (has_comma_again = has_comma(cursor, end))
+      cursor = next_comma(cursor, end) ;
+    else break ;
+  }
+
+  if (has_comma_again) 
+    return false ;
+
+  if (!has_rbracket(cursor, end))
+    return false ;
+  
+  cursor = next_rbracket(cursor, end) ;
+  
+  if (!has_colon(cursor, end) || !has_identifier(next_colon(cursor, end), end))
+    return false ;
+
+  cursor = next_identifier(next_colon(cursor, end), end) ;  
+
+  if (!has_lbrace(cursor, end))
+    return false ;
+
+  cursor = next_lbrace(cursor, end) ;
+  
+  while (has_const_instruction(cursor, end))
+    cursor = next_const_instruction(cursor, end) ;
+
+  if (!has_return_instruction(cursor, end)) 
+    return false ; 
+
+  cursor = next_return_instruction(cursor, end) ;
+
+  if (!has_rbrace(cursor, end))
+    return false ;
+  
+  return true ;
+}
+
+auto next_function_declaration (auto begin, auto end) -> decltype(begin) {
+  auto cursor = begin ;
+  cursor = next_lbracket(next_identifier(cursor, end), end) ;
+  
+  while (has_parameter(cursor, end))
+    if (!has_comma(cursor = next_parameter(cursor, end), end)) break ;
+    else cursor = next_comma(cursor, end) ;
+
+  cursor = next_lbrace(next_identifier(next_colon(next_rbracket(cursor, end), end), end), end) ;
+
+  while (has_const_instruction(cursor, end))
+    cursor = next_const_instruction(cursor, end) ;
+
+  cursor = next_return_instruction(cursor, end) ;
+
+  return next_rbrace(cursor, end) ;
+}
+
+bool has_thodd (auto begin, auto end) {
+  auto cursor = begin ;
+  bool has_declaration = true ;
+  bool has_declaration_malformed = false ;
+
+  while (has_declaration && !has_declaration_malformed)
+    if (has_pod_declaration(cursor, end))
+      cursor = next_pod_declaration(cursor, end) ;
+    else if (has_function_declaration(cursor, end))
+      cursor = next_function_declaration(cursor, end) ;
+    else 
+      has_declaration = false ;
+
+  return cursor == end ;
+}
+
 
 
 #endif

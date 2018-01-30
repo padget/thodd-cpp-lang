@@ -220,15 +220,26 @@ test_result test_has_expression_lambda () {
   return make_result(has_expression(lxs.begin(), lxs.end()), "test_has_expression_lambda") ;
 }
 
-test_result test_has_pod_member() {
-  std::vector<lexem> lxs = make_lexems({}) ;
+test_result test_has_pod_member () {
+  std::vector<lexem> lxs = make_lexems({thd::identifier, thd::colon, thd::identifier, thd::semi_colon}) ;
   return make_result(has_pod_member(lxs.begin(), lxs.end()), "test_has_pod_member") ;
 }
 
-test_result test_has_pod_declaration() {
-  std::vector<lexem> lxs = make_lexems({}) ;
+test_result test_has_pod_declaration_empty () {
+  std::vector<lexem> lxs = make_lexems({thd::pod_kw, thd::identifier, thd::lbrace, thd::rbrace}) ;
   return make_result(has_pod_declaration(lxs.begin(), lxs.end()), "test_has_pod_member") ;
 }
+
+test_result test_has_pod_declaration_with_members () {
+  std::vector<lexem> lxs = make_lexems({
+    thd::pod_kw, thd::identifier, thd::lbrace, 
+      thd::identifier, thd::colon, thd::identifier, thd::semi_colon, 
+      thd::identifier, thd::colon, thd::identifier, thd::semi_colon, 
+      thd::identifier, thd::colon, thd::identifier, thd::semi_colon,
+    thd::rbrace}) ;
+  return make_result(has_pod_declaration(lxs.begin(), lxs.end()), "test_has_pod_declaration_with_members") ;
+}
+
 
 /// ///////// ///
 /// TEST NEXT ///
@@ -410,15 +421,29 @@ test_result test_next_expression_lambda () {
 }
 
 test_result test_next_pod_member () {
-  std::vector<lexem> lxs = make_lexems({}) ;
-  return make_result(false/*next_pod_member(lxs.begin(), lxs.end()) == lxs.end()*/, "next_pod_member") ;
+  std::vector<lexem> lxs = make_lexems({{thd::identifier, thd::colon, thd::identifier, thd::semi_colon}}) ;
+  return make_result(next_pod_member(lxs.begin(), lxs.end()) == lxs.end(), "next_pod_member") ;
 }
 
 test_result test_next_pod_declaration () {
-  std::vector<lexem> lxs = make_lexems({}) ;
-  return make_result(false/*next_pod_declaration(lxs.begin(), lxs.end()) == lxs.end()*/, "next_pod_declaration") ;
+  std::vector<lexem> lxs = make_lexems({thd::pod_kw, thd::identifier, thd::lbrace, thd::rbrace}) ;
+  return make_result(next_pod_declaration(lxs.begin(), lxs.end()) == lxs.end(), "next_pod_declaration") ;
 }
 
+
+/// //////// ///
+/// E2E TEST ///
+/// //////// ///
+#include "../src/from_file.hpp"
+
+test_result test_has_thodd_by_stream () {
+  auto const & stream   = from_file("main.thodd") ;
+  auto const & lexems   = extract_lexems(stream.begin(), stream.end(), thodd_rxs()) ;
+  auto const & filtered = filter_lexems(lexems.begin(), lexems.end()) ;
+
+
+  return make_result(true/*has_thodd(filtered.begin(), filtered.end())*/, "test_has_thodd_by_stream") ;
+}
 
 int main() {
   std::vector<std::function<test_result()>> tests = {
@@ -434,7 +459,8 @@ int main() {
     test_has_const_instruction, test_has_return_instruction,  
     test_has_expression_identifier, test_has_expression_number, 
     test_has_expression_lambda, test_has_expression_function_call,
-    test_has_pod_member, test_has_pod_declaration,
+    test_has_pod_member, test_has_pod_declaration_empty, 
+    test_has_pod_declaration_with_members,
 
     test_next_lbracket, test_next_rbracket, test_next_lbrace, test_next_rbrace, 
     test_next_return_kw, test_next_lambda_kw, test_next_colon, test_next_comma, 
@@ -446,7 +472,9 @@ int main() {
     test_next_const_instruction, test_next_return_instruction, 
     test_next_expression_identifier, test_next_expression_number, 
     test_next_expression_lambda, test_next_expression_function_call, 
-    test_next_pod_declaration, test_next_pod_member
+    test_next_pod_declaration, test_next_pod_member, 
+
+    test_has_thodd_by_stream
   } ;
   
   bool passed = true ;
@@ -456,7 +484,6 @@ int main() {
     std::cout << result.name << (result.passed ? " ---- OK" : " ---- KO /!\\") << std::endl ;
     passed = passed && result.passed ;
   }) ;
-  
   
   if (passed)
     return EXIT_SUCCESS ;

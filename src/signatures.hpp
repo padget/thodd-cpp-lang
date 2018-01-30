@@ -58,16 +58,15 @@ auto next_const_instruction (auto begin, auto end) -> decltype(begin) ; // x t
 bool has_return_instruction (auto begin, auto end) ; // x t
 auto next_return_instruction (auto begin, auto end) -> decltype(begin) ; // x t
 
-bool has_pod_member (auto begin, auto end) ; // x
-auto next_pod_member (auto begin, auto end) -> decltype(begin) ; // x
+bool has_pod_member (auto begin, auto end) ; // x t
+auto next_pod_member (auto begin, auto end) -> decltype(begin) ; // x t
 
-bool has_pod_declaration (auto begin, auto end) ; // x
-auto next_pod_declaration (auto begin, auto end) -> decltype(begin) ; // x
+bool has_pod_declaration (auto begin, auto end) ; // x t
+auto next_pod_declaration (auto begin, auto end) -> decltype(begin) ; // x t
 
-bool has_function_declaration (auto begin, auto end) ;
-auto next_function_declaration (auto begin, auto end) -> decltype(begin) ;
+bool has_function_declaration (auto begin, auto end) ; // x
+auto next_function_declaration (auto begin, auto end) -> decltype(begin) ; // x
 
-bool has_thodd (auto begin, auto end) ; //
-auto next_thodd (auto begin, auto end) -> decltype(begin) ; // 
+bool has_thodd (auto begin, auto end) ; // x
 
 #endif

@@ -7,10 +7,10 @@
 /// //////////// ///
 
 
-auto is_pure_rx (auto begin, auto end) -> decltype(begin) ; //
-auto is_impure_rx (auto begin, auto end) -> decltype(begin) ; //
-auto is_lambda_rx (auto begin, auto end) -> decltype(begin) ; //
-auto is_pod_rx (auto begin, auto end) -> decltype(begin) ; //
+auto is_pure_rx (auto begin, auto end) -> decltype(begin) ; // x t
+auto is_impure_rx (auto begin, auto end) -> decltype(begin) ; // x t
+auto is_lambda_rx (auto begin, auto end) -> decltype(begin) ; // x t
+auto is_pod_rx (auto begin, auto end) -> decltype(begin) ; // x t
 auto is_return_rx (auto begin, auto end) -> decltype(begin) ; //
 auto is_identifier_rx (auto begin, auto end) -> decltype(begin) ; //
 auto is_identifiers_rx (auto begin, auto end) -> decltype(begin) ; //

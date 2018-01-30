@@ -12,8 +12,20 @@ g++ -c test/test_has_element.cpp -o test_has_element.o -std=c++17 -fconcepts %IN
 echo test_has_element.exe
 g++ -o test_has_element.exe regexes.o test_has_element.o 
 
+echo.
 echo --- test_has_element.exe ---
 test_has_element.exe
+
+
+echo building test_regexes.cpp ...
+g++ -c test/test_regexes.cpp -o test_regexes.o -std=c++17 -fconcepts %INCLUDES_ARGS% -Wno-attributes
+
+echo test_has_element.exe
+g++ -o test_regexes.exe regexes.o test_regexes.o 
+
+echo.
+echo --- test_regexes.exe ---
+test_regexes.exe
 
 rem echo thodd.cpp
 rem g++ -g -c src/thodd.cpp -o main.o -std=c++17 -fconcepts %INCLUDES_ARGS% -Wno-attributes

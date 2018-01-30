@@ -37,19 +37,38 @@ auto is_pod_rx (auto begin, auto end) -> decltype(begin) {
 }
 
 auto is_return_rx (auto begin, auto end) -> decltype(begin) {
-  auto cursor = begin ;
-
-  return cursor ;
+  std::string_view return_ = "return" ;
+  return start_with(begin, end, return_.begin(), return_.end(), std::equal_to{}) ?  std::next(begin, return_.size()) : begin  ;
 }
 
 auto is_identifier_rx (auto begin, auto end) -> decltype(begin) {
   auto cursor = begin ;
+  
+  while (('a' <= *cursor && *cursor <= 'z') || *cursor == '_')
+    cursor = std::next(cursor) ;
 
   return cursor ;
 }
 
 auto is_identifiers_rx (auto begin, auto end) -> decltype(begin) {
   auto cursor = begin ;
+  
+  while (('a' <= *cursor && *cursor <= 'z') || *cursor == '_')
+    cursor = std::next(cursor) ;
+
+  if (cursor == begin)
+    return begin ;
+
+  if (*cursor == '.') {
+    auto save = cursor ;
+    cursor = std::next(cursor) ;
+
+    while (('a' <= *cursor && *cursor <= 'z') || *cursor == '_')
+      cursor = std::next(cursor) ;
+
+    if (cursor == save)
+      return begin ;
+  }
 
   return cursor ;
 }

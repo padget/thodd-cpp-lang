@@ -19,23 +19,28 @@ auto next_for(auto cursor, auto end, std::string_view searched) {
 }
 
 auto is_pure_rx (auto begin, auto end) -> std::tuple<decltype(begin), lexem::type_> {
-  return std::make_tuple(next_for(begin, end, "pure"), lexem::type_::pure_kw) ;
+  auto cursor = next_for(begin, end, "pure") ;
+  return std::make_tuple(cursor, cursor != begin ? lexem::type_::pure_kw : lexem::type_::error) ;
 }
 
 auto is_impure_rx (auto begin, auto end) -> std::tuple<decltype(begin), lexem::type_> {
-  return std::make_tuple(next_for(begin, end, "impure"), lexem::type_::impure_kw) ;
+  auto cursor = next_for(begin, end, "impure") ;
+  return std::make_tuple(cursor, cursor != begin ? lexem::type_::impure_kw : lexem::type_::error) ;
 }
 
 auto is_lambda_rx (auto begin, auto end) -> std::tuple<decltype(begin), lexem::type_> {
-  return std::make_tuple(next_for(begin, end, "lambda"), lexem::type_::lambda_kw) ;
+  auto cursor = next_for(begin, end, "lambda") ;
+  return std::make_tuple(cursor, cursor != begin ? lexem::type_::lambda_kw : lexem::type_::error) ;
 }
 
 auto is_pod_rx (auto begin, auto end) -> std::tuple<decltype(begin), lexem::type_> {
-  return std::make_tuple(next_for(begin, end, "pod"), lexem::type_::pod_kw) ;
+  auto cursor = next_for(begin, end, "pod") ;
+  return std::make_tuple(cursor, cursor != begin ? lexem::type_::pod_kw : lexem::type_::error) ;
 }
 
 auto is_return_rx (auto begin, auto end) -> std::tuple<decltype(begin), lexem::type_> {
-  return std::make_tuple(next_for(begin, end, "return"), lexem::type_::return_kw) ;
+  auto cursor = next_for(begin, end, "return") ;
+  return std::make_tuple(cursor, cursor != begin ? lexem::type_::return_kw : lexem::type_::error) ;
 }
 
 auto is_identifier_rx (auto begin, auto end) -> std::tuple<decltype(begin), lexem::type_> {
@@ -71,43 +76,53 @@ auto is_identifiers_rx (auto begin, auto end) -> std::tuple<decltype(begin), lex
 }
 
 auto is_lbracket_rx (auto begin, auto end) -> std::tuple<decltype(begin), lexem::type_> {
-  return std::make_tuple(next_for(begin, end, "("), lexem::type_::lbracket) ;
+  auto cursor = next_for(begin, end, "(") ;
+  return std::make_tuple(cursor, cursor != begin ? lexem::type_::lbracket : lexem::type_::error) ;
 }
 
 auto is_rbracket_rx (auto begin, auto end) -> std::tuple<decltype(begin), lexem::type_> {
-  return std::make_tuple(next_for(begin, end, ")"), lexem::type_::rbracket) ;
+  auto cursor = next_for(begin, end, ")") ;
+  return std::make_tuple(cursor, cursor != begin ? lexem::type_::rbracket : lexem::type_::error) ;
 }
 
 auto is_lbrace_rx (auto begin, auto end) -> std::tuple<decltype(begin), lexem::type_> {
-  return std::make_tuple(next_for(begin, end, "{"), lexem::type_::lbrace) ;
+  auto cursor = next_for(begin, end, "{") ;
+  return std::make_tuple(cursor, cursor != begin ? lexem::type_::lbrace : lexem::type_::error) ;
 }
 
 auto is_rbrace_rx (auto begin, auto end) -> std::tuple<decltype(begin), lexem::type_> {
-  return std::make_tuple(next_for(begin, end, "}"), lexem::type_::rbrace) ;
+  auto cursor = next_for(begin, end, "}") ;
+  return std::make_tuple(cursor, cursor != begin ? lexem::type_::rbrace : lexem::type_::error) ;
 }
 
 auto is_colon_rx (auto begin, auto end) -> std::tuple<decltype(begin), lexem::type_> {
-  return std::make_tuple(next_for(begin, end, ":"), lexem::type_::colon) ;
+  auto cursor = next_for(begin, end, ":") ;
+  return std::make_tuple(cursor, cursor != begin ? lexem::type_::colon : lexem::type_::error) ;
 }
 
 auto is_semi_colon_rx (auto begin, auto end) -> std::tuple<decltype(begin), lexem::type_> {
-  return std::make_tuple(next_for(begin, end, ";"), lexem::type_::semi_colon) ;
+  auto cursor = next_for(begin, end, ";") ;
+  return std::make_tuple(cursor, cursor != begin ? lexem::type_::semi_colon : lexem::type_::error) ;
 }
 
 auto is_comma_rx (auto begin, auto end) -> std::tuple<decltype(begin), lexem::type_> {
-  return std::make_tuple(next_for(begin, end, ","), lexem::type_::comma) ;
+  auto cursor = next_for(begin, end, ",") ;
+  return std::make_tuple(cursor, cursor != begin ? lexem::type_::comma : lexem::type_::error) ;
 }
 
 auto is_alias_rx (auto begin, auto end) -> std::tuple<decltype(begin), lexem::type_> {
-  return std::make_tuple(next_for(begin, end, "#"), lexem::type_::alias) ;
+  auto cursor = next_for(begin, end, "#") ;
+  return std::make_tuple(cursor, cursor != begin ? lexem::type_::alias : lexem::type_::error) ;
 }
 
 auto is_strengh_rx (auto begin, auto end) -> std::tuple<decltype(begin), lexem::type_> {
-  return std::make_tuple(next_for(begin, end, "[@]"), lexem::type_::strengh) ;
+  auto cursor = next_for(begin, end, "[@]") ;
+  return std::make_tuple(cursor, cursor != begin ? lexem::type_::strengh : lexem::type_::error) ;
 }
 
 auto is_weak_rx (auto begin, auto end) -> std::tuple<decltype(begin), lexem::type_> {
-  return std::make_tuple(next_for(begin, end, "@"), lexem::type_::weak) ;
+  auto cursor = next_for(begin, end, "@") ;
+  return std::make_tuple(cursor, cursor != begin ? lexem::type_::weak : lexem::type_::error) ;
 }
 
 auto is_number_rx (auto begin, auto end) -> std::tuple<decltype(begin), lexem::type_> {

@@ -22,7 +22,8 @@ extract_lexems (auto begin, auto end, auto rxs_tuple) {
     auto max = std::max_element (
       cursors.cbegin(), cursors.cend(), 
       [begin] (auto const & lcursor, auto const & rcursor) { 
-        return std::distance(begin, std::get<0>(lcursor)) < std::distance(begin, std::get<0>(rcursor)) ; 
+        return std::get<1>(rcursor) != lexem::type_::error && 
+          std::distance(begin, std::get<0>(lcursor)) < std::distance(begin, std::get<0>(rcursor)) ; 
       }) ;
       
       auto max_cursor = begin == std::get<0>(*max) ? 

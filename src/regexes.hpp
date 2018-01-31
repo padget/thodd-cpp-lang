@@ -49,7 +49,7 @@ auto is_identifier_rx (auto begin, auto end) -> std::tuple<decltype(begin), lexe
   while (('a' <= *cursor && *cursor <= 'z') || *cursor == '_')
     cursor = std::next(cursor) ;
 
-  return std::make_tuple(cursor, lexem::type_::identifier) ;
+  return std::make_tuple(cursor, cursor != begin ? lexem::type_::identifier : lexem::type_::error) ;
 }
 
 auto is_identifiers_rx (auto begin, auto end) -> std::tuple<decltype(begin), lexem::type_> {
@@ -72,7 +72,7 @@ auto is_identifiers_rx (auto begin, auto end) -> std::tuple<decltype(begin), lex
       return std::make_tuple(begin, lexem::type_::error) ;
   }
 
-  return std::make_tuple(cursor, lexem::type_::identifiers) ;
+  return std::make_tuple(cursor, cursor != begin ? lexem::type_::identifiers : lexem::type_::error) ;
 }
 
 auto is_lbracket_rx (auto begin, auto end) -> std::tuple<decltype(begin), lexem::type_> {
@@ -145,7 +145,7 @@ auto is_number_rx (auto begin, auto end) -> std::tuple<decltype(begin), lexem::t
       return std::make_tuple(begin, lexem::type_::error) ;
   }
 
-  return std::make_tuple(cursor, lexem::type_::number) ;
+  return std::make_tuple(cursor, cursor != begin ? lexem::type_::number : lexem::type_::error) ;
 }
 
 auto is_ignored_rx (auto begin, auto end) -> std::tuple<decltype(begin), lexem::type_> {

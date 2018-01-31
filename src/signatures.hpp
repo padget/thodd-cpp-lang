@@ -1,31 +1,33 @@
 #ifndef __thodd_signatures_hpp__
 #  define __thodd_signatures_hpp__
 
+#  include <tuple>
+#  include "structure.hpp"
 
 /// //////////// ///
 /// couche regex ///
 /// //////////// ///
 
 
-auto is_pure_rx (auto begin, auto end) -> decltype(begin) ; // x t
-auto is_impure_rx (auto begin, auto end) -> decltype(begin) ; // x t
-auto is_lambda_rx (auto begin, auto end) -> decltype(begin) ; // x t
-auto is_pod_rx (auto begin, auto end) -> decltype(begin) ; // x t
-auto is_return_rx (auto begin, auto end) -> decltype(begin) ; //
-auto is_identifier_rx (auto begin, auto end) -> decltype(begin) ; //
-auto is_identifiers_rx (auto begin, auto end) -> decltype(begin) ; //
-auto is_lbracket_rx (auto begin, auto end) -> decltype(begin) ; //
-auto is_rbracket_rx (auto begin, auto end) -> decltype(begin) ; //
-auto is_lbrace_rx (auto begin, auto end) -> decltype(begin) ; //
-auto is_rbrace_rx (auto begin, auto end) -> decltype(begin) ; //
-auto is_colon_rx (auto begin, auto end) -> decltype(begin) ; //
-auto is_semi_colon_rx (auto begin, auto end) -> decltype(begin) ; //
-auto is_comma_rx (auto begin, auto end) -> decltype(begin) ; //
-auto is_alias_rx (auto begin, auto end) -> decltype(begin) ; //
-auto is_strengh_rx (auto begin, auto end) -> decltype(begin) ; //
-auto is_weak_rx (auto begin, auto end) -> decltype(begin) ; //
-auto is_number_rx (auto begin, auto end) -> decltype(begin) ; //
-auto is_ignored_rx (auto begin, auto end) -> decltype(begin) ; //
+auto is_pure_rx (auto begin, auto end) -> std::tuple<decltype(begin), lexem::type_> ; // x t
+auto is_impure_rx (auto begin, auto end) -> std::tuple<decltype(begin), lexem::type_> ; // x t
+auto is_lambda_rx (auto begin, auto end) -> std::tuple<decltype(begin), lexem::type_> ; // x t
+auto is_pod_rx (auto begin, auto end) -> std::tuple<decltype(begin), lexem::type_> ; // x t
+auto is_return_rx (auto begin, auto end) -> std::tuple<decltype(begin), lexem::type_> ; // x t
+auto is_identifier_rx (auto begin, auto end) -> std::tuple<decltype(begin), lexem::type_> ; // x t
+auto is_identifiers_rx (auto begin, auto end) -> std::tuple<decltype(begin), lexem::type_> ; // x 
+auto is_lbracket_rx (auto begin, auto end) -> std::tuple<decltype(begin), lexem::type_> ; // x t
+auto is_rbracket_rx (auto begin, auto end) -> std::tuple<decltype(begin), lexem::type_> ; // x t
+auto is_lbrace_rx (auto begin, auto end) -> std::tuple<decltype(begin), lexem::type_> ; // x t
+auto is_rbrace_rx (auto begin, auto end) -> std::tuple<decltype(begin), lexem::type_> ; // x t
+auto is_colon_rx (auto begin, auto end) -> std::tuple<decltype(begin), lexem::type_> ; // x t
+auto is_semi_colon_rx (auto begin, auto end) -> std::tuple<decltype(begin), lexem::type_> ; // x t
+auto is_comma_rx (auto begin, auto end) -> std::tuple<decltype(begin), lexem::type_> ; // x t
+auto is_alias_rx (auto begin, auto end) -> std::tuple<decltype(begin), lexem::type_> ; // x t
+auto is_strengh_rx (auto begin, auto end) -> std::tuple<decltype(begin), lexem::type_> ; // x t
+auto is_weak_rx (auto begin, auto end) -> std::tuple<decltype(begin), lexem::type_> ; // x t
+auto is_number_rx (auto begin, auto end) -> std::tuple<decltype(begin), lexem::type_> ; // x t
+auto is_ignored_rx (auto begin, auto end) -> std::tuple<decltype(begin), lexem::type_> ; // x t
 
 
 /// //////////// ///

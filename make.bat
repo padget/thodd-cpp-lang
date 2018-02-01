@@ -1,3 +1,4 @@
+echo off
 echo ------ tests ------
 
 echo building test_regexes.cpp ...

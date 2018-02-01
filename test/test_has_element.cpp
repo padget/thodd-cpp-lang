@@ -7,6 +7,8 @@
 #include "../src/has_element.hpp"
 #include "../src/extract_lexems.hpp"
 
+#include "jasmine.hpp"
+
 using thd = lexem::type_ ;
 
 struct test_result {
@@ -34,15 +36,202 @@ make_lexems(std::vector<thd> const & thds) {
 /// TEST HAS ///
 /// //////// /// 
 
-test_result test_has_lbracket () {
-  std::vector<lexem> lxs = make_lexems({thd::lbracket}) ;
-  return make_result(has_lbracket(lxs.begin(), lxs.end()), "test_has_lbracket") ;
+int main() {
+  suite(
+    "has_xxx",
+    [] {
+      std::vector<lexem> const lxs = make_lexems({thd::lbracket}) ;
+      std::vector<lexem> const lxs2 = make_lexems({thd::alias}) ;
+
+      describe("has_lbracket", 
+        it("should detect a lbracket", expect(has_lbracket(lxs.begin(), lxs.end()), be_true())),
+        it("shouldn't detect a lbracket", expect(has_lbracket(lxs2.begin(), lxs2.end()), be_false()))) ;
+    }, 
+    [] {
+      std::vector<lexem> const lxs = make_lexems({thd::rbracket}) ;
+      std::vector<lexem> const lxs2 = make_lexems({thd::alias}) ;
+
+      describe("has_rbracket", 
+        it("should detect a rbracket", expect(has_rbracket(lxs.begin(), lxs.end()), be_true())),
+        it("shouldn't detect a rbracket", expect(has_rbracket(lxs2.begin(), lxs2.end()), be_false()))) ; 
+    },  
+    [] {
+      std::vector<lexem> const lxs_identifier = make_lexems({thd::identifier}) ;
+      
+      std::vector<lexem> const lxs_number = make_lexems({thd::number}) ;
+      
+      std::vector<lexem> const lxs_fcall = make_lexems({
+        thd::identifier, thd::lbracket, 
+          thd::identifier, thd::comma, 
+          thd::number, thd::comma, 
+          thd::identifier, thd::lbracket, thd::identifier, thd::comma, thd::number, thd::rbracket,
+        thd::rbracket}) ;
+
+      std::vector<lexem> const lxs_lambda = make_lexems({
+        thd::lambda_kw, thd::lbracket, 
+          thd::identifier, thd::colon, thd::identifier, thd::comma,
+          thd::identifier, thd::colon, thd::identifier, thd::comma,
+          thd::identifier, thd::colon, thd::identifier, 
+        thd::rbracket, 
+          thd::colon, thd::identifier, 
+          thd::lbrace, 
+            thd::identifier, thd::colon, thd::identifier, thd::number, thd::semi_colon,
+            thd::identifier, thd::colon, thd::identifier, thd::number, thd::semi_colon,
+            thd::identifier, thd::colon, thd::identifier, thd::number, thd::semi_colon,
+            thd::return_kw, thd::identifier, thd::semi_colon,
+          thd::rbrace
+      }) ;
+
+      describe("has_expression", 
+        it("should detect a identifier", 
+          expect(has_expression(lxs_identifier.begin(), lxs_identifier.end()), be_true())),
+        it("should detect a number", 
+          expect(has_expression(lxs_number.begin(), lxs_number.end()), be_true())),
+        it("should detect a function call", 
+          expect(has_expression(lxs_fcall.begin(), lxs_fcall.end()), be_true())),
+        it("should detect a lambda", 
+          expect(has_expression(lxs_lambda.begin(), lxs_lambda.end()), be_true()))) ;
+    }, 
+    [] {
+      std::vector<lexem> const lxs = make_lexems({thd::lbrace}) ;
+      std::vector<lexem> const lxs2 = make_lexems({thd::alias}) ;
+
+      describe("has_lbrace", 
+        it("should detect a lbrace", expect(has_lbrace(lxs.begin(), lxs.end()), be_true())),
+        it("shouldn't detect a lbrace", expect(has_lbrace(lxs2.begin(), lxs2.end()), be_false()))) ;
+    }, 
+   [] {
+      std::vector<lexem> const lxs = make_lexems({thd::rbrace}) ;
+      std::vector<lexem> const lxs2 = make_lexems({thd::alias}) ;
+
+      describe("has_rbrace", 
+        it("should detect a rbrace", expect(has_rbrace(lxs.begin(), lxs.end()), be_true())),
+        it("shouldn't detect a rbrace", expect(has_rbrace(lxs2.begin(), lxs2.end()), be_false()))) ;
+    },
+    [] {
+      std::vector<lexem> const lxs = make_lexems({thd::return_kw}) ;
+      std::vector<lexem> const lxs2 = make_lexems({thd::alias}) ;
+
+      describe("has_return_kw", 
+        it("should detect a return_kw", expect(has_return_kw(lxs.begin(), lxs.end()), be_true())),
+        it("shouldn't detect a return_kw", expect(has_return_kw(lxs2.begin(), lxs2.end()), be_false()))) ;
+    }, 
+    [] {
+      std::vector<lexem> const lxs = make_lexems({thd::lambda_kw}) ;
+      std::vector<lexem> const lxs2 = make_lexems({thd::alias}) ;
+
+      describe("has_lambda_kw", 
+        it("should detect a lambda_kw", expect(has_lambda_kw(lxs.begin(), lxs.end()), be_true())),
+        it("shouldn't detect a lambda_kw", expect(has_lambda_kw(lxs2.begin(), lxs2.end()), be_false()))) ;
+    }, 
+    [] {
+      std::vector<lexem> const lxs = make_lexems({thd::colon}) ;
+      std::vector<lexem> const lxs2 = make_lexems({thd::alias}) ;
+
+      describe("has_colon", 
+        it("should detect a colon", expect(has_colon(lxs.begin(), lxs.end()), be_true())),
+        it("shouldn't detect a colon", expect(has_colon(lxs2.begin(), lxs2.end()), be_false()))) ;
+    }, 
+    [] {
+      std::vector<lexem> const lxs = make_lexems({thd::lbracket}) ;
+      std::vector<lexem> const lxs2 = make_lexems({thd::alias}) ;
+
+      describe("has_comma", 
+        it("should detect a lbracket", expect(has_comma(lxs.begin(), lxs.end()), be_true())),
+        it("shouldn't detect a lbracket", expect(has_comma(lxs2.begin(), lxs2.end()), be_false()))) ;
+    }, 
+    [] {
+      std::vector<lexem> const lxs = make_lexems({thd::lbracket}) ;
+      std::vector<lexem> const lxs2 = make_lexems({thd::alias}) ;
+
+      describe("has_pod_kw", 
+        it("should detect a lbracket", expect(has_pod_kw(lxs.begin(), lxs.end()), be_true())),
+        it("shouldn't detect a lbracket", expect(has_pod_kw(lxs2.begin(), lxs2.end()), be_false()))) ;
+    }, 
+    [] {
+      std::vector<lexem> const lxs = make_lexems({thd::lbracket}) ;
+      std::vector<lexem> const lxs2 = make_lexems({thd::alias}) ;
+
+      describe("has_semi_colon", 
+        it("should detect a lbracket", expect(has_semi_colon(lxs.begin(), lxs.end()), be_true())),
+        it("shouldn't detect a lbracket", expect(has_semi_colon(lxs2.begin(), lxs2.end()), be_false()))) ;
+    }, 
+    [] {
+      std::vector<lexem> const lxs = make_lexems({thd::lbracket}) ;
+      std::vector<lexem> const lxs2 = make_lexems({thd::alias}) ;
+
+      describe("has_string", 
+        it("should detect a lbracket", expect(has_string(lxs.begin(), lxs.end()), be_true())),
+        it("shouldn't detect a lbracket", expect(has_string(lxs2.begin(), lxs2.end()), be_false()))) ;
+    }, 
+    [] {
+      std::vector<lexem> const lxs = make_lexems({thd::lbracket}) ;
+      std::vector<lexem> const lxs2 = make_lexems({thd::alias}) ;
+
+      describe("has_identifier", 
+        it("should detect a lbracket", expect(has_identifier(lxs.begin(), lxs.end()), be_true())),
+        it("shouldn't detect a lbracket", expect(has_identifier(lxs2.begin(), lxs2.end()), be_false()))) ;
+    }, 
+    [] {
+      std::vector<lexem> const lxs = make_lexems({thd::lbracket}) ;
+      std::vector<lexem> const lxs2 = make_lexems({thd::alias}) ;
+
+      describe("has_number", 
+        it("should detect a lbracket", expect(has_number(lxs.begin(), lxs.end()), be_true())),
+        it("shouldn't detect a lbracket", expect(has_number(lxs2.begin(), lxs2.end()), be_false()))) ;
+    }, 
+    [] {
+      std::vector<lexem> const lxs = make_lexems({thd::lbracket}) ;
+      std::vector<lexem> const lxs2 = make_lexems({thd::alias}) ;
+
+      describe("has_function_call_expression", 
+        it("should detect a lbracket", expect(has_function_call_expression(lxs.begin(), lxs.end()), be_true())),
+        it("shouldn't detect a lbracket", expect(has_function_call_expression(lxs2.begin(), lxs2.end()), be_false()))) ;
+    }, 
+    [] {
+      std::vector<lexem> const lxs = make_lexems({thd::lbracket}) ;
+      std::vector<lexem> const lxs2 = make_lexems({thd::alias}) ;
+
+      describe("has_parameter", 
+        it("should detect a lbracket", expect(has_parameter(lxs.begin(), lxs.end()), be_true())),
+        it("shouldn't detect a lbracket", expect(has_parameter(lxs2.begin(), lxs2.end()), be_false()))) ;
+    }, 
+    [] {
+      std::vector<lexem> const lxs = make_lexems({thd::lbracket}) ;
+      std::vector<lexem> const lxs2 = make_lexems({thd::alias}) ;
+
+      describe("has_lambda_expression", 
+        it("should detect a lbracket", expect(has_lambda_expression(lxs.begin(), lxs.end()), be_true())),
+        it("shouldn't detect a lbracket", expect(has_lambda_expression(lxs2.begin(), lxs2.end()), be_false()))) ;
+    }, 
+    [] {
+      std::vector<lexem> const lxs = make_lexems({thd::lbracket}) ;
+      std::vector<lexem> const lxs2 = make_lexems({thd::alias}) ;
+
+      describe("has_const_instruction", 
+        it("should detect a lbracket", expect(has_const_instruction(lxs.begin(), lxs.end()), be_true())),
+        it("shouldn't detect a lbracket", expect(has_const_instruction(lxs2.begin(), lxs2.end()), be_false()))) ;
+    }, 
+    [] {
+      std::vector<lexem> const lxs = make_lexems({thd::lbracket}) ;
+      std::vector<lexem> const lxs2 = make_lexems({thd::alias}) ;
+
+      describe("has_return_instruction", 
+        it("should detect a lbracket", expect(has_return_instruction(lxs.begin(), lxs.end()), be_true())),
+        it("shouldn't detect a lbracket", expect(has_return_instruction(lxs2.begin(), lxs2.end()), be_false()))) ;
+    }, 
+    [] {
+      std::vector<lexem> const lxs = make_lexems({thd::lbracket}) ;
+      std::vector<lexem> const lxs2 = make_lexems({thd::alias}) ;
+
+      describe("has_pod_member", 
+        it("should detect a lbracket", expect(has_pod_member(lxs.begin(), lxs.end()), be_true())),
+        it("shouldn't detect a lbracket", expect(has_pod_member(lxs2.begin(), lxs2.end()), be_false()))) ;
+    }) ;
+  
+  return EXIT_SUCCESS ;
 }
 
-test_result test_has_rbracket () {
-  std::vector<lexem> lxs = make_lexems({thd::rbracket}) ;
-  return make_result(has_rbracket(lxs.begin(), lxs.end()), "test_has_rbracket") ;
-}
 
 test_result test_has_lbrace () {
   std::vector<lexem> lxs = make_lexems({thd::lbrace}) ;
@@ -183,42 +372,6 @@ test_result test_has_return_instruction () {
   return make_result(has_return_instruction(lxs.begin(), lxs.end()), "test_has_return_instruction") ;
 }
 
-test_result test_has_expression_identifier () {
-  std::vector<lexem> lxs = make_lexems({thd::identifier}) ;
-  return make_result(has_expression(lxs.begin(), lxs.end()), "test_has_expression_identifier") ;
-}
-
-test_result test_has_expression_number () {
-  std::vector<lexem> lxs = make_lexems({thd::number}) ;
-  return make_result(has_expression(lxs.begin(), lxs.end()), "test_has_expression_number") ;
-}
-
-test_result test_has_expression_function_call () {
-  std::vector<lexem> lxs = make_lexems({
-    thd::identifier, thd::lbracket, 
-      thd::identifier, thd::comma, 
-      thd::number, thd::comma, 
-      thd::identifier, thd::lbracket, thd::identifier, thd::comma, thd::number, thd::rbracket,
-    thd::rbracket}) ;
-  return make_result(has_expression(lxs.begin(), lxs.end()), "test_has_expression_function_call") ;
-}
-
-test_result test_has_expression_lambda () {
-  std::vector<lexem> lxs = make_lexems({
-    thd::lambda_kw, thd::lbracket, 
-      thd::identifier, thd::colon, thd::identifier, thd::comma,
-      thd::identifier, thd::colon, thd::identifier, thd::comma,
-      thd::identifier, thd::colon, thd::identifier, 
-    thd::rbracket, 
-      thd::colon, thd::identifier, 
-      thd::lbrace, 
-        thd::identifier, thd::colon, thd::identifier, thd::number, thd::semi_colon,
-        thd::identifier, thd::colon, thd::identifier, thd::number, thd::semi_colon,
-        thd::identifier, thd::colon, thd::identifier, thd::number, thd::semi_colon,
-        thd::return_kw, thd::identifier, thd::semi_colon,
-      thd::rbrace}) ;
-  return make_result(has_expression(lxs.begin(), lxs.end()), "test_has_expression_lambda") ;
-}
 
 test_result test_has_pod_member () {
   std::vector<lexem> lxs = make_lexems({thd::identifier, thd::colon, thd::identifier, thd::semi_colon}) ;
@@ -444,49 +597,3 @@ test_result test_has_thodd_by_stream () {
   return make_result(has_thodd(filtered.begin(), filtered.end()), "test_has_thodd_by_stream") ;
 }
 
-int main() {
-  std::vector<std::function<test_result()>> tests = {
-    test_has_lbracket, test_has_rbracket, test_has_lbrace, test_has_rbrace, 
-    test_has_return_kw, test_has_lambda_kw, test_has_colon, test_has_comma, 
-    test_has_pod_kw, test_has_semi_colon, test_has_string, test_has_identifier, 
-    test_has_number, test_has_function_call_expression_empty, 
-    test_has_function_call_expression_end_with_comma, 
-    test_has_function_call_expression_nb_ident,
-    test_has_function_call_expression_end_with_func_call, test_has_parameter,
-    test_has_lambda_expression, test_has_lambda_expression_with_parameters,
-    test_has_lambda_expression_with_parameters_and_const_instructions, 
-    test_has_const_instruction, test_has_return_instruction,  
-    test_has_expression_identifier, test_has_expression_number, 
-    test_has_expression_lambda, test_has_expression_function_call,
-    test_has_pod_member, test_has_pod_declaration_empty, 
-    test_has_pod_declaration_with_members,
-
-    test_next_lbracket, test_next_rbracket, test_next_lbrace, test_next_rbrace, 
-    test_next_return_kw, test_next_lambda_kw, test_next_colon, test_next_comma, 
-    test_next_pod_kw, test_next_semi_colon, test_next_string, test_next_identifier, 
-    test_next_number, test_next_function_call_expression_empty,
-    test_next_function_call_expression_end_with_func_call, test_next_parameter,
-    test_next_lambda_expression, test_next_lambda_expression_with_parameters,
-    test_next_lambda_expression_with_parameters_and_const_instructions, 
-    test_next_const_instruction, test_next_return_instruction, 
-    test_next_expression_identifier, test_next_expression_number, 
-    test_next_expression_lambda, test_next_expression_function_call, 
-    test_next_pod_declaration, test_next_pod_member, 
-
-    test_has_thodd_by_stream
-  } ;
-  
-  bool passed = true ;
-
-  std::for_each (tests.begin(), tests.end(), [&passed] (auto && test) {
-    auto && result = test() ;
-    std::cout << result.name << (result.passed ? " ---- OK" : " ---- KO /!\\") << std::endl ;
-    passed = passed && result.passed ;
-  }) ;
-  
-  if (passed)
-    return EXIT_SUCCESS ;
-  
-  std::cout << "une erreur est survenue" << std::endl ; 
-  return EXIT_FAILURE ;
-}

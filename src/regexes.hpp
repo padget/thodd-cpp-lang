@@ -18,27 +18,27 @@ auto search_for(auto cursor, auto end, std::string_view searched, lexem::type_ t
     is_start_with ? type : lexem::type_::error) ;
 }
 
-auto is_pure_rx (auto begin, auto end) -> std::tuple<decltype(begin), lexem::type_> {
+auto search_for_pure_rx (auto begin, auto end) -> std::tuple<decltype(begin), lexem::type_> {
   return search_for(begin, end, "pure", lexem::type_::pure_kw) ;
 }
 
-auto is_impure_rx (auto begin, auto end) -> std::tuple<decltype(begin), lexem::type_> {
+auto search_for_impure_rx (auto begin, auto end) -> std::tuple<decltype(begin), lexem::type_> {
   return search_for(begin, end, "impure", lexem::type_::impure_kw ) ;
 }
 
-auto is_lambda_rx (auto begin, auto end) -> std::tuple<decltype(begin), lexem::type_> {
+auto search_for_lambda_rx (auto begin, auto end) -> std::tuple<decltype(begin), lexem::type_> {
   return search_for(begin, end, "lambda", lexem::type_::lambda_kw) ;
 }
 
-auto is_pod_rx (auto begin, auto end) -> std::tuple<decltype(begin), lexem::type_> {
+auto search_for_pod_rx (auto begin, auto end) -> std::tuple<decltype(begin), lexem::type_> {
   return search_for(begin, end, "pod", lexem::type_::pod_kw) ;
 }
 
-auto is_return_rx (auto begin, auto end) -> std::tuple<decltype(begin), lexem::type_> {
+auto search_for_return_rx (auto begin, auto end) -> std::tuple<decltype(begin), lexem::type_> {
   return search_for(begin, end, "return", lexem::type_::return_kw) ;
 }
 
-auto is_identifier_rx (auto begin, auto end) -> std::tuple<decltype(begin), lexem::type_> {
+auto search_for_identifier_rx (auto begin, auto end) -> std::tuple<decltype(begin), lexem::type_> {
   auto cursor = begin ;
   
   while (('a' <= *cursor && *cursor <= 'z') || *cursor == '_')
@@ -47,7 +47,7 @@ auto is_identifier_rx (auto begin, auto end) -> std::tuple<decltype(begin), lexe
   return std::make_tuple(cursor, cursor != begin ? lexem::type_::identifier : lexem::type_::error) ;
 }
 
-auto is_identifiers_rx (auto begin, auto end) -> std::tuple<decltype(begin), lexem::type_> {
+auto search_for_identifiers_rx (auto begin, auto end) -> std::tuple<decltype(begin), lexem::type_> {
   auto cursor = begin ;
   
   while (('a' <= *cursor && *cursor <= 'z') || *cursor == '_')
@@ -70,47 +70,47 @@ auto is_identifiers_rx (auto begin, auto end) -> std::tuple<decltype(begin), lex
   return std::make_tuple(cursor, cursor != begin ? lexem::type_::identifiers : lexem::type_::error) ;
 }
 
-auto is_lbracket_rx (auto begin, auto end) -> std::tuple<decltype(begin), lexem::type_> {
+auto search_for_lbracket_rx (auto begin, auto end) -> std::tuple<decltype(begin), lexem::type_> {
   return search_for(begin, end, "(", lexem::type_::lbracket) ;
 }
 
-auto is_rbracket_rx (auto begin, auto end) -> std::tuple<decltype(begin), lexem::type_> {
+auto search_for_rbracket_rx (auto begin, auto end) -> std::tuple<decltype(begin), lexem::type_> {
   return search_for(begin, end, ")", lexem::type_::rbracket) ;
 }
 
-auto is_lbrace_rx (auto begin, auto end) -> std::tuple<decltype(begin), lexem::type_> {
+auto search_for_lbrace_rx (auto begin, auto end) -> std::tuple<decltype(begin), lexem::type_> {
   return search_for(begin, end, "{", lexem::type_::lbrace) ;
 }
 
-auto is_rbrace_rx (auto begin, auto end) -> std::tuple<decltype(begin), lexem::type_> {
+auto search_for_rbrace_rx (auto begin, auto end) -> std::tuple<decltype(begin), lexem::type_> {
   return search_for(begin, end, "}", lexem::type_::rbrace) ;
 }
 
-auto is_colon_rx (auto begin, auto end) -> std::tuple<decltype(begin), lexem::type_> {
+auto search_for_colon_rx (auto begin, auto end) -> std::tuple<decltype(begin), lexem::type_> {
   return search_for(begin, end, ":", lexem::type_::colon) ;
 }
 
-auto is_semi_colon_rx (auto begin, auto end) -> std::tuple<decltype(begin), lexem::type_> {
+auto search_for_semi_colon_rx (auto begin, auto end) -> std::tuple<decltype(begin), lexem::type_> {
   return search_for(begin, end, ";", lexem::type_::semi_colon) ;
 }
 
-auto is_comma_rx (auto begin, auto end) -> std::tuple<decltype(begin), lexem::type_> {
+auto search_for_comma_rx (auto begin, auto end) -> std::tuple<decltype(begin), lexem::type_> {
   return search_for(begin, end, ",", lexem::type_::comma) ;
 }
 
-auto is_alias_rx (auto begin, auto end) -> std::tuple<decltype(begin), lexem::type_> {
+auto search_for_alias_rx (auto begin, auto end) -> std::tuple<decltype(begin), lexem::type_> {
   return search_for(begin, end, "#", lexem::type_::alias) ;
 }
 
-auto is_strengh_rx (auto begin, auto end) -> std::tuple<decltype(begin), lexem::type_> {
+auto search_for_strengh_rx (auto begin, auto end) -> std::tuple<decltype(begin), lexem::type_> {
   return search_for(begin, end, "[@]", lexem::type_::strengh) ;
 }
 
-auto is_weak_rx (auto begin, auto end) -> std::tuple<decltype(begin), lexem::type_> {
+auto search_for_weak_rx (auto begin, auto end) -> std::tuple<decltype(begin), lexem::type_> {
   return search_for(begin, end, "@", lexem::type_::weak) ;
 }
 
-auto is_number_rx (auto begin, auto end) -> std::tuple<decltype(begin), lexem::type_> {
+auto search_for_number_rx (auto begin, auto end) -> std::tuple<decltype(begin), lexem::type_> {
   auto cursor = begin ;
   
   while (('0' <= *cursor && *cursor <= '9'))
@@ -133,7 +133,7 @@ auto is_number_rx (auto begin, auto end) -> std::tuple<decltype(begin), lexem::t
   return std::make_tuple(cursor, cursor != begin ? lexem::type_::number : lexem::type_::error) ;
 }
 
-auto is_ignored_rx (auto begin, auto end) -> std::tuple<decltype(begin), lexem::type_> {
+auto search_for_ignored_rx (auto begin, auto end) -> std::tuple<decltype(begin), lexem::type_> {
   auto cursor = begin ;
   
   while (*cursor == ' ' || *cursor == '\t' || *cursor == '\n')
@@ -146,24 +146,24 @@ auto is_ignored_rx (auto begin, auto end) -> std::tuple<decltype(begin), lexem::
 auto
 thodd_rxs (auto) {
   return std::make_tuple (
-    [] (auto begin, auto end) { return is_pure_rx(begin, end) ;}, 
-    [] (auto begin, auto end) { return is_impure_rx(begin, end) ;}, 
-    [] (auto begin, auto end) { return is_lambda_rx(begin, end) ;}, 
-    [] (auto begin, auto end) { return is_pod_rx(begin, end) ;}, 
-    [] (auto begin, auto end) { return is_return_rx(begin, end) ;}, 
-    [] (auto begin, auto end) { return is_identifier_rx(begin, end) ;}, 
-    [] (auto begin, auto end) { return is_identifiers_rx(begin, end) ;},
-    [] (auto begin, auto end) { return is_lbracket_rx(begin, end) ;}, 
-    [] (auto begin, auto end) { return is_rbracket_rx(begin, end) ;}, 
-    [] (auto begin, auto end) { return is_lbrace_rx(begin, end) ;},
-    [] (auto begin, auto end) { return is_rbrace_rx(begin, end) ;}, 
-    [] (auto begin, auto end) { return is_colon_rx(begin, end) ;}, 
-    [] (auto begin, auto end) { return is_semi_colon_rx(begin, end) ;},
-    [] (auto begin, auto end) { return is_comma_rx(begin, end) ;}, 
-    [] (auto begin, auto end) { return is_alias_rx(begin, end) ;}, 
-    [] (auto begin, auto end) { return is_strengh_rx(begin, end) ;}, 
-    [] (auto begin, auto end) { return is_number_rx(begin, end) ;}, 
-    [] (auto begin, auto end) { return is_ignored_rx(begin, end) ;} );
+    [] (auto begin, auto end) { return search_for_pure_rx(begin, end) ;}, 
+    [] (auto begin, auto end) { return search_for_impure_rx(begin, end) ;}, 
+    [] (auto begin, auto end) { return search_for_lambda_rx(begin, end) ;}, 
+    [] (auto begin, auto end) { return search_for_pod_rx(begin, end) ;}, 
+    [] (auto begin, auto end) { return search_for_return_rx(begin, end) ;}, 
+    [] (auto begin, auto end) { return search_for_identifier_rx(begin, end) ;}, 
+    [] (auto begin, auto end) { return search_for_identifiers_rx(begin, end) ;},
+    [] (auto begin, auto end) { return search_for_lbracket_rx(begin, end) ;}, 
+    [] (auto begin, auto end) { return search_for_rbracket_rx(begin, end) ;}, 
+    [] (auto begin, auto end) { return search_for_lbrace_rx(begin, end) ;},
+    [] (auto begin, auto end) { return search_for_rbrace_rx(begin, end) ;}, 
+    [] (auto begin, auto end) { return search_for_colon_rx(begin, end) ;}, 
+    [] (auto begin, auto end) { return search_for_semi_colon_rx(begin, end) ;},
+    [] (auto begin, auto end) { return search_for_comma_rx(begin, end) ;}, 
+    [] (auto begin, auto end) { return search_for_alias_rx(begin, end) ;}, 
+    [] (auto begin, auto end) { return search_for_strengh_rx(begin, end) ;}, 
+    [] (auto begin, auto end) { return search_for_number_rx(begin, end) ;}, 
+    [] (auto begin, auto end) { return search_for_ignored_rx(begin, end) ;} );
 } 
 
 

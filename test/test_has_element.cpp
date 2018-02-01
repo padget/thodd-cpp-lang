@@ -438,11 +438,10 @@ test_result test_next_pod_declaration () {
 
 test_result test_has_thodd_by_stream () {
   auto const & stream   = from_file("main.thodd") ;
-  auto const & lexems   = extract_lexems(stream.begin(), stream.end(), thodd_rxs()) ;
+  auto const & lexems   = extract_lexems(stream.begin(), stream.end(), thodd_rxs(0)) ;
   auto const & filtered = filter_lexems(lexems.begin(), lexems.end()) ;
 
-
-  return make_result(true/*has_thodd(filtered.begin(), filtered.end())*/, "test_has_thodd_by_stream") ;
+  return make_result(has_thodd(filtered.begin(), filtered.end()), "test_has_thodd_by_stream") ;
 }
 
 int main() {

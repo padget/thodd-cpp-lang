@@ -4,33 +4,34 @@
 #  include <vector>
 #  include <functional>
 #  include <regex>
+#  include <tuple>
 
 #  include "regexes.hpp"
 
+
 std::vector<lexem> const
-extract_lexems (auto begin, auto end, std::vector<rx> rxs) {
+extract_lexems (auto begin, auto end, auto rxs_tuple) {
   std::smatch matched ; 
   std::vector<lexem> lexems ;
 
   while (std::not_equal_to{}(begin, end)) {
-    std::vector<lexem> matchs ;
+    std::vector<std::tuple<decltype(begin), lexem::type_>> cursors ;
     
-    for (auto const & rx : rxs) {
-      std::regex_search(begin, end, matched, rx.reg) ;
-      matchs.push_back(lexem{rx.type, matched.str()}) ;
-    }
+    std::apply([&] (auto && ... rx) {(cursors.push_back(rx(begin, end)), ...) ;}, rxs_tuple) ;
 
     auto max = std::max_element (
-      matchs.cbegin(), matchs.cend(), 
-      [] (auto const & l, auto const & r) { 
-        return l.data.size() < r.data.size() ; 
+      cursors.cbegin(), cursors.cend(), 
+      [begin] (auto const & lcursor, auto const & rcursor) { 
+        return std::get<1>(rcursor) != lexem::type_::error && 
+          std::distance(begin, std::get<0>(lcursor)) < std::distance(begin, std::get<0>(rcursor)) ; 
       }) ;
       
-    auto const & max_size = (*max).data.size() ;
-    begin = std::next (begin, max_size == 0 ? 1 : max_size) ;
-    
-    if (max_size != 0)
-      lexems.push_back(*max) ;
+      auto max_cursor = begin == std::get<0>(*max) ? 
+        std::next(begin) : 
+        std::get<0>(*max) ;
+
+    lexems.push_back(lexem{std::get<1>(*max), std::string(begin, max_cursor)}) ;    
+    begin = max_cursor ;
   } 
 
   return lexems ;

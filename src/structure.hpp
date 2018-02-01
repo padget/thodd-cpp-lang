@@ -14,7 +14,7 @@ struct lexem {
     colon, semi_colon, 
     point, comma, ignored, 
     pure_kw, impure_kw, pod_kw,
-    lambda_kw,
+    lambda_kw, error,
     weak, strengh, alias, 
     switch_kw, case_kw, return_kw, 
     iterate_kw, iterate_if_kw

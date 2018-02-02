@@ -54,17 +54,30 @@ test_extract_lexems.exe
 
 
 
+echo building test_extract_element.cpp ...
+g++ -c test/test_extract_element.cpp -o test_extract_element.o -std=c++17 -fconcepts -Wno-attributes
+
+echo test_extract_element.exe
+g++ -o test_extract_element.exe test_extract_element.o 
+
+echo.
+echo --- test_extract_element.exe ---
+test_extract_element.exe
+
+
 echo.
 echo --- clean build files ---
 rm test_regexes.exe
 rm test_has_element.exe
 rm test_extract_lexems.exe
 rm jasmine_example.exe
+rm test_extract_element.exe
 
 
 rm test_regexes.o
 rm test_has_element.o
 rm test_extract_lexems.o
 rm jasmine_example.o
+rm test_extract_element.o
 
             

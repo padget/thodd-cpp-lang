@@ -4,29 +4,7 @@
 #  include <vector>
 #  include <string>
 
-struct lexem {
-  enum class type_ : int {
-    identifier, identifiers, 
-    number, string, 
-    lbrace, rbrace, 
-    lbracket, rbracket,
-    lsbracket, rsbracket,
-    colon, semi_colon, 
-    point, comma, ignored, 
-    pure_kw, impure_kw, pod_kw,
-    lambda_kw, error,
-    weak, strengh, alias, 
-    switch_kw, case_kw, return_kw, 
-    iterate_kw, iterate_if_kw
-  } ;
-
-  type_ type ;
-  std::string data ;
-} ;
-
-/**
- * Structure du langage thodd
- */ 
+#  include "signatures.hpp"
 
 struct expression {
   enum class type_ {
@@ -37,62 +15,51 @@ struct expression {
   std::vector<lexem> data ;
 } ;
 
-/**
- * [a-z_]+
- */
 struct identifier {
   std::string data ;
 } ;
 
-/**
- * [a-z_]+(\\.[a-z_]+)*
- */ 
 struct identifiers {
   std::vector<identifier> idents ;
 } ;
 
-/**
- * [0-9]+(\\.[0-9]+){0,1}
- */
 struct number {
   std::string data ;
 } ;
 
-/**
- * 
- */
-struct function_call {
-  identifier fname ;
-  std::vector<expression> params ; 
+struct string {
+  std::string data ;
 } ;
 
-/**
- * 
- */
+struct function_call { 
+  identifier name ;
+  std::vector<expression> args ;
+} ;
+
 struct parameter {
   identifier name ;
   identifier type ;
 } ;
 
-/**
- * 
- */
 struct const_instruction {
   identifier name ;
   identifier type ;
   expression value ;
 } ;
 
-/**
- * 
- */
 struct return_instruction {
   expression expr ;
 } ;
 
-/**
- * 
- */
+
+struct lambda_expression {
+  identifier name ;
+  identifier type ;
+  std::vector<parameter> parameters ;
+  std::vector<const_instruction> const_instructions ;
+  return_instruction return_ ;
+} ;
+
 struct function_declaration {
   identifier name ;
   identifier type ;
@@ -101,25 +68,16 @@ struct function_declaration {
   return_instruction return_ ;
 } ;
 
-/**
- * 
- */
 struct pod_member {
   identifier name ;
   identifier type ;
 } ;
 
-/**
- * 
- */
 struct pod_declaration {
   identifier name ;
   std::vector<pod_member> members ;
 } ;
 
-/**
- * 
- */
 struct declaration {
   enum class type_ {
     import, function, pod
@@ -129,9 +87,6 @@ struct declaration {
   std::vector<lexem> data ;
 } ;
 
-/**
- * 
- */
 struct thodd {
   std::string filename ;
   std::vector<declaration> declarations ;

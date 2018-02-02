@@ -1,12 +1,6 @@
 #  include "../src/extract_element.hpp"
 #  include "jasmine.hpp"
 
-auto equals_to (string const & expected) {
-  return [=] (string const & value) {
-    return value.data == expected.data ;
-  } ;
-}
-
 int main () {
   suite(
     "extract_element", 
@@ -15,7 +9,7 @@ int main () {
 
       describe("extract_string", 
         it("should extract a string with its content", 
-           expect(extract_string(lxs.begin(), lxs.end()), [] (auto && value) {return value.data == "\"str\"" ;}))) ;
+           expect(extract_string(lxs.begin(), lxs.end()).data, equals_to("\"str\"")))) ;
     }) ;
   return EXIT_SUCCESS ;
 }

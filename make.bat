@@ -3,6 +3,19 @@ echo ------ tests ------
 
 
 
+echo building jasmine_example.cpp ...
+g++ -c test/jasmine_example.cpp -o jasmine_example.o -std=c++17 -fconcepts -Wno-attributes
+
+echo jasmine_example.exe
+g++ -o jasmine_example.exe jasmine_example.o 
+
+echo.
+echo --- jasmine_example.exe ---
+jasmine_example.exe
+
+
+
+
 echo building test_regexes.cpp ...
 g++ -c test/test_regexes.cpp -o test_regexes.o -std=c++17 -fconcepts -Wno-attributes
 
@@ -12,6 +25,7 @@ g++ -o test_regexes.exe test_regexes.o
 echo.
 echo --- test_regexes.exe ---
 test_regexes.exe
+
 
 
 
@@ -27,6 +41,7 @@ test_has_element.exe
 
 
 
+
 echo building test_extract_lexems.cpp ...
 g++ -c test/test_extract_lexems.cpp -o test_extract_lexems.o -std=c++17 -fconcepts -Wno-attributes
 
@@ -39,16 +54,17 @@ test_extract_lexems.exe
 
 
 
-
-
 echo.
 echo --- clean build files ---
 rm test_regexes.exe
 rm test_has_element.exe
 rm test_extract_lexems.exe
+rm jasmine_example.exe
+
 
 rm test_regexes.o
 rm test_has_element.o
 rm test_extract_lexems.o
+rm jasmine_example.o
 
             

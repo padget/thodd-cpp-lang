@@ -9,6 +9,9 @@
 #include "../src/regexes.hpp"
 #include "../src/extract_lexems.hpp"
 
+#include "jasmine.hpp"
+
+
 struct test_result {
   std::string name ;
   bool passed ;
@@ -81,6 +84,19 @@ int main() {
     std::cout << result.name << (result.passed ? " ---- OK" : " ---- KO /!\\") << std::endl ;
     passed = passed && result.passed ;
   }) ;
+
+
+  std::string stream = "int aaaa 2.3 dqd2" ;
+  describe("extract_lexems", 
+    it("should return the right lexems sequence", 
+      expect(
+        extract_lexems(stream.begin(), stream.end(), thodd_rxs(0)), 
+        range_equals_to(
+          make_lexems({
+            thd::identifier, thd::ignored, thd::identifier, thd::ignored, 
+            thd::number, thd::ignored, thd::identifier, thd::number
+          }), 
+          [] (auto && l, auto && r) {return l.type == r.type ;})))) ;
   
   if (passed)
     return EXIT_SUCCESS ;

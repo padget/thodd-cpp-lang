@@ -4,16 +4,16 @@
 #  include "signatures.hpp"
 #  include "structure.hpp"
 
-string extract_string (auto begin, auto end) {
-  return string{(*begin).data} ;
+string_so extract_string (auto begin, auto end) {
+  return string_so{(*begin).data} ;
 }
 
-identifier extract_identifier (auto begin, auto end) {
-  return identifier{(*begin).data} ;
+identifier_so extract_identifier (auto begin, auto end) {
+  return identifier_so{(*begin).data} ;
 }
 
-number extract_number (auto begin, auto end) {
-  return number{(*begin).data} ;
+number_so extract_number (auto begin, auto end) {
+  return number_so{(*begin).data} ;
 }
 
 #endif 

@@ -43,7 +43,7 @@ namespace std {
 
 
 enum class thodd : int {
-  identifier, number,
+  identifier, number_po,
   lbrace, rbrace, 
   lbracket, rbracket,
   lsbracket, rsbracket,
@@ -168,24 +168,24 @@ next_identifier (auto begin, auto const end) {
   }
 }
 
-struct number {
+struct number_po {
   lexem num ;
 } ;
 
-extracted<auto, number> 
+extracted<auto, number_po> 
 next_number (auto begin, auto const end) {
-  auto const number_ids = { thodd::number } ;
+  auto const number_ids = { thodd::number_po } ;
   
   if (auto && number_opt = next_ids (begin, end, number_ids) ;
       number_opt.has_value()) 
-    return make_extracted (number_opt.value(), number { *begin }) ;
+    return make_extracted (number_opt.value(), number_po { *begin }) ;
   else 
-    return make_extracted (begin, number {}, false) ;
+    return make_extracted (begin, number_po {}, false) ;
 }
 
 struct parameter {
   enum class type_ : size_t {
-    fcall, number, identifier
+    fcall, number_po, identifier
   } ;
 
   type_ type ;
@@ -208,8 +208,8 @@ next_param(auto begin, auto const end, bool mandatory = true) {
       if (!number_ext.unit.has_value()) {
         error (mandatory, "un paramêtre de fonction valide (identifiant, nomber, appel de fonction) est attendu") () ;
         return make_extracted(begin, parameter{}, false) ;
-      } else // interpretation number ;
-        (last = number_ext.last, ptype = parameter::type_::number) ;
+      } else // interpretation number_po ;
+        (last = number_ext.last, ptype = parameter::type_::number_po) ;
     } else // interpretation identifiant ;
       (last = ident_ext.last, ptype = parameter::type_::identifier) ;
   } else // interpretation function_call ;
@@ -706,7 +706,7 @@ namespace cpp {
   transpile_function_call (function_call const & fcall) ;
 
   std::string const
-  transpile_number (number const & fnum) {
+  transpile_number (number_po const & fnum) {
     return fnum.num.str ;
   }
 
@@ -718,7 +718,7 @@ namespace cpp {
   std::string const
   transpile_parameter (parameter const & fparam) {  
     switch (fparam.type) {
-      case parameter::type_::number : 
+      case parameter::type_::number_po : 
         return 
         transpile_number(
           next_number(
@@ -937,7 +937,7 @@ int main(int argc, char** argv) {
   auto const alias_rx = rx { std::regex ("^##"), thodd::alias } ;
   auto const strengh_rx = rx { std::regex ("^\\[#\\]"), thodd::strengh } ;
   auto const weak_rx = rx { std::regex ("^#"), thodd::weak } ;
-  auto const number_rx = rx { std::regex ("^[0-9]+(\\.[0-9]+){0,1}"), thodd::number } ;
+  auto const number_rx = rx { std::regex ("^[0-9]+(\\.[0-9]+){0,1}"), thodd::number_po } ;
   auto const ignored_rx = rx { std::regex ("^[ \\n\\t]+"), thodd::ignored } ;
 
   auto const pure_rx = rx { std::regex ("^pure"), thodd::pure_kw } ;

@@ -191,15 +191,15 @@ int main() {
           thd::identifier, thd::lbracket, thd::identifier, thd::comma, thd::number, thd::rbracket,
         thd::rbracket}) ;
 
-      describe("has_function_call_expression", 
-        it("should detect an empty function_call_expression", 
-           expect(has_function_call_expression(lxs_fcall_empty.begin(), lxs_fcall_empty.end()), be_true())),
-        it("should detect a function_call_expression with nb and identifier", 
-           expect(has_function_call_expression(lxs_fcall_nb_ident.begin(), lxs_fcall_nb_ident.end()), be_true())),
-        it("shouldn't detect a function_call_expression (ends with comma)", 
-           expect(has_function_call_expression(lxs_fcall_end_comma.begin(), lxs_fcall_end_comma.end()), be_false())),
-        it("should detect a function_call_expression (fcall as parameter)", 
-           expect(has_function_call_expression(lxs_fcall_fcall.begin(), lxs_fcall_fcall.end()), be_true()))) ;
+      describe("has_function_call", 
+        it("should detect an empty function_call expression", 
+           expect(has_function_call(lxs_fcall_empty.begin(), lxs_fcall_empty.end()), be_true())),
+        it("should detect a function_call expression with nb and identifier", 
+           expect(has_function_call(lxs_fcall_nb_ident.begin(), lxs_fcall_nb_ident.end()), be_true())),
+        it("shouldn't detect a function_call expression (ends with comma)", 
+           expect(has_function_call(lxs_fcall_end_comma.begin(), lxs_fcall_end_comma.end()), be_false())),
+        it("should detect a function_call expression (fcall as parameter)", 
+           expect(has_function_call(lxs_fcall_fcall.begin(), lxs_fcall_fcall.end()), be_true()))) ;
     }, 
     [] {
       std::vector<lexem> const lxs = make_lexems({thd::identifier, thd::colon, thd::identifier}) ;
@@ -241,13 +241,13 @@ int main() {
             thd::return_kw, thd::identifier, thd::semi_colon,
           thd::rbrace}) ;
 
-      describe("has_lambda_expression", 
+      describe("has_lambda", 
         it("should detect a lambda_expression with no parameter", 
-           expect(has_lambda_expression(lxs_lambda_empty.begin(), lxs_lambda_empty.end()), be_true())),
+           expect(has_lambda(lxs_lambda_empty.begin(), lxs_lambda_empty.end()), be_true())),
         it("should detect a lambda_expression with parameter", 
-           expect(has_lambda_expression(lxs_lambda_params.begin(), lxs_lambda_params.end()), be_true())),
-        it("should detect a lambda_expression with parameters and const expression", 
-           expect(has_lambda_expression(lxs_lambda_full.begin(), lxs_lambda_full.end()), be_true()))) ;
+           expect(has_lambda(lxs_lambda_params.begin(), lxs_lambda_params.end()), be_true())),
+        it("should detect a lambda_expression with parameters and const expression_so", 
+           expect(has_lambda(lxs_lambda_full.begin(), lxs_lambda_full.end()), be_true()))) ;
     }, 
     [] {
       std::vector<lexem> const lxs = make_lexems({thd::identifier, thd::colon, thd::identifier, thd::number, thd::semi_colon}) ;
@@ -269,9 +269,9 @@ int main() {
       std::vector<lexem> const lxs = make_lexems({thd::identifier, thd::colon, thd::identifier, thd::semi_colon}) ;
       std::vector<lexem> const lxs2 = make_lexems({thd::identifier, thd::colon, thd::identifier}) ;
 
-      describe("has_pod_member", 
-        it("should detect a pod_member", expect(has_pod_member(lxs.begin(), lxs.end()), be_true())),
-        it("shouldn't detect a pod_member", expect(has_pod_member(lxs2.begin(), lxs2.end()), be_false()))) ;
+      describe("has_member", 
+        it("should detect a member", expect(has_member(lxs.begin(), lxs.end()), be_true())),
+        it("shouldn't detect a member", expect(has_member(lxs2.begin(), lxs2.end()), be_false()))) ;
     }, 
     [] {
       std::vector<lexem> const lxs_pod_empty = make_lexems({thd::pod_kw, thd::identifier, thd::lbrace, thd::rbrace}) ;
@@ -282,11 +282,11 @@ int main() {
           thd::identifier, thd::colon, thd::identifier, thd::semi_colon,
         thd::rbrace}) ;
 
-      describe("has_pod_declaration", 
+      describe("has_pod", 
         it("should detect a pod_declaration with no member", 
-           expect(has_pod_declaration(lxs_pod_empty.begin(), lxs_pod_empty.end()), be_true())),
+           expect(has_pod(lxs_pod_empty.begin(), lxs_pod_empty.end()), be_true())),
         it("should detect a pod_declaration with members", 
-           expect(has_pod_declaration(lxs_pod_members.begin(), lxs_pod_members.end()), be_true()))) ;
+           expect(has_pod(lxs_pod_members.begin(), lxs_pod_members.end()), be_true()))) ;
     }) ;
 
     suite(
@@ -371,7 +371,7 @@ test_result test_next_number () {
 test_result test_next_function_call_expression_empty () {
   std::vector<lexem> lxs = make_lexems({
     thd::identifier, thd::lbracket, thd::rbracket}) ;
-  return make_result(next_function_call_expression(lxs.begin(), lxs.end()) == lxs.end(), "test_next_function_call_expression_empty") ;
+  return make_result(next_function_call(lxs.begin(), lxs.end()) == lxs.end(), "test_next_function_call_expression_empty") ;
 }
 
 test_result test_next_function_call_expression_end_with_func_call () {
@@ -381,7 +381,7 @@ test_result test_next_function_call_expression_end_with_func_call () {
       thd::number, thd::comma, 
       thd::identifier, thd::lbracket, thd::identifier, thd::comma, thd::number, thd::rbracket,
     thd::rbracket}) ;
-  return make_result(next_function_call_expression(lxs.begin(), lxs.end()) == lxs.end(), "test_next_function_call_expression_end_with_func_call") ;
+  return make_result(next_function_call(lxs.begin(), lxs.end()) == lxs.end(), "test_next_function_call_expression_end_with_func_call") ;
 }
 
 test_result test_next_parameter () {
@@ -396,7 +396,7 @@ test_result test_next_lambda_expression () {
       thd::lbrace, 
         thd::return_kw, thd::identifier, thd::semi_colon,
       thd::rbrace}) ;
-  return make_result(next_lambda_expression(lxs.begin(), lxs.end()) == lxs.end(), "test_next_lambda_expression") ;
+  return make_result(next_lambda(lxs.begin(), lxs.end()) == lxs.end(), "test_next_lambda_expression") ;
 }
 
 test_result test_next_lambda_expression_with_parameters () {
@@ -410,7 +410,7 @@ test_result test_next_lambda_expression_with_parameters () {
       thd::lbrace, 
         thd::return_kw, thd::identifier, thd::semi_colon,
       thd::rbrace}) ;
-  return make_result(next_lambda_expression(lxs.begin(), lxs.end()) == lxs.end(), "test_next_lambda_expression_with_parameters") ;
+  return make_result(next_lambda(lxs.begin(), lxs.end()) == lxs.end(), "test_next_lambda_expression_with_parameters") ;
 }
 
 test_result test_next_lambda_expression_with_parameters_and_const_instructions () {
@@ -427,7 +427,7 @@ test_result test_next_lambda_expression_with_parameters_and_const_instructions (
         thd::identifier, thd::colon, thd::identifier, thd::number, thd::semi_colon,
         thd::return_kw, thd::identifier, thd::semi_colon,
       thd::rbrace}) ;
-  return make_result(next_lambda_expression(lxs.begin(), lxs.end()) == lxs.end(), "test_next_lambda_expression_with_parameters_and_const_instructions") ;
+  return make_result(next_lambda(lxs.begin(), lxs.end()) == lxs.end(), "test_next_lambda_expression_with_parameters_and_const_instructions") ;
 }
 
 test_result test_next_const_instruction () {
@@ -479,12 +479,12 @@ test_result test_next_expression_lambda () {
 
 test_result test_next_pod_member () {
   std::vector<lexem> lxs = make_lexems({{thd::identifier, thd::colon, thd::identifier, thd::semi_colon}}) ;
-  return make_result(next_pod_member(lxs.begin(), lxs.end()) == lxs.end(), "next_pod_member") ;
+  return make_result(next_member(lxs.begin(), lxs.end()) == lxs.end(), "next_pod_member") ;
 }
 
 test_result test_next_pod_declaration () {
   std::vector<lexem> lxs = make_lexems({thd::pod_kw, thd::identifier, thd::lbrace, thd::rbrace}) ;
-  return make_result(next_pod_declaration(lxs.begin(), lxs.end()) == lxs.end(), "next_pod_declaration") ;
+  return make_result(next_pod(lxs.begin(), lxs.end()) == lxs.end(), "next_pod_declaration") ;
 }
 
 

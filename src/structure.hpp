@@ -6,7 +6,7 @@
 
 #  include "signatures.hpp"
 
-struct expression {
+struct expression_so {
   enum class type_ {
      identifier, identifiers, number, lambda, function_call
   } ;
@@ -15,70 +15,70 @@ struct expression {
   std::vector<lexem> data ;
 } ;
 
-struct identifier {
+struct identifier_so {
   std::string data ;
 } ;
 
-struct identifiers {
-  std::vector<identifier> idents ;
+struct identifiers_so {
+  std::vector<identifier_so> idents ;
 } ;
 
-struct number {
+struct number_so {
   std::string data ;
 } ;
 
-struct string {
+struct string_so {
   std::string data ;
 } ;
 
-struct function_call { 
-  identifier name ;
-  std::vector<expression> args ;
+struct function_call_so { 
+  identifier_so name ;
+  std::vector<expression_so> args ;
 } ;
 
-struct parameter {
-  identifier name ;
-  identifier type ;
+struct parameter_so {
+  identifier_so name ;
+  identifier_so type ;
 } ;
 
-struct const_instruction {
-  identifier name ;
-  identifier type ;
-  expression value ;
+struct const_instruction_so {
+  identifier_so name ;
+  identifier_so type ;
+  expression_so value ;
 } ;
 
-struct return_instruction {
-  expression expr ;
+struct return_instruction_so {
+  expression_so expr ;
 } ;
 
 
-struct lambda_expression {
-  identifier name ;
-  identifier type ;
-  std::vector<parameter> parameters ;
-  std::vector<const_instruction> const_instructions ;
-  return_instruction return_ ;
+struct lambda_expression_so {
+  identifier_so name ;
+  identifier_so type ;
+  std::vector<parameter_so> parameters ;
+  std::vector<const_instruction_so> const_instructions ;
+  return_instruction_so return_ ;
 } ;
 
-struct function_declaration {
-  identifier name ;
-  identifier type ;
-  std::vector<parameter> parameters ;
-  std::vector<const_instruction> const_instructions ;
-  return_instruction return_ ;
+struct function_declaration_so {
+  identifier_so name ;
+  identifier_so type ;
+  std::vector<parameter_so> parameters ;
+  std::vector<const_instruction_so> const_instructions ;
+  return_instruction_so return_ ;
 } ;
 
-struct pod_member {
-  identifier name ;
-  identifier type ;
+struct pod_member_so {
+  identifier_so name ;
+  identifier_so type ;
 } ;
 
-struct pod_declaration {
-  identifier name ;
-  std::vector<pod_member> members ;
+struct pod_declaration_so {
+  identifier_so name ;
+  std::vector<pod_member_so> members ;
 } ;
 
-struct declaration {
+struct declaration_so {
   enum class type_ {
     import, function, pod
   } ;
@@ -87,9 +87,9 @@ struct declaration {
   std::vector<lexem> data ;
 } ;
 
-struct thodd {
+struct thodd_so {
   std::string filename ;
-  std::vector<declaration> declarations ;
+  std::vector<declaration_so> declarations ;
 } ;
 
 #endif

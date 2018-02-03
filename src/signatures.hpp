@@ -28,20 +28,20 @@ struct lexem {
   std::string data ;
 } ;
 
-struct expression ;
-struct number ; 
-struct identifier ;
-struct lambda_expression ;
-struct string ;
-struct function_call ;
-struct parameter ;
-struct pod_declaration ;
-struct pod_member ;
-struct const_instruction ;
-struct return_instruction ;
-struct function_declaration ;
-struct declaration ;
-struct thodd ;
+struct expression_so ;
+struct number_so ; 
+struct identifier_so ;
+struct lambda_so ;
+struct string_so ;
+struct function_call_so ;
+struct parameter_so ;
+struct pod_so ;
+struct member_so ;
+struct const_instruction_so ;
+struct return_instruction_so ;
+struct function_so ;
+struct declaration_so ;
+struct thodd_so ;
 
 
 /// //////////// ///
@@ -114,14 +114,14 @@ auto next_identifier (auto begin, auto end) -> decltype(begin) ; // x t
 bool has_number (auto begin, auto end) ; // x t
 auto next_number (auto begin, auto end) -> decltype(begin) ; // x t
 
-bool has_function_call_expression (auto begin, auto end) ; // x t
-auto next_function_call_expression (auto begin, auto end) -> decltype(begin) ; // x t
+bool has_function_call (auto begin, auto end) ; // x t
+auto next_function_call (auto begin, auto end) -> decltype(begin) ; // x t
 
 bool has_parameter (auto begin, auto end) ; // x t
 auto next_parameter (auto begin, auto end) -> decltype(begin) ; // x t
 
-bool has_lambda_expression (auto begin, auto end) ; // x t
-auto next_lambda_expression (auto begin, auto end) -> decltype(begin) ; // x t
+bool has_lambda (auto begin, auto end) ; // x t
+auto next_lambda (auto begin, auto end) -> decltype(begin) ; // x t
 
 bool has_expression (auto begin, auto end) ; // x t
 auto next_expression (auto begin, auto end) -> decltype(begin) ; // x t
@@ -132,14 +132,14 @@ auto next_const_instruction (auto begin, auto end) -> decltype(begin) ; // x t
 bool has_return_instruction (auto begin, auto end) ; // x t
 auto next_return_instruction (auto begin, auto end) -> decltype(begin) ; // x t
 
-bool has_pod_member (auto begin, auto end) ; // x t
-auto next_pod_member (auto begin, auto end) -> decltype(begin) ; // x t
+bool has_member (auto begin, auto end) ; // x t
+auto next_member (auto begin, auto end) -> decltype(begin) ; // x t
 
-bool has_pod_declaration (auto begin, auto end) ; // x t
-auto next_pod_declaration (auto begin, auto end) -> decltype(begin) ; // x t
+bool has_pod (auto begin, auto end) ; // x t
+auto next_pod (auto begin, auto end) -> decltype(begin) ; // x t
 
-bool has_function_declaration (auto begin, auto end) ; // x t 
-auto next_function_declaration (auto begin, auto end) -> decltype(begin) ; // x t
+bool has_function (auto begin, auto end) ; // x t 
+auto next_function (auto begin, auto end) -> decltype(begin) ; // x t
 
 bool has_thodd (auto begin, auto end) ; // x t
 
@@ -149,18 +149,18 @@ bool has_thodd (auto begin, auto end) ; // x t
 /// //////////// ///
 
 
-string extract_string (auto begin, auto end) ; // x
-identifier extract_identifier (auto begin, auto end) ;// x
-number extract_number (auto begin, auto end) ;
-function_call extract_function_call_expression (auto begin, auto end) ;
-parameter extract_parameter (auto begin, auto end) ;
-lambda_expression extract_lambda_expression (auto begin, auto end) ;
-expression extract_expression (auto begin, auto end) ;
-const_instruction extract_const_instruction (auto begin, auto end) ;
-return_instruction extract_return_instruction (auto begin, auto end) ;
-pod_member extract_pod_member (auto begin, auto end) ;
-pod_declaration extract_pod_declaration (auto begin, auto end) ;
-function_declaration extract_function_declaration (auto begin, auto end) ;
-thodd extract_thodd (auto begin, auto end) ;
+string_so extract_string (auto begin, auto end) ; // x
+identifier_so extract_identifier (auto begin, auto end) ;// x
+number_so extract_number (auto begin, auto end) ;
+function_call_so extract_function_call (auto begin, auto end) ;
+parameter_so extract_parameter (auto begin, auto end) ;
+lambda_so extract_lambda (auto begin, auto end) ;
+expression_so extract_expression (auto begin, auto end) ;
+const_instruction_so extract_const_instruction (auto begin, auto end) ;
+return_instruction_so extract_return_instruction (auto begin, auto end) ;
+member_so extract_member (auto begin, auto end) ;
+pod_so extract_pod (auto begin, auto end) ;
+function_so extract_function (auto begin, auto end) ;
+thodd_so extract_thodd (auto begin, auto end) ;
 
 #endif

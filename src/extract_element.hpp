@@ -2,7 +2,7 @@
 #  define __thodd_extract_element_hpp__
 
 #  include "signatures.hpp"
-#  include "structure.hpp"
+#  include "structure_so.hpp"
 
 string_so extract_string (auto begin, auto end) {
   return string_so{(*begin).data} ;

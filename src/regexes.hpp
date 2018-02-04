@@ -7,7 +7,7 @@
 #  include <functional>
 
 #  include "signatures.hpp"
-#  include "structure.hpp"
+#  include "structure_so.hpp"
 #  include "start_with.hpp"
 
 

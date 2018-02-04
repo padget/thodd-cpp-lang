@@ -6,7 +6,7 @@
 #  include <type_traits>
 
 #  include "start_with.hpp"
-#  include "structure.hpp"
+#  include "structure_so.hpp"
 #  include "signatures.hpp"
 
 

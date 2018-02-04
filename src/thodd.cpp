@@ -1,5 +1,5 @@
 #include "from_file.hpp"
-#include "structure.hpp"
+#include "structure_so.hpp"
 #include "regexes.hpp"
 #include "extract_lexems.hpp"
 #include "extract_element.hpp"

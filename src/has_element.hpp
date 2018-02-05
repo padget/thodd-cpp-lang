@@ -121,7 +121,7 @@ auto next_number (auto begin, auto end) -> decltype(begin) {
   return std::next(begin) ;
 }
 
-bool has_function_call_expression (auto begin, auto end) {
+bool has_function_call (auto begin, auto end) {
   auto cursor = begin ; 
   
   if (has_identifier(cursor, end) && 
@@ -144,7 +144,7 @@ bool has_function_call_expression (auto begin, auto end) {
   return !has_comma_again && has_rbracket(cursor, end) ;
 }
 
-auto next_function_call_expression (auto begin, auto end) -> decltype(begin) {
+auto next_function_call (auto begin, auto end) -> decltype(begin) {
   auto cursor = begin ; 
   cursor = next_lbracket(next_identifier(cursor, end), end) ;
 
@@ -167,7 +167,7 @@ auto next_parameter (auto begin, auto end) -> decltype(begin) {
   return next_identifier(next_colon(next_identifier(begin, end), end), end) ;
 } 
 
-bool has_lambda_expression (auto begin, auto end) {
+bool has_lambda (auto begin, auto end) {
   auto cursor = begin ;
 
   if (!has_lambda_kw(cursor, end)) 
@@ -221,7 +221,7 @@ bool has_lambda_expression (auto begin, auto end) {
   return true ;
 }
 
-auto next_lambda_expression (auto begin, auto end) -> decltype(begin) {
+auto next_lambda (auto begin, auto end) -> decltype(begin) {
   auto cursor = begin ;
   cursor = next_lbracket(next_lambda_kw(cursor, end), end) ;
   
@@ -240,15 +240,15 @@ auto next_lambda_expression (auto begin, auto end) -> decltype(begin) {
 }
 
 bool has_expression (auto begin, auto end) {
-  return has_function_call_expression (begin, end) || 
-    has_lambda_expression(begin, end) ||
+  return has_function_call (begin, end) || 
+    has_lambda(begin, end) ||
     has_identifier(begin, end) ||
     has_number(begin, end) ;
 }
 
 auto next_expression (auto begin, auto end) -> decltype(begin) {
-  if (has_function_call_expression(begin, end)) return next_function_call_expression(begin, end) ;
-  if (has_lambda_expression(begin, end)) return next_lambda_expression(begin, end) ;
+  if (has_function_call(begin, end)) return next_function_call(begin, end) ;
+  if (has_lambda(begin, end)) return next_lambda(begin, end) ;
   if (has_identifier(begin, end)) return next_identifier(begin, end) ;
   if (has_number(begin, end)) return next_number(begin, end) ;
   return begin ;
@@ -276,18 +276,18 @@ auto next_return_instruction (auto begin, auto end) -> decltype(begin) {
   return next_semi_colon(next_expression(next_return_kw(begin, end), end), end) ; 
 }
 
-bool has_pod_member (auto begin, auto end) {
+bool has_member (auto begin, auto end) {
   return has_identifier(begin, end) && 
     has_colon(next_identifier(begin, end), end) && 
     has_identifier(next_colon(next_identifier(begin, end), end), end) && 
     has_semi_colon(next_identifier(next_colon(next_identifier(begin, end), end), end), end) ;
 }
 
-auto next_pod_member (auto begin, auto end) -> decltype(begin) {
+auto next_member (auto begin, auto end) -> decltype(begin) {
   return next_semi_colon(next_identifier(next_colon(next_identifier(begin, end), end), end), end) ;
 }
 
-bool has_pod_declaration (auto begin, auto end) {
+bool has_pod (auto begin, auto end) {
   auto cursor = begin ; 
   
   if (!has_pod_kw(cursor, end))
@@ -305,22 +305,22 @@ bool has_pod_declaration (auto begin, auto end) {
 
   cursor = next_lbrace(cursor, end) ;
 
-  while (has_pod_member(cursor, end)) 
-    cursor = next_pod_member(cursor, end) ;
+  while (has_member(cursor, end)) 
+    cursor = next_member(cursor, end) ;
 
   return has_rbrace(cursor, end) ;
 }
 
-auto next_pod_declaration (auto begin, auto end) -> decltype(begin) {
+auto next_pod (auto begin, auto end) -> decltype(begin) {
   auto cursor = next_lbrace(next_identifier(next_pod_kw(begin, end), end), end) ;
   
-  while (has_pod_member(cursor, end))
-    cursor = next_pod_member(cursor, end) ;
+  while (has_member(cursor, end))
+    cursor = next_member(cursor, end) ;
 
   return next_rbrace(cursor, end) ;
 }
 
-bool has_function_declaration (auto begin, auto end) {
+bool has_function (auto begin, auto end) {
   auto cursor = begin ;
 
   if (!has_identifier(cursor, end)) 
@@ -374,7 +374,7 @@ bool has_function_declaration (auto begin, auto end) {
   return true ;
 }
 
-auto next_function_declaration (auto begin, auto end) -> decltype(begin) {
+auto next_function (auto begin, auto end) -> decltype(begin) {
   auto cursor = begin ;
   cursor = next_lbracket(next_identifier(cursor, end), end) ;
   
@@ -398,10 +398,10 @@ bool has_thodd (auto begin, auto end) {
   bool has_declaration_malformed = false ;
 
   while (has_declaration && !has_declaration_malformed)
-    if (has_pod_declaration(cursor, end))
-      cursor = next_pod_declaration(cursor, end) ;
-    else if (has_function_declaration(cursor, end))
-      cursor = next_function_declaration(cursor, end) ;
+    if (has_pod(cursor, end))
+      cursor = next_pod(cursor, end) ;
+    else if (has_function(cursor, end))
+      cursor = next_function(cursor, end) ;
     else 
       has_declaration = false ;
 

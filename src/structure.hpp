@@ -1,5 +1,5 @@
-#ifndef __thodd_structure_hpp__
-#  define __thodd_structure_hpp__
+#ifndef __thodd_structure_so_hpp__
+#  define __thodd_structure_so_hpp__
 
 #  include <vector>
 #  include <string>
@@ -52,7 +52,7 @@ struct return_instruction {
 } ;
 
 
-struct lambda_expression {
+struct lambda {
   identifier name ;
   identifier type ;
   std::vector<parameter> parameters ;
@@ -60,22 +60,24 @@ struct lambda_expression {
   return_instruction return_ ;
 } ;
 
-struct function_declaration {
+struct function {
   identifier name ;
   identifier type ;
+
   std::vector<parameter> parameters ;
+  
   std::vector<const_instruction> const_instructions ;
   return_instruction return_ ;
 } ;
 
-struct pod_member {
+struct member {
   identifier name ;
   identifier type ;
 } ;
 
-struct pod_declaration {
+struct pod {
   identifier name ;
-  std::vector<pod_member> members ;
+  std::vector<member> members ;
 } ;
 
 struct declaration {
@@ -89,7 +91,9 @@ struct declaration {
 
 struct thodd {
   std::string filename ;
-  std::vector<declaration> declarations ;
+  
+  std::vector<pod> pods ;
+  std::vector<function> functions ;
 } ;
 
 #endif

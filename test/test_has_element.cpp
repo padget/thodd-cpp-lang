@@ -246,7 +246,7 @@ int main() {
            expect(has_lambda(lxs_lambda_empty.begin(), lxs_lambda_empty.end()), be_true())),
         it("should detect a lambda_expression with parameter", 
            expect(has_lambda(lxs_lambda_params.begin(), lxs_lambda_params.end()), be_true())),
-        it("should detect a lambda_expression with parameters and const expression_so", 
+        it("should detect a lambda_expression with parameters and const expression", 
            expect(has_lambda(lxs_lambda_full.begin(), lxs_lambda_full.end()), be_true()))) ;
     }, 
     [] {

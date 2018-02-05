@@ -65,19 +65,6 @@ echo --- test_extract_element.exe ---
 test_extract_element.exe
 
 
-
-
-echo building test_so_to_tdd.cpp ...
-g++ -c test/test_so_to_tdd.cpp -o test_so_to_tdd.o -std=c++17 -fconcepts -Wno-attributes
-
-echo test_so_to_tdd.exe
-g++ -o test_so_to_tdd.exe test_so_to_tdd.o 
-
-echo.
-echo --- test_so_to_tdd.exe ---
-test_so_to_tdd.exe
-
-
 echo.
 echo --- clean build files ---
 rm test_regexes.exe

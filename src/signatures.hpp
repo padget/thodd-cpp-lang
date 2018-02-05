@@ -164,15 +164,4 @@ function extract_function (auto begin, auto end) ;
 thodd extract_thodd (auto begin, auto end) ;
 
 
-
-/// //////////////////// /// 
-/// couche structure tdd ///
-/// //////////////////// /// 
-
-
-struct member_tdd ;
-struct pod_tdd ;
-struct thodd_tdd ;
-
-
 #endif

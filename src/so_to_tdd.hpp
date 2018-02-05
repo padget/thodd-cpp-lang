@@ -1,36 +1,34 @@
 #ifndef __thodd_so_to_tdd_hpp__
 #  define __thodd_so_to_tdd_hpp__
 
+#  include <map>
+#  include <vector>
+
 #  include "signatures.hpp"
 #  include "structure_so.hpp"
 #  include "structure_tdd.hpp"
 
-thodd_tdd so_to_tdd (thodd_so so) {
-  std::vector<pod_tdd> pods_tdd ;
-  std::map<std::string, pod_tdd*> name_to_podptr ;
 
-  for (auto const & pod : so.pods) {
-    std::vector<member_tdd> members ;
+member_tdd so_to_tdd(member_so const & so) {
+  return member_tdd{so.name.data, so.type.data} ;
+}
 
-    for (auto const member : pod.members) {
-      members.push_back(member_tdd{member.name}) ;
-      member_name_to_type.insert(pod.name + "::" + member.name, &pod) ;
-    } 
-    
-    pods_tdd.push_back(pod_tdd{pod.name, members}) ;
-  }
+pod_tdd so_to_tdd(pod_so const & so) {
+  std::vector<member_tdd> members ;
 
-  for (auto & pod : pods)
-    for (auto & member : pod.members) {
-      auto const && name = pod.name + "::" + member.name ;
+  for (auto && m_so : so.members) 
+    members.push_back(so_to_tdd(m_so)) ;
 
-      if (name_to_podptr.count(name) == 1)
-        member.parent = name_to_podptr.at (name) ;
-      else std::cout << "error" << std::endl ; 
-    }
+  return pod_tdd{so.name.data, members} ;
+}
+
+thodd_tdd so_to_tdd (thodd_so const & so) {
+  std::vector<pod_tdd> pods ;
   
+  for (auto && p_so : so.pods)
+    pods.push_back(so_to_tdd(p_so)) ;
 
-
+  return thodd_tdd{so.filename, pods} ;
 }
 
 #endif

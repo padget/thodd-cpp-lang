@@ -28,21 +28,6 @@ struct lexem {
   std::string data ;
 } ;
 
-struct expression_so ;
-struct number_so ; 
-struct identifier_so ;
-struct lambda_so ;
-struct string_so ;
-struct function_call_so ;
-struct parameter_so ;
-struct pod_so ;
-struct member_so ;
-struct const_instruction_so ;
-struct return_instruction_so ;
-struct function_so ;
-struct declaration_so ;
-struct thodd_so ;
-
 
 /// //////////// ///
 /// couche regex ///
@@ -148,20 +133,35 @@ bool has_thodd (auto begin, auto end) ; // x t
 /// couche objet ///
 /// //////////// ///
 
+struct expression ;
+struct number ; 
+struct identifier ;
+struct lambda ;
+struct string ;
+struct function_call ;
+struct parameter ;
+struct pod ;
+struct member ;
+struct const_instruction ;
+struct return_instruction ;
+struct function ;
+struct declaration ;
+struct thodd ;
 
-string_so extract_string (auto begin, auto end) ; // x
-identifier_so extract_identifier (auto begin, auto end) ; // x
-number_so extract_number (auto begin, auto end) ;
-function_call_so extract_function_call (auto begin, auto end) ;
-parameter_so extract_parameter (auto begin, auto end) ;
-lambda_so extract_lambda (auto begin, auto end) ;
-expression_so extract_expression (auto begin, auto end) ;
-const_instruction_so extract_const_instruction (auto begin, auto end) ;
-return_instruction_so extract_return_instruction (auto begin, auto end) ;
-member_so extract_member (auto begin, auto end) ;
-pod_so extract_pod (auto begin, auto end) ;
-function_so extract_function (auto begin, auto end) ;
-thodd_so extract_thodd (auto begin, auto end) ;
+
+string extract_string (auto begin, auto end) ; // x
+identifier extract_identifier (auto begin, auto end) ; // x
+number extract_number (auto begin, auto end) ;
+function_call extract_function_call (auto begin, auto end) ;
+parameter extract_parameter (auto begin, auto end) ;
+lambda extract_lambda (auto begin, auto end) ;
+expression extract_expression (auto begin, auto end) ;
+const_instruction extract_const_instruction (auto begin, auto end) ;
+return_instruction extract_return_instruction (auto begin, auto end) ;
+member extract_member (auto begin, auto end) ;
+pod extract_pod (auto begin, auto end) ;
+function extract_function (auto begin, auto end) ;
+thodd extract_thodd (auto begin, auto end) ;
 
 
 

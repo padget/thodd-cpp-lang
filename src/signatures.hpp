@@ -3,9 +3,9 @@
 
 #  include <tuple>
 
-/// //////////////// ///
-/// couche structure ///
-/// //////////////// ///
+/// /////////////////// ///
+/// couche structure so ///
+/// /////////////////// ///
 
 
 struct lexem {
@@ -150,7 +150,7 @@ bool has_thodd (auto begin, auto end) ; // x t
 
 
 string_so extract_string (auto begin, auto end) ; // x
-identifier_so extract_identifier (auto begin, auto end) ;// x
+identifier_so extract_identifier (auto begin, auto end) ; // x
 number_so extract_number (auto begin, auto end) ;
 function_call_so extract_function_call (auto begin, auto end) ;
 parameter_so extract_parameter (auto begin, auto end) ;
@@ -162,5 +162,17 @@ member_so extract_member (auto begin, auto end) ;
 pod_so extract_pod (auto begin, auto end) ;
 function_so extract_function (auto begin, auto end) ;
 thodd_so extract_thodd (auto begin, auto end) ;
+
+
+
+/// //////////////////// /// 
+/// couche structure tdd ///
+/// //////////////////// /// 
+
+
+struct member_tdd ;
+struct pod_tdd ;
+struct thodd_tdd ;
+
 
 #endif

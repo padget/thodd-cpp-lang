@@ -45,7 +45,12 @@
         {
             "name": "Win32",
             "includePath": [
-                "${workspaceRoot}"
+                "${workspaceRoot}/src",
+                "C:/MinGW/include/c++/7.2.0",
+                "C:/MinGW/include/c++/7.2.0/x86_64-w64-mingw32",
+                "C:/MinGW/include/c++/7.2.0/x86_64-w64-mingw32/bits",
+                "C:/MinGW/include/c++/7.2.0/tr1", 
+                "C:/MinGW/include/c++/7.2.0/bits"
             ],
             "defines": [
                 "_DEBUG",
@@ -54,9 +59,14 @@
             "intelliSenseMode": "msvc-x64",
             "browse": {
                 "path": [
-                    "${workspaceRoot}"
+                    "${workspaceRoot}/src",
+                    "C:/MinGW/include/c++/7.2.0",
+                    "C:/MinGW/include/c++/7.2.0/x86_64-w64-mingw32",
+                    "C:/MinGW/include/c++/7.2.0/x86_64-w64-mingw32/bits",
+                    "C:/MinGW/include/c++/7.2.0/tr1", 
+                    "C:/MinGW/include/c++/7.2.0/bits"
                 ],
-                "limitSymbolsToIncludedHeaders": true,
+                "limitSymbolsToIncludedHeaders": false,
                 "databaseFilename": ""
             }
         }

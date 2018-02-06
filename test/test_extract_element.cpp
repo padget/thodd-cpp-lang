@@ -24,6 +24,20 @@ int main () {
       describe("extract_number", 
         it("should extract a number with its content", 
            expect(extract_number(lxs.begin(), lxs.end()).data, equals_to("12.5")))) ;
+    }, 
+    [] {
+      std::vector<lexem> lxs = {
+        lexem{lexem::type_::identifier, "name"}, 
+        lexem{lexem::type_::colon, ":"}, 
+        lexem{lexem::type_::identifier, "int"}
+      } ;
+
+      describe("extract_member", 
+        it("should extract a member with its content", 
+           expect(extract_member(lxs.begin(), lxs.end()), [] (auto && mbr) {
+             return mbr.name.data == "name" &&
+              mbr.type.data == "int" ;
+           }))) ;
     }) ;
   return EXIT_SUCCESS ;
 }

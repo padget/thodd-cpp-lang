@@ -8,7 +8,7 @@
 
 struct expression {
   enum class type_ {
-     identifier, identifiers, number, lambda, function_call
+     identifier, number, string, lambda, function_call, unknown
   } ;
 
   type_ type ;
@@ -56,17 +56,15 @@ struct lambda {
   identifier name ;
   identifier type ;
   std::vector<parameter> parameters ;
-  std::vector<const_instruction> const_instructions ;
+  std::vector<const_instruction> consts ;
   return_instruction return_ ;
 } ;
 
 struct function {
   identifier name ;
   identifier type ;
-
   std::vector<parameter> parameters ;
-  
-  std::vector<const_instruction> const_instructions ;
+  std::vector<const_instruction> consts ;
   return_instruction return_ ;
 } ;
 
@@ -78,15 +76,6 @@ struct member {
 struct pod {
   identifier name ;
   std::vector<member> members ;
-} ;
-
-struct declaration {
-  enum class type_ {
-    import, function, pod
-  } ;
-
-  type_ type ;
-  std::vector<lexem> data ;
 } ;
 
 struct thodd {

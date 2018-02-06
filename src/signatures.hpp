@@ -149,19 +149,19 @@ struct declaration ;
 struct thodd ;
 
 
-string extract_string (auto begin, auto end) ; // x
-identifier extract_identifier (auto begin, auto end) ; // x
-number extract_number (auto begin, auto end) ;
-function_call extract_function_call (auto begin, auto end) ;
-parameter extract_parameter (auto begin, auto end) ;
-lambda extract_lambda (auto begin, auto end) ;
-expression extract_expression (auto begin, auto end) ;
-const_instruction extract_const_instruction (auto begin, auto end) ;
-return_instruction extract_return_instruction (auto begin, auto end) ;
-member extract_member (auto begin, auto end) ;
-pod extract_pod (auto begin, auto end) ;
-function extract_function (auto begin, auto end) ;
-thodd extract_thodd (auto begin, auto end) ;
+string extract_string (auto begin, auto end) ; // x t
+identifier extract_identifier (auto begin, auto end) ; // x t
+number extract_number (auto begin, auto end) ; // x t
+function_call extract_function_call (auto begin, auto end) ; // x
+parameter extract_parameter (auto begin, auto end) ; // x
+lambda extract_lambda (auto begin, auto end) ; // x
+expression extract_expression (auto begin, auto end) ; // x
+const_instruction extract_const_instruction (auto begin, auto end) ; // x
+return_instruction extract_return_instruction (auto begin, auto end) ; // x
+member extract_member (auto begin, auto end) ; // x
+pod extract_pod (auto begin, auto end) ; // x
+function extract_function (auto begin, auto end) ; // x
+thodd extract_thodd (auto begin, auto end) ; // x
 
 
 #endif

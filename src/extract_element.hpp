@@ -19,7 +19,7 @@ number extract_number (auto begin, auto end) {
 function_call extract_function_call (auto begin, auto end) {
   auto cursor = begin ; 
   auto && name = extract_identifier(cursor, end) ;
-  cursor = next_lbracket(next_identifier(cursor)) ;
+  cursor = next_lbracket(next_identifier(cursor, end), end) ;
   std::vector<expression> args ;
   
   while (has_expression(cursor, end)) {
@@ -37,7 +37,7 @@ function_call extract_function_call (auto begin, auto end) {
 parameter extract_parameter (auto begin, auto end) {
   return parameter{
     extract_identifier(begin, end), 
-    extract_identifier(next_colon(next_identifier(begin)), end)} ; 
+    extract_identifier(next_colon(next_identifier(begin, end), end), end)} ; 
 }
 
 lambda extract_lambda (auto begin, auto end) {
@@ -54,7 +54,7 @@ lambda extract_lambda (auto begin, auto end) {
     else break ;
   }
 
-  cursor = next_colon(next_rbracket(cursor, end)) ;
+  cursor = next_colon(next_rbracket(cursor, end), end) ;
 
   auto && type = extract_identifier(cursor, end) ;
   cursor = next_identifier(cursor, end) ;
@@ -133,7 +133,7 @@ function extract_function (auto begin, auto end) {
     else break ;
   }
 
-  cursor = next_colon(next_rbracket(cursor, end)) ;
+  cursor = next_colon(next_rbracket(cursor, end), end) ;
 
   auto && type = extract_identifier(cursor, end) ;
   cursor = next_identifier(cursor, end) ;
@@ -160,7 +160,7 @@ thodd extract_thodd (std::string_view filename, auto begin, auto end) {
 
   while (has_something) {
     if (has_pod(cursor, end)) {
-      pods.push_back(extract_pod(cursor, end))
+      pods.push_back(extract_pod(cursor, end)) ;
       cursor = next_pod(cursor, end) ;
     } else if (has_function(cursor, end)) {
       functions.push_back(cursor, end) ;

@@ -1,4 +1,5 @@
 #  include "../src/extract_element.hpp"
+#  include "../src/element_to_string.hpp"
 #  include "jasmine.hpp"
 
 int main () {
@@ -35,6 +36,7 @@ int main () {
       describe("extract_member", 
         it("should extract a member with its content", 
            expect(extract_member(lxs.begin(), lxs.end()), [] (auto && mbr) {
+             std::cout << to_string(mbr) << std::endl ;
              return mbr.name.data == "name" &&
               mbr.type.data == "int" ;
            }))) ;

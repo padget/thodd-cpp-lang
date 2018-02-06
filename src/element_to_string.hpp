@@ -14,6 +14,7 @@ std::string to_string (parameter const & el) ;
 std::string to_string (member const & el) ;
 std::string to_string (pod const & el) ;
 std::string to_string (thodd const & el) ;
+std::string to_string (expression const & el) ;
 
 
 std::string to_string (identifier const & el) {
@@ -29,7 +30,7 @@ std::string to_string (string const & el) {
 }
 
 std::string to_string (member const & el) {
-  return to_string(el.name) + " : " + to_string(el.type) + ";"
+  return to_string(el.name) + " : " + to_string(el.type) + ";" ;
 }
 
 std::string to_string (pod const & el) {
@@ -82,7 +83,7 @@ std::string to_string (lambda const & el) {
     res += to_string(param) + ", " ;
 
   res.erase(std::next(res.begin(), res.size() - 2), res.end()) ;
-  res += ": " + to_string(res.type) + "{" ;
+  res += ": " + to_string(el.type) + "{" ;
 
   for (auto && const_ : el.consts)  
     res += to_string(const_) ;
@@ -97,7 +98,7 @@ std::string to_string (function const & el) {
     res += to_string(param) + ", " ;
 
   res.erase(std::next(res.begin(), res.size() - 2), res.end()) ;
-  res += ": " + to_string(res.type) + "{" ;
+  res += ": " + to_string(el.type) + "{" ;
 
   for (auto && const_ : el.consts)  
     res += to_string(const_) ;

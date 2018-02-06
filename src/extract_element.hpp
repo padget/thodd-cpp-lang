@@ -4,6 +4,15 @@
 #  include "structure.hpp"
 #  include "has_element.hpp"
 
+#  include <sstream>
+
+std::string next_id () {
+  static int id = 0 ;
+  auto ss = std::stringstream() ;
+  ss << id++ ;
+  return ss.str() ;
+}
+
 string extract_string (auto begin, auto end) {
   return string{(*begin).data} ;
 }
@@ -70,7 +79,7 @@ lambda extract_lambda (auto begin, auto end) {
   auto && return_ = extract_return_instruction(cursor, end) ;
   
   return  // TODO generate unique name 
-  lambda{identifier{}, type, parameters, consts, return_} ;
+  lambda{identifier{next_id()}, type, parameters, consts, return_} ;
 }
 
 expression extract_expression (auto begin, auto end) {

@@ -78,10 +78,11 @@ lambda extract_lambda (auto begin, auto end) {
 
   auto && return_ = extract_return_instruction(cursor, end) ;
   
-  return  // TODO generate unique name 
+  return
   lambda{identifier{next_id()}, type, parameters, consts, return_} ;
 }
 
+// TODO faire un tu pour tester le type des expressions
 expression extract_expression (auto begin, auto end) {
   if (has_function_call(begin, end))
     return expression{expression::type_::function_call, std::vector<lexem>(begin, next_function_call(begin, end))} ;
@@ -90,9 +91,9 @@ expression extract_expression (auto begin, auto end) {
   else if (has_number(begin, end))
     return expression{expression::type_::number, std::vector<lexem>(begin, next_number(begin, end))} ;
   else if (has_identifier(begin, end))
-    return expression{expression::type_::lambda, std::vector<lexem>(begin, next_identifier(begin, end))} ;
+    return expression{expression::type_::identifier, std::vector<lexem>(begin, next_identifier(begin, end))} ;
   else if (has_string(begin, end))
-    return expression{expression::type_::lambda, std::vector<lexem>(begin, next_string(begin, end))} ;
+    return expression{expression::type_::string, std::vector<lexem>(begin, next_string(begin, end))} ;
   return expression{expression::type_::unknown} ;
 }
 

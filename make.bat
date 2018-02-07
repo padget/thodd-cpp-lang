@@ -84,7 +84,6 @@ rm test_has_element.exe
 rm test_extract_lexems.exe
 rm jasmine_example.exe
 rm test_extract_element.exe
-rm thodd.exe
 
 
 rm test_regexes.o

@@ -83,7 +83,7 @@ std::string to_string (lambda const & el) {
     res += to_string(param) + ", " ;
 
   res.erase(std::next(res.begin(), res.size() - 2), res.end()) ;
-  res += ": " + to_string(el.type) + "{" ;
+  res += ") : " + to_string(el.type) + "{" ;
 
   for (auto && const_ : el.consts)  
     res += to_string(const_) ;
@@ -98,7 +98,7 @@ std::string to_string (function const & el) {
     res += to_string(param) + ", " ;
 
   res.erase(std::next(res.begin(), res.size() - 2), res.end()) ;
-  res += ": " + to_string(el.type) + "{" ;
+  res += ") : " + to_string(el.type) + "{" ;
 
   for (auto && const_ : el.consts)  
     res += to_string(const_) ;

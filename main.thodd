@@ -5,6 +5,7 @@ pod strings {
 }
 
 add (a: int, b: int) : int {
-  return a ;
+  return lambda () : strings {
+    return 2 ;
+  } ;
 } 
-

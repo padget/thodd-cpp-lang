@@ -6,7 +6,6 @@
 #  include <fstream> 
 #  include <iterator>
 
-
 std::string const
 from_file (std::string_view filename) {
   std::fstream thodd_file (filename.data(), std::ios::in) ;

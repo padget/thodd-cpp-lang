@@ -1,8 +1,6 @@
 #ifndef __thodd_signatures_hpp__
 #  define __thodd_signatures_hpp__
 
-#  include <tuple>
-
 /// /////////////////// ///
 /// couche structure so ///
 /// /////////////////// ///

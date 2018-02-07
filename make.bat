@@ -65,6 +65,18 @@ echo --- test_extract_element.exe ---
 test_extract_element.exe
 
 
+
+echo building thodd.cpp ...
+g++ -c src/thodd.cpp -o thodd.o -std=c++17 -fconcepts -Wno-attributes
+
+echo thodd.exe
+g++ -o thodd.exe thodd.o 
+
+echo.
+echo --- thodd.exe ---
+thodd.exe
+
+
 echo.
 echo --- clean build files ---
 rm test_regexes.exe
@@ -72,6 +84,7 @@ rm test_has_element.exe
 rm test_extract_lexems.exe
 rm jasmine_example.exe
 rm test_extract_element.exe
+rm thodd.exe
 
 
 rm test_regexes.o
@@ -79,5 +92,5 @@ rm test_has_element.o
 rm test_extract_lexems.o
 rm jasmine_example.o
 rm test_extract_element.o
-
+rm thodd.o
             

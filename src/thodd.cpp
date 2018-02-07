@@ -3,7 +3,8 @@
 #include "regexes.hpp"
 #include "extract_lexems.hpp"
 #include "extract_element.hpp"
-#include "build_context.hpp"
+#include "element_to_string.hpp"
+#include "check_identifiers.hpp"
 
 #include <iostream>
 
@@ -15,16 +16,14 @@ void print_lexems(auto begin, auto end) {
 
 int main () {
   auto const & stream   = from_file("main.thodd") ;
-  auto const & lexems   = extract_lexems(stream.begin(), stream.end(), thodd_rxs()) ;
+  auto const & lexems   = extract_lexems(stream.begin(), stream.end(), thodd_rxs(0)) ;
   auto const & filtered = filter_lexems(lexems.begin(), lexems.end()) ;
 
   print_lexems (filtered.begin(), filtered.end()) ;
 
   if (has_thodd(filtered.begin(), filtered.end())) {
     std::cout << "has thodd !!\n" ; 
-    auto const && contexts = build_context("main", extract_thodd("main", filtered.begin(), filtered.end()).ext) ;
-    
-    for (auto const & ctxt : contexts) std::cout << ctxt.name << "\n" ;
+    std::cout << std::boolalpha << check_all_identifiers(extract_thodd("main", filtered.begin(), filtered.end())) << std::endl ;
   }
 
   return EXIT_SUCCESS ;

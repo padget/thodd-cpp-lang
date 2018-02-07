@@ -172,12 +172,12 @@ thodd extract_thodd (std::string_view filename, auto begin, auto end) {
       pods.push_back(extract_pod(cursor, end)) ;
       cursor = next_pod(cursor, end) ;
     } else if (has_function(cursor, end)) {
-      functions.push_back(cursor, end) ;
+      functions.push_back(extract_function(cursor, end)) ;
       cursor = next_function(cursor, end) ;
     } else has_something = false ; 
   }
   
-  return thodd{filename, pods, functions} ;
+  return thodd{filename.data(), pods, functions} ;
 }
 
 

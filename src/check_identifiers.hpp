@@ -30,9 +30,20 @@ bool check_identifiers_exist (function const & f, std::string ctx, auto const & 
 
 
 namespace detail {
+  
   bool contains (auto begin, auto end, auto const & value) {
     std::find(begin, end, value) != end ;
   }
+
+  bool contains_end_with (auto begin, auto end , auto const value) {
+    return std::find_if (begin, end, [&value] (auto && item) {
+      auto && mismatch = std::mismatch(item.rbegin(), item.rend(), value.rbegin(), value.rend()) ;
+      auto && first_size = std::distance(item.rbegin(), mismatch.first) ;
+      auto && second_size = std::distance(value.rbegin(), mismatch.second) ;
+      return first_size == second_size && first_size != 0 && second_size != 0 ;
+    }) != end ;
+  }
+
 }
 
 
@@ -104,8 +115,7 @@ bool check_identifiers_exist (expression const & exp, std::string const & ctx, a
 }
 
 bool check_identifiers_exist (identifier const & id, std::string const & ctx, auto const & identifiers) {
-  for (auto && ide : identifiers) std::cout << ide << " vs " << detail::child_ctx(ctx, id.data)<< std::endl ; 
-  return detail::contains(identifiers.begin(), identifiers.end(), detail::child_ctx(ctx, id.data)) ;
+  return detail::contains_end_with(identifiers.begin(), identifiers.end(), detail::child_ctx(ctx, id.data)) ;
 }
 
 bool check_identifiers_exist (function_call const & fcall, std::string const & ctx, auto const & identifiers) {
@@ -114,7 +124,7 @@ bool check_identifiers_exist (function_call const & fcall, std::string const & c
   for (expression const & arg : fcall.args)
     all_identifiers_exists = all_identifiers_exists && check_identifiers_exist(arg, ctx, identifiers) ;
 
-  return detail::contains(identifiers.begin(), identifiers.end(), detail::child_ctx(ctx, fcall.name.data)) ;
+  return detail::contains_end_with(identifiers.begin(), identifiers.end(), detail::child_ctx(ctx, fcall.name.data)) ;
 }
 
 bool check_identifiers_exist (lambda const & lam, std::string const & ctx, auto const & identifiers) {
@@ -170,7 +180,7 @@ bool check_all_identifiers (thodd const & tdd) {
 
   for (pod const & p : tdd.pods)
     for (member const & m : p.members) 
-      all_types_exists = all_types_exists && detail::contains(types.begin(), types.end(), m.type.data) ;
+      all_types_exists = all_types_exists && detail::contains_end_with(types.begin(), types.end(), m.type.data) ;
 
   for (function const & f : tdd.functions)
     all_types_exists = all_types_exists && check_types_exist(f, types) ;

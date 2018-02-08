@@ -62,6 +62,9 @@
     "thread": "cpp",
     "tuple": "cpp",
     "typeindex": "cpp",
-    "typeinfo": "cpp"
+    "typeinfo": "cpp",
+    "iterator": "cpp",
+    "unordered_map": "cpp",
+    "vector": "cpp"
   }
 }

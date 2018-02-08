@@ -3,7 +3,6 @@
 
 #  include <vector>
 #  include <functional>
-#  include <regex>
 #  include <tuple>
 
 #  include "regexes.hpp"
@@ -11,7 +10,6 @@
 
 std::vector<lexem> const
 extract_lexems (auto begin, auto end, auto rxs_tuple) {
-  std::smatch matched ; 
   std::vector<lexem> lexems ;
 
   while (std::not_equal_to{}(begin, end)) {

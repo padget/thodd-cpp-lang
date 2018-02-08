@@ -11,7 +11,123 @@
 #  include <iostream>
 
 
+namespace detail {
+  auto child_ctx(auto const & ctx, auto const & child) {
+    return ctx + "::" + child ;
+  }
+}
 
+std::vector<std::string> get_identifiers (member const & m, std::string const & ctx) ;
+std::vector<std::string> get_identifiers (pod const & p, std::string const & ctx) ;
+std::vector<std::string> get_identifiers (expression const & exp, std::string const & ctx) ;
+std::vector<std::string> get_identifiers (function_call const & fcall, std::string const & ctx) ;
+std::vector<std::string> get_identifiers (lambda const & lam, std::string const & ctx) ;
+std::vector<std::string> get_identifiers (parameter const & p, std::string const & ctx) ;
+std::vector<std::string> get_identifiers (const_instruction const & c, std::string ctx) ;
+std::vector<std::string> get_identifiers (return_instruction const & r, std::string ctx) ;
+std::vector<std::string> get_identifiers (function const & f, std::string ctx) ;
+std::vector<std::string> get_identifiers (thodd const & tdd) ;
+
+std::vector<std::string> get_identifiers (member const & m, std::string const & ctx) {
+  return {detail::child_ctx(ctx, m.name.data)} ;
+}
+
+std::vector<std::string> get_identifiers (pod const & p, std::string const & ctx) {
+  auto local_ctx = detail::child_ctx(ctx, p.name.data) ;
+  std::vector<std::string> identifiers {local_ctx} ;
+  
+  for (member const & m : p.members) {
+    auto && m_identifiers = get_identifiers(m, local_ctx) ;
+    identifiers.insert(identifiers.end(), m_identifiers.begin(), m_identifiers.end()) ;
+  }
+
+  return identifiers ;
+}
+
+std::vector<std::string> get_identifiers (expression const & exp, std::string const & ctx) {
+  switch (exp.type) {
+    case expression::type_::function_call :
+      return get_identifiers(extract_function_call(exp.data.begin(), exp.data.end()), ctx) ;
+    case expression::type_::lambda : 
+      return get_identifiers(extract_lambda(exp.data.begin(), exp.data.end()), ctx) ;
+    default : 
+      return {} ;
+  }
+}
+
+std::vector<std::string> get_identifiers (function_call const & fcall, std::string const & ctx) {
+  std::list<std::string> identifiers ;
+
+  for (expression const & arg : fcall.args) {
+    auto && arg_identifiers = get_identifiers(arg, ctx) ;
+    identifiers.insert(identifiers.end(), arg_identifiers.begin(), arg_identifiers.end()) ;
+  }
+
+  return {identifiers.begin(), identifiers.end()} ;
+}
+
+std::vector<std::string> get_identifiers (lambda const & lam, std::string const & ctx) {
+  auto local_ctx = detail::child_ctx(ctx, lam.name.data) ;
+  std::list<std::string> identifiers {local_ctx} ;
+
+  for (parameter const & p : lam.parameters)  
+    identifiers.push_back(detail::child_ctx(local_ctx, p.name.data)) ;
+  
+  for (const_instruction const & c : lam.consts) {
+    auto && c_identifiers = get_identifiers(c, local_ctx) ;
+    identifiers.insert(identifiers.end(), c_identifiers.begin(), c_identifiers.end()) ;
+  }
+
+  auto && return_identifiers = get_identifiers(lam.return_, local_ctx) ;
+  identifiers.insert(identifiers.end(), return_identifiers.begin(), return_identifiers.end()) ;
+
+  return {identifiers.begin(), identifiers.end()} ;
+}
+
+std::vector<std::string> get_identifiers (const_instruction const & c, std::string ctx) {
+  std::vector<std::string> identifiers {detail::child_ctx(ctx, c.name.data)} ;
+  auto && value_identifiers = get_identifiers(c.value, ctx) ;
+  identifiers.insert(identifiers.end(), value_identifiers.begin(), value_identifiers.end()) ;
+  return identifiers ;
+}
+
+std::vector<std::string> get_identifiers (return_instruction const & r, std::string ctx) {
+  return get_identifiers(r.expr, ctx) ;
+}
+
+std::vector<std::string> get_identifiers (function const & f, std::string ctx) {
+  auto local_ctx = detail::child_ctx(ctx, f.name.data) ;
+  std::list<std::string> identifiers {local_ctx} ;
+
+  for (parameter const & p : f.parameters)  
+    identifiers.push_back(detail::child_ctx(local_ctx, p.name.data)) ;
+  
+  for (const_instruction const & c : f.consts) {
+    auto && c_identifiers = get_identifiers(c, local_ctx) ;
+    identifiers.insert(identifiers.end(), c_identifiers.begin(), c_identifiers.end()) ;
+  }
+
+  auto && return_identifiers = get_identifiers(f.return_, local_ctx) ;
+  identifiers.insert(identifiers.end(), return_identifiers.begin(), return_identifiers.end()) ;
+
+  return {identifiers.begin(), identifiers.end()} ;
+}
+
+std::vector<std::string> get_identifiers (thodd const & tdd) {
+  std::list<std::string> identifiers ;
+
+  for (function const & f : tdd.functions) {
+    auto && f_identifiers = get_identifiers(f, "") ;
+    identifiers.insert(identifiers.end(), f_identifiers.begin(), f_identifiers.end()) ;
+  }
+
+  for (pod const & p : tdd.pods) {
+    auto && p_identifiers = get_identifiers(p, "") ;
+    identifiers.insert(identifiers.end(), p_identifiers.begin(), p_identifiers.end()) ;
+  }
+
+  return {identifiers.begin(), identifiers.end()} ;
+}
 
 /// ///////////////// ///
 /// PRIVATE FUNCTIONS ///
@@ -122,11 +238,6 @@ bool check_identifiers_exist (function const & f, std::string ctx, auto const & 
 bool check_identifiers_exist (thodd const & tdd) ;
 
 
-namespace detail {
-  auto child_ctx(auto const & ctx, auto const & child) {
-    return ctx + "::" + child ;
-  }
-}
 
  
 bool check_identifiers_exist (expression const & exp, std::string const & ctx, auto const & identifiers) {
@@ -224,120 +335,11 @@ bool check_types_not_duplicate (thodd const & tdd) {
 /// ALREADY EXISTS IDENTIFIERS ///
 /// ////////////////////////// ///
 
-std::vector<std::string> get_identifiers (member const & m, std::string const & ctx) ;
-std::vector<std::string> get_identifiers (pod const & p, std::string const & ctx) ;
-std::vector<std::string> get_identifiers (expression const & exp, std::string const & ctx) ;
-std::vector<std::string> get_identifiers (function_call const & fcall, std::string const & ctx) ;
-std::vector<std::string> get_identifiers (lambda const & lam, std::string const & ctx) ;
-std::vector<std::string> get_identifiers (parameter const & p, std::string const & ctx) ;
-std::vector<std::string> get_identifiers (const_instruction const & c, std::string ctx) ;
-std::vector<std::string> get_identifiers (return_instruction const & r, std::string ctx) ;
-std::vector<std::string> get_identifiers (function const & f, std::string ctx) ;
-bool check_identifiers_not_duplicate (thodd const & tdd) ;
-
-
-std::vector<std::string> get_identifiers (member const & m, std::string const & ctx) {
-  return {detail::child_ctx(ctx, m.name.data)} ;
-}
-
-std::vector<std::string> get_identifiers (pod const & p, std::string const & ctx) {
-  auto local_ctx = detail::child_ctx(ctx, p.name.data) ;
-  std::vector<std::string> identifiers {local_ctx} ;
-  
-  for (member const & m : p.members) {
-    auto && m_identifiers = get_identifiers(m, local_ctx) ;
-    identifiers.insert(identifiers.end(), m_identifiers.begin(), m_identifiers.end()) ;
-  }
-
-  return identifiers ;
-}
-
-std::vector<std::string> get_identifiers (expression const & exp, std::string const & ctx) {
-  switch (exp.type) {
-    case expression::type_::function_call :
-      return get_identifiers(extract_function_call(exp.data.begin(), exp.data.end()), ctx) ;
-    case expression::type_::lambda : 
-      return get_identifiers(extract_lambda(exp.data.begin(), exp.data.end()), ctx) ;
-    default : 
-      return {} ;
-  }
-}
-
-std::vector<std::string> get_identifiers (function_call const & fcall, std::string const & ctx) {
-  std::list<std::string> identifiers ;
-
-  for (expression const & arg : fcall.args) {
-    auto && arg_identifiers = get_identifiers(arg, ctx) ;
-    identifiers.insert(identifiers.end(), arg_identifiers.begin(), arg_identifiers.end()) ;
-  }
-
-  return {identifiers.begin(), identifiers.end()} ;
-}
-
-std::vector<std::string> get_identifiers (lambda const & lam, std::string const & ctx) {
-  auto local_ctx = detail::child_ctx(ctx, lam.name.data) ;
-  std::list<std::string> identifiers {local_ctx} ;
-
-  for (parameter const & p : lam.parameters)  
-    identifiers.push_back(detail::child_ctx(local_ctx, p.name.data)) ;
-  
-  for (const_instruction const & c : lam.consts) {
-    auto && c_identifiers = get_identifiers(c, local_ctx) ;
-    identifiers.insert(identifiers.end(), c_identifiers.begin(), c_identifiers.end()) ;
-    identifiers.push_back(c.name.data) ;
-  }
-
-  auto && return_identifiers = get_identifiers(lam.return_, local_ctx) ;
-  identifiers.insert(identifiers.end(), return_identifiers.begin(), return_identifiers.end()) ;
-
-  return {identifiers.begin(), identifiers.end()} ;
-}
-
-std::vector<std::string> get_identifiers (const_instruction const & c, std::string ctx) {
-  return get_identifiers(c.value, ctx) ;
-}
-
-std::vector<std::string> get_identifiers (return_instruction const & r, std::string ctx) {
-  return get_identifiers(r.expr, ctx) ;
-}
-
-std::vector<std::string> get_identifiers (function const & f, std::string ctx) {
-  auto local_ctx = detail::child_ctx(ctx, f.name.data) ;
-  std::list<std::string> identifiers {local_ctx} ;
-
-  for (parameter const & p : f.parameters)  
-    identifiers.push_back(detail::child_ctx(local_ctx, p.name.data)) ;
-  
-  for (const_instruction const & c : f.consts) {
-    auto && c_identifiers = get_identifiers(c, local_ctx) ;
-    identifiers.insert(identifiers.end(), c_identifiers.begin(), c_identifiers.end()) ;
-    identifiers.push_back(c.name.data) ;
-  }
-
-  auto && return_identifiers = get_identifiers(f.return_, local_ctx) ;
-  identifiers.insert(identifiers.end(), return_identifiers.begin(), return_identifiers.end()) ;
-
-  return {identifiers.begin(), identifiers.end()} ;
-}
-
-
 bool check_identifiers_not_duplicate (thodd const & tdd) {
-  std::multiset<std::string> identifiers ;
-
-  for (function const & f : tdd.functions) {
-    auto && f_identifiers = get_identifiers(f, "") ;
-    identifiers.insert(f_identifiers.begin(), f_identifiers.end()) ;
-  }
-
-  for (pod const & p : tdd.pods) {
-    auto && p_identifiers = get_identifiers(p, "") ;
-    identifiers.insert(p_identifiers.begin(), p_identifiers.end()) ;
-  }
-
-  for (auto && i : identifiers)
-    std::cout << i << std::endl ;
-
-   return std::adjacent_find(identifiers.begin(), identifiers.end()) == identifiers.end() ;
+  auto && tdd_identifiers = get_identifiers (tdd) ;
+  for (auto && item : tdd_identifiers) std::cout << item << std::endl  ;
+  std::multiset<std::string> identifiers {tdd_identifiers.begin(), tdd_identifiers.end()} ;
+  return std::adjacent_find(identifiers.begin(), identifiers.end()) == identifiers.end() ;
 }
 
 

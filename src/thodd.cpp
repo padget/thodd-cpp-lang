@@ -5,6 +5,7 @@
 #include "extract_element.hpp"
 #include "element_to_string.hpp"
 #include "check_identifiers.hpp"
+#include "types_by_identifiers.hpp"
 
 #include <iostream>
 
@@ -28,6 +29,11 @@ int main () {
     std::cout << std::boolalpha << check_types_not_duplicate(tdd) << std::endl ;
     std::cout << std::boolalpha << check_identifiers_exist(tdd) << std::endl ;
     std::cout << std::boolalpha << check_identifiers_not_duplicate(tdd) << std::endl ; 
+    
+    auto && tbi = type_by_identifier(tdd) ;
+
+    for (auto & p : tbi) 
+      std::cout << p.first << " : " << p.second << std::endl ; 
     
     std::cout << "end tests" << std::endl ; 
   }

@@ -4,25 +4,14 @@
 #  include "structure.hpp"
 #  include <string>
 #  include <vector>
+#  include <set>
+#  include <list>
 #  include <algorithm>
 
 #  include <iostream>
 
-bool check_types_exist (expression const & exp, auto const & types) ;
-bool check_types_exist (lambda const & l, auto const & types) ;
-bool check_types_exist (function_call const & fcall, auto const & types) ;
-bool check_types_exist (function const & f, auto const & types) ;
 
 
-
-bool check_identifiers_exist (expression const & exp, std::string const & ctx, auto const & identifiers) ;
-bool check_identifiers_exist (function_call const & fcall, std::string const & ctx, auto const & identifiers) ;
-bool check_identifiers_exist (identifier const & id, std::string const & ctx, auto const & identifiers) ;
-bool check_identifiers_exist (lambda const & lam, std::string const & ctx, auto const & identifiers) ;
-bool check_identifiers_exist (parameter const & p, std::string const & ctx, auto const & identifiers) ;
-bool check_identifiers_exist (const_instruction const & c, std::string ctx, auto const & identifiers) ;
-bool check_identifiers_exist (return_instruction const & r, std::string ctx, auto const & identifiers) ;
-bool check_identifiers_exist (function const & f, std::string ctx, auto const & identifiers) ;
 
 /// ///////////////// ///
 /// PRIVATE FUNCTIONS ///
@@ -50,6 +39,15 @@ namespace detail {
 /// ///////////////// ///
 /// CHECK TYPES EXIST ///
 /// ///////////////// ///
+
+
+bool check_types_exist (expression const & exp, auto const & types) ;
+bool check_types_exist (lambda const & l, auto const & types) ;
+bool check_types_exist (function_call const & fcall, auto const & types) ;
+bool check_types_exist (function const & f, auto const & types) ;
+bool check_types_exist (pod const p , auto const & types) ;
+bool check_types_exist (thodd const & tdd) ;
+
 
 bool check_types_exist_function_body (auto const & body, auto const & types) {
   bool all_types_exist = detail::contains(types.begin(), types.end(), body.type.data) ;
@@ -81,13 +79,31 @@ bool check_types_exist (function_call const & fcall, auto const & types) {
 }
 
 bool check_types_exist (expression const & exp, auto const & types) {
-  if (has_lambda(exp.data.begin(), exp.data.end())) 
-    return check_types_exist(extract_lambda(exp.data.begin(), exp.data.end()), types) ;
-  
-  if (has_function_call(exp.data.begin(), exp.data.end()))
-    return check_types_exist(extract_function_call(exp.data.begin(), exp.data.end()), types) ;
-  
-  return true ;
+  switch (exp.type) {
+    case expression::type_::lambda :
+      return check_types_exist(extract_lambda(exp.data.begin(), exp.data.end()), types) ;
+    case expression::type_::function_call :
+      return check_types_exist(extract_function_call(exp.data.begin(), exp.data.end()), types) ;
+    default : return true ;
+  }
+}
+
+bool check_types_exist (pod const p , auto const & types) {
+    return std::all_of (p.members.begin(), p.members.end(), [&types] (member const & m) { 
+      return detail::contains_end_with(types.begin(), types.end(), m.type.data) ;
+    }) ;
+}
+
+bool check_types_exist (thodd const & tdd) {
+  std::vector<std::string> types {"int", "uint", "float", "string"} ;
+
+  for (pod const & p : tdd.pods)
+    types.push_back(p.name.data) ;
+
+  auto all_types_exist = [&types] (auto const & el) {return check_types_exist(el, types) ;};
+
+  return std::all_of(tdd.pods.begin(), tdd.pods.end(), all_types_exist) && 
+    std::all_of(tdd.functions.begin(), tdd.functions.begin(), all_types_exist) ;
 }
 
 
@@ -95,11 +111,23 @@ bool check_types_exist (expression const & exp, auto const & types) {
 /// CHECK IDENTIFIERS EXIST ///
 /// /////////////////////// ///
 
+bool check_identifiers_exist (expression const & exp, std::string const & ctx, auto const & identifiers) ;
+bool check_identifiers_exist (function_call const & fcall, std::string const & ctx, auto const & identifiers) ;
+bool check_identifiers_exist (identifier const & id, std::string const & ctx, auto const & identifiers) ;
+bool check_identifiers_exist (lambda const & lam, std::string const & ctx, auto const & identifiers) ;
+bool check_identifiers_exist (parameter const & p, std::string const & ctx, auto const & identifiers) ;
+bool check_identifiers_exist (const_instruction const & c, std::string ctx, auto const & identifiers) ;
+bool check_identifiers_exist (return_instruction const & r, std::string ctx, auto const & identifiers) ;
+bool check_identifiers_exist (function const & f, std::string ctx, auto const & identifiers) ;
+bool check_identifiers_exist (thodd const & tdd) ;
+
+
 namespace detail {
   auto child_ctx(auto const & ctx, auto const & child) {
     return ctx + "::" + child ;
   }
 }
+
  
 bool check_identifiers_exist (expression const & exp, std::string const & ctx, auto const & identifiers) {
   switch (exp.type) {
@@ -169,29 +197,153 @@ bool check_identifiers_exist (function const & f, std::string ctx, auto const & 
   return all_identifiers_exists && check_identifiers_exist(f.return_, local_ctx, local_identifiers) ;
 }
 
-
-bool check_all_identifiers (thodd const & tdd) {
-  std::vector<std::string> types {"int", "uint", "float", "string"} ;
-
-  for (pod const & p : tdd.pods)
-    types.push_back(p.name.data) ;
-
-  bool all_types_exists = true ;
-
-  for (pod const & p : tdd.pods)
-    for (member const & m : p.members) 
-      all_types_exists = all_types_exists && detail::contains_end_with(types.begin(), types.end(), m.type.data) ;
-
-  for (function const & f : tdd.functions)
-    all_types_exists = all_types_exists && check_types_exist(f, types) ;
-
+bool check_identifiers_exist (thodd const & tdd) {
   std::vector<std::string> identifiers ;
-  bool all_identifiers_exist = true ;
-
-  for (function const & f : tdd.functions) 
-    all_identifiers_exist = all_identifiers_exist && check_identifiers_exist(f, "", identifiers) ;
-
-  return all_types_exists && all_identifiers_exist ;
+  
+  return std::all_of (tdd.functions.begin(), tdd.functions.end(), [&identifiers] (function const & f) {
+    return check_identifiers_exist(f, "", identifiers) ;
+  }) ;
 }
+
+
+/// //////////////////// ///
+/// ALREADY EXISTS TYPES ///
+/// //////////////////// ///
+
+
+bool check_types_not_duplicate (thodd const & tdd) {
+  std::multiset<std::string> types {"int", "uint", "float", "string"} ;
+
+  for (pod const & p : tdd.pods)
+    types.insert(p.name.data) ; 
+
+  return std::adjacent_find(types.begin(), types.end()) == types.end() ;
+}
+
+/// ////////////////////////// ///
+/// ALREADY EXISTS IDENTIFIERS ///
+/// ////////////////////////// ///
+
+std::vector<std::string> get_identifiers (member const & m, std::string const & ctx) ;
+std::vector<std::string> get_identifiers (pod const & p, std::string const & ctx) ;
+std::vector<std::string> get_identifiers (expression const & exp, std::string const & ctx) ;
+std::vector<std::string> get_identifiers (function_call const & fcall, std::string const & ctx) ;
+std::vector<std::string> get_identifiers (lambda const & lam, std::string const & ctx) ;
+std::vector<std::string> get_identifiers (parameter const & p, std::string const & ctx) ;
+std::vector<std::string> get_identifiers (const_instruction const & c, std::string ctx) ;
+std::vector<std::string> get_identifiers (return_instruction const & r, std::string ctx) ;
+std::vector<std::string> get_identifiers (function const & f, std::string ctx) ;
+bool check_identifiers_not_duplicate (thodd const & tdd) ;
+
+
+std::vector<std::string> get_identifiers (member const & m, std::string const & ctx) {
+  return {detail::child_ctx(ctx, m.name.data)} ;
+}
+
+std::vector<std::string> get_identifiers (pod const & p, std::string const & ctx) {
+  auto local_ctx = detail::child_ctx(ctx, p.name.data) ;
+  std::vector<std::string> identifiers {local_ctx} ;
+  
+  for (member const & m : p.members) {
+    auto && m_identifiers = get_identifiers(m, local_ctx) ;
+    identifiers.insert(identifiers.end(), m_identifiers.begin(), m_identifiers.end()) ;
+  }
+
+  return identifiers ;
+}
+
+std::vector<std::string> get_identifiers (expression const & exp, std::string const & ctx) {
+  switch (exp.type) {
+    case expression::type_::function_call :
+      return get_identifiers(extract_function_call(exp.data.begin(), exp.data.end()), ctx) ;
+    case expression::type_::lambda : 
+      return get_identifiers(extract_lambda(exp.data.begin(), exp.data.end()), ctx) ;
+    default : 
+      return {} ;
+  }
+}
+
+std::vector<std::string> get_identifiers (function_call const & fcall, std::string const & ctx) {
+  std::list<std::string> identifiers ;
+
+  for (expression const & arg : fcall.args) {
+    auto && arg_identifiers = get_identifiers(arg, ctx) ;
+    identifiers.insert(identifiers.end(), arg_identifiers.begin(), arg_identifiers.end()) ;
+  }
+
+  return {identifiers.begin(), identifiers.end()} ;
+}
+
+std::vector<std::string> get_identifiers (lambda const & lam, std::string const & ctx) {
+  auto local_ctx = detail::child_ctx(ctx, lam.name.data) ;
+  std::list<std::string> identifiers {local_ctx} ;
+
+  for (parameter const & p : lam.parameters)  
+    identifiers.push_back(detail::child_ctx(local_ctx, p.name.data)) ;
+  
+  for (const_instruction const & c : lam.consts) {
+    auto && c_identifiers = get_identifiers(c, local_ctx) ;
+    identifiers.insert(identifiers.end(), c_identifiers.begin(), c_identifiers.end()) ;
+    identifiers.push_back(c.name.data) ;
+  }
+
+  auto && return_identifiers = get_identifiers(lam.return_, local_ctx) ;
+  identifiers.insert(identifiers.end(), return_identifiers.begin(), return_identifiers.end()) ;
+
+  return {identifiers.begin(), identifiers.end()} ;
+}
+
+std::vector<std::string> get_identifiers (const_instruction const & c, std::string ctx) {
+  return get_identifiers(c.value, ctx) ;
+}
+
+std::vector<std::string> get_identifiers (return_instruction const & r, std::string ctx) {
+  return get_identifiers(r.expr, ctx) ;
+}
+
+std::vector<std::string> get_identifiers (function const & f, std::string ctx) {
+  auto local_ctx = detail::child_ctx(ctx, f.name.data) ;
+  std::list<std::string> identifiers {local_ctx} ;
+
+  for (parameter const & p : f.parameters)  
+    identifiers.push_back(detail::child_ctx(local_ctx, p.name.data)) ;
+  
+  for (const_instruction const & c : f.consts) {
+    auto && c_identifiers = get_identifiers(c, local_ctx) ;
+    identifiers.insert(identifiers.end(), c_identifiers.begin(), c_identifiers.end()) ;
+    identifiers.push_back(c.name.data) ;
+  }
+
+  auto && return_identifiers = get_identifiers(f.return_, local_ctx) ;
+  identifiers.insert(identifiers.end(), return_identifiers.begin(), return_identifiers.end()) ;
+
+  return {identifiers.begin(), identifiers.end()} ;
+}
+
+
+bool check_identifiers_not_duplicate (thodd const & tdd) {
+  std::multiset<std::string> identifiers ;
+
+  for (function const & f : tdd.functions) {
+    auto && f_identifiers = get_identifiers(f, "") ;
+    identifiers.insert(f_identifiers.begin(), f_identifiers.end()) ;
+  }
+
+  for (pod const & p : tdd.pods) {
+    auto && p_identifiers = get_identifiers(p, "") ;
+    identifiers.insert(p_identifiers.begin(), p_identifiers.end()) ;
+  }
+
+  for (auto && i : identifiers)
+    std::cout << i << std::endl ;
+
+   return std::adjacent_find(identifiers.begin(), identifiers.end()) == identifiers.end() ;
+}
+
+
+/// /////////////////////////// ///
+/// CHECK SHADOWING IDENTIFIERS /// // TODO
+/// /////////////////////////// ///
+
 
 #endif

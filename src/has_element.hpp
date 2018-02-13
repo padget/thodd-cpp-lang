@@ -73,6 +73,14 @@ auto next_colon (auto begin, auto end) -> decltype(begin) {
   return std::next(begin) ;
 }
 
+bool has_point (auto begin, auto end) {
+  return has_next(begin, end, {lexem::type_::point}) ;
+}
+
+auto next_point (auto begin, auto end) -> decltype(begin) {
+  return std::next(begin) ;
+}
+
 bool has_comma (auto begin, auto end) {
   return has_next(begin, end, {lexem::type_::comma}) ;
 }
@@ -110,6 +118,27 @@ bool has_identifier (auto begin, auto end) {
 }
 
 auto next_identifier (auto begin, auto end) -> decltype(begin) {
+  return std::next(begin) ;
+}
+
+bool has_identifiers (auto begin, auto end) {
+  auto cursor = begin ;
+  bool has_point_again = false ;
+  size_t nb_identifiers = 0u ;
+  while (has_identifier(cursor, end)) {
+    cursor = next_identifier(cursor, end) ;
+    ++ nb_identifiers ;
+
+    if (has_point_again = has_point(cursor, end)) 
+      cursor = next_point(cursor, end) ;
+    else
+      break ;
+  }
+
+  return nb_identifiers >= 2 && !has_point_again && cursor != begin ;
+}
+
+auto next_identifiers (auto begin, auto end) -> decltype(begin) {
   return std::next(begin) ;
 }
 
@@ -242,6 +271,7 @@ auto next_lambda (auto begin, auto end) -> decltype(begin) {
 bool has_expression (auto begin, auto end) {
   return has_function_call (begin, end) || 
     has_lambda(begin, end) ||
+    has_identifiers(begin, end) ||
     has_identifier(begin, end) ||
     has_number(begin, end) ;
 }
@@ -249,6 +279,7 @@ bool has_expression (auto begin, auto end) {
 auto next_expression (auto begin, auto end) -> decltype(begin) {
   if (has_function_call(begin, end)) return next_function_call(begin, end) ;
   if (has_lambda(begin, end)) return next_lambda(begin, end) ;
+  if (has_identifiers(begin, end)) return next_identifiers(begin, end) ;
   if (has_identifier(begin, end)) return next_identifier(begin, end) ;
   if (has_number(begin, end)) return next_number(begin, end) ;
   return begin ;

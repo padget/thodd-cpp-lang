@@ -21,6 +21,21 @@ identifier extract_identifier (auto begin, auto end) {
   return identifier{(*begin).data} ;
 }
 
+identifiers extract_identifiers (auto begin, auto end) {
+  std::vector<identifier> idents ;
+  auto cursor = begin ;
+
+  while (has_identifier(cursor, end)) {
+    idents.push_back(extract_identifier(cursor, end)) ;
+    cursor = next_identifier(cursor, end) ;
+    
+    if (has_point(cursor, end)) cursor = next_point(cursor, end) ;
+    else break ;
+  } 
+  
+  return identifiers{idents} ;
+}
+
 number extract_number (auto begin, auto end) {
   return number{(*begin).data} ;
 }
@@ -90,6 +105,8 @@ expression extract_expression (auto begin, auto end) {
     return expression{expression::type_::lambda, std::vector<lexem>(begin, next_lambda(begin, end))} ;
   else if (has_number(begin, end))
     return expression{expression::type_::number, std::vector<lexem>(begin, next_number(begin, end))} ;
+  else if (has_identifiers(begin, end))
+    return expression{expression::type_::identifiers, std::vector<lexem>(begin, next_identifiers(begin, end))} ;
   else if (has_identifier(begin, end))
     return expression{expression::type_::identifier, std::vector<lexem>(begin, next_identifier(begin, end))} ;
   else if (has_string(begin, end))

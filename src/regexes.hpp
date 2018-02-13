@@ -46,6 +46,8 @@ auto search_for_identifier_rx (auto begin, auto end) -> std::tuple<decltype(begi
   return std::make_tuple(cursor, cursor != begin ? lexem::type_::identifier : lexem::type_::error) ;
 }
 
+#include <iostream>
+
 auto search_for_identifiers_rx (auto begin, auto end) -> std::tuple<decltype(begin), lexem::type_> {
   auto cursor = begin ;
   
@@ -54,6 +56,7 @@ auto search_for_identifiers_rx (auto begin, auto end) -> std::tuple<decltype(beg
 
   if (cursor == begin)
     return std::make_tuple(begin, lexem::type_::error) ;
+  auto nb_identifiers = 1u ;
 
   while (*cursor == '.') {
     auto save = cursor ;
@@ -64,9 +67,11 @@ auto search_for_identifiers_rx (auto begin, auto end) -> std::tuple<decltype(beg
 
     if (cursor == save)
       return std::make_tuple(begin, lexem::type_::error) ;
+
+    ++ nb_identifiers ;
   }
 
-  return std::make_tuple(cursor, cursor != begin ? lexem::type_::identifiers : lexem::type_::error) ;
+  return std::make_tuple(cursor, cursor != begin && nb_identifiers >= 2 ? lexem::type_::identifiers : lexem::type_::error) ;
 }
 
 auto search_for_lbracket_rx (auto begin, auto end) -> std::tuple<decltype(begin), lexem::type_> {
@@ -95,6 +100,10 @@ auto search_for_semi_colon_rx (auto begin, auto end) -> std::tuple<decltype(begi
 
 auto search_for_comma_rx (auto begin, auto end) -> std::tuple<decltype(begin), lexem::type_> {
   return search_for(begin, end, ",", lexem::type_::comma) ;
+}
+
+auto search_for_point_rx (auto begin, auto end) -> std::tuple<decltype(begin), lexem::type_> {
+  return search_for(begin, end, ".", lexem::type_::point) ;
 }
 
 auto search_for_alias_rx (auto begin, auto end) -> std::tuple<decltype(begin), lexem::type_> {
@@ -156,6 +165,7 @@ thodd_rxs (auto) {
     [] (auto begin, auto end) { return search_for_rbracket_rx(begin, end) ;}, 
     [] (auto begin, auto end) { return search_for_lbrace_rx(begin, end) ;},
     [] (auto begin, auto end) { return search_for_rbrace_rx(begin, end) ;}, 
+    [] (auto begin, auto end) { return search_for_point_rx(begin, end) ;}, 
     [] (auto begin, auto end) { return search_for_colon_rx(begin, end) ;}, 
     [] (auto begin, auto end) { return search_for_semi_colon_rx(begin, end) ;},
     [] (auto begin, auto end) { return search_for_comma_rx(begin, end) ;}, 

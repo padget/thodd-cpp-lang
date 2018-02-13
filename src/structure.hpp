@@ -8,7 +8,7 @@
 
 struct expression {
   enum class type_ {
-     identifier, number, string, lambda, function_call, unknown
+     identifier, identifiers, number, string, lambda, function_call, unknown
   } ;
 
   type_ type ;

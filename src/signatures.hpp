@@ -43,6 +43,7 @@ auto search_for_lbracket_rx (auto begin, auto end) -> std::tuple<decltype(begin)
 auto search_for_rbracket_rx (auto begin, auto end) -> std::tuple<decltype(begin), lexem::type_> ; // x t
 auto search_for_lbrace_rx (auto begin, auto end) -> std::tuple<decltype(begin), lexem::type_> ; // x t
 auto search_for_rbrace_rx (auto begin, auto end) -> std::tuple<decltype(begin), lexem::type_> ; // x t
+auto search_for_point_rx (auto begin, auto end) -> std::tuple<decltype(begin), lexem::type_> ; // x 
 auto search_for_colon_rx (auto begin, auto end) -> std::tuple<decltype(begin), lexem::type_> ; // x t
 auto search_for_semi_colon_rx (auto begin, auto end) -> std::tuple<decltype(begin), lexem::type_> ; // x t
 auto search_for_comma_rx (auto begin, auto end) -> std::tuple<decltype(begin), lexem::type_> ; // x t
@@ -78,6 +79,9 @@ auto next_colon (auto begin, auto end) -> decltype(begin) ; // x t
 
 bool has_comma (auto begin, auto end) ; // x t
 auto next_comma (auto begin, auto end) -> decltype(begin) ; // x t
+
+bool has_point (auto begin, auto end) ; // x 
+auto next_point (auto begin, auto end) -> decltype(begin) ; // x 
 
 bool has_pod_kw (auto begin, auto end) ; // x t
 auto next_pod_kw (auto begin, auto end) -> decltype(begin) ; // x t

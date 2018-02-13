@@ -53,6 +53,4 @@ copy_lexems (auto begin, auto end) {
   return lexems ;
 }
 
-
-
 #endif

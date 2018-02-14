@@ -173,14 +173,6 @@ int main() {
         it("shouldn't detect a identifier", expect(has_identifier(lxs2.begin(), lxs2.end()), be_false()))) ;
     },
     [] {
-      std::vector<lexem> const lxs = make_lexems({thd::identifiers}) ;
-      std::vector<lexem> const lxs2 = make_lexems({thd::alias}) ;
-
-      describe("has_identifiers", 
-        it("should detect a identifiers", expect(has_identifiers(lxs.begin(), lxs.end()), be_true())),
-        it("shouldn't detect a identifiers", expect(has_identifiers(lxs2.begin(), lxs2.end()), be_false()))) ;
-    },
-    [] {
       std::vector<lexem> const lxs = make_lexems({thd::number}) ;
       std::vector<lexem> const lxs2 = make_lexems({thd::alias}) ;
 

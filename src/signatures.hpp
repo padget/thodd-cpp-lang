@@ -8,7 +8,7 @@
 
 struct lexem {
   enum class type_ : int {
-    identifier, identifiers, 
+    identifier, 
     number, string, 
     lbrace, rbrace, 
     lbracket, rbracket,
@@ -38,7 +38,6 @@ auto search_for_lambda_rx (auto begin, auto end) -> std::tuple<decltype(begin), 
 auto search_for_pod_rx (auto begin, auto end) -> std::tuple<decltype(begin), lexem::type_> ; // x t
 auto search_for_return_rx (auto begin, auto end) -> std::tuple<decltype(begin), lexem::type_> ; // x t
 auto search_for_identifier_rx (auto begin, auto end) -> std::tuple<decltype(begin), lexem::type_> ; // x t
-auto search_for_identifiers_rx (auto begin, auto end) -> std::tuple<decltype(begin), lexem::type_> ; // x 
 auto search_for_lbracket_rx (auto begin, auto end) -> std::tuple<decltype(begin), lexem::type_> ; // x t
 auto search_for_rbracket_rx (auto begin, auto end) -> std::tuple<decltype(begin), lexem::type_> ; // x t
 auto search_for_lbrace_rx (auto begin, auto end) -> std::tuple<decltype(begin), lexem::type_> ; // x t

@@ -59,12 +59,6 @@ test_result test_search_for_identifier_rx () {
   return make_result(std::get<0>(res) == stream.end() && std::get<1>(res) == lexem::type_::identifier, "test_search_for_identifier_rx") ;
 }
 
-test_result test_search_for_identifiers_rx () {
-  std::string stream = "iden.tif.iers" ; 
-  auto && res = search_for_identifiers_rx(stream.begin(), stream.end()) ;
-  return make_result(std::get<0>(res) == stream.end() && std::get<1>(res) == lexem::type_::identifiers, "test_search_for_identifiers_rx") ;
-}
-
 test_result test_search_for_lbracket_rx () {
   std::string stream = "(" ; 
   auto && res = search_for_lbracket_rx(stream.begin(), stream.end()) ;
@@ -180,12 +174,6 @@ test_result test_search_for_identifier_rx_false () {
   return make_result(std::get<0>(res) != stream.end() && std::get<1>(res) == lexem::type_::error, "test_search_for_identifier_rx_false") ;
 }
 
-test_result test_search_for_identifiers_rx_false () {
-  std::string stream = "1iden.tif.iers" ; 
-  auto && res = search_for_identifiers_rx(stream.begin(), stream.end()) ;
-  return make_result(std::get<0>(res) != stream.end() && std::get<1>(res) == lexem::type_::error, "test_search_for_identifiers_rx_false") ;
-}
-
 test_result test_search_for_lbracket_rx_false () {
   std::string stream = "'(" ; 
   auto && res = search_for_lbracket_rx(stream.begin(), stream.end()) ;
@@ -263,12 +251,12 @@ test_result test_search_for_ignored_rx_false () {
 int main() {
   std::vector<std::function<test_result()>> tests = {
     test_search_for_pure_rx, test_search_for_impure_rx, test_search_for_lambda_rx, test_search_for_pod_rx, test_search_for_return_rx, 
-    test_search_for_identifier_rx, test_search_for_identifiers_rx, test_search_for_lbracket_rx, test_search_for_rbracket_rx, 
+    test_search_for_identifier_rx, test_search_for_lbracket_rx, test_search_for_rbracket_rx, 
     test_search_for_lbrace_rx, test_search_for_rbrace_rx, test_search_for_colon_rx, test_search_for_semi_colon_rx, test_search_for_comma_rx, 
     test_search_for_alias_rx, test_search_for_strengh_rx, test_search_for_weak_rx, test_search_for_number_rx, test_search_for_ignored_rx,
 
     test_search_for_pure_rx_false, test_search_for_impure_rx_false, test_search_for_lambda_rx_false, test_search_for_pod_rx_false, test_search_for_return_rx_false, 
-    test_search_for_identifier_rx_false, test_search_for_identifiers_rx_false, test_search_for_lbracket_rx_false, test_search_for_rbracket_rx_false, 
+    test_search_for_identifier_rx_false, test_search_for_lbracket_rx_false, test_search_for_rbracket_rx_false, 
     test_search_for_lbrace_rx_false, test_search_for_rbrace_rx_false, test_search_for_colon_rx_false, test_search_for_semi_colon_rx_false, test_search_for_comma_rx_false, 
     test_search_for_alias_rx_false, test_search_for_strengh_rx_false, test_search_for_weak_rx_false, test_search_for_number_rx_false, test_search_for_ignored_rx_false  
   } ;

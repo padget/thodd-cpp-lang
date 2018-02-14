@@ -125,6 +125,7 @@ bool has_identifiers (auto begin, auto end) {
   auto cursor = begin ;
   bool has_point_again = false ;
   size_t nb_identifiers = 0u ;
+
   while (has_identifier(cursor, end)) {
     cursor = next_identifier(cursor, end) ;
     ++ nb_identifiers ;
@@ -138,8 +139,20 @@ bool has_identifiers (auto begin, auto end) {
   return nb_identifiers >= 2 && !has_point_again && cursor != begin ;
 }
 
+
+
 auto next_identifiers (auto begin, auto end) -> decltype(begin) {
-  return std::next(begin) ;
+  auto cursor = begin ;
+
+  while (has_identifier(cursor, end)) {
+    cursor = next_identifier(cursor, end) ;
+    
+    if (has_point(cursor, end)) 
+      cursor = next_point(cursor, end) ;
+    else break ;
+  }
+
+  return cursor ;
 }
 
 bool has_number (auto begin, auto end) {

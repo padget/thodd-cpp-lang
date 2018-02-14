@@ -230,6 +230,7 @@ bool check_types_exist (thodd const & tdd) {
 bool check_identifiers_exist (expression const & exp, std::string const & ctx, auto const & identifiers) ;
 bool check_identifiers_exist (function_call const & fcall, std::string const & ctx, auto const & identifiers) ;
 bool check_identifiers_exist (identifier const & id, std::string const & ctx, auto const & identifiers) ;
+bool check_identifiers_exist (identifiers const & id, std::string const & ctx, auto const & identifiers) ; // TODO
 bool check_identifiers_exist (lambda const & lam, std::string const & ctx, auto const & identifiers) ;
 bool check_identifiers_exist (parameter const & p, std::string const & ctx, auto const & identifiers) ;
 bool check_identifiers_exist (const_instruction const & c, std::string ctx, auto const & identifiers) ;
@@ -341,11 +342,5 @@ bool check_identifiers_not_duplicate (thodd const & tdd) {
   std::multiset<std::string> identifiers {tdd_identifiers.begin(), tdd_identifiers.end()} ;
   return std::adjacent_find(identifiers.begin(), identifiers.end()) == identifiers.end() ;
 }
-
-
-/// /////////////////////////// ///
-/// CHECK SHADOWING IDENTIFIERS /// // TODO
-/// /////////////////////////// ///
-
 
 #endif

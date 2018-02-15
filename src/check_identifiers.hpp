@@ -2,20 +2,15 @@
 #  define __thodd_check_identifiers_exist_hpp__
 
 #  include "structure.hpp"
+#  include "child_ctx.hpp"
+#  include "types_by_identifiers.hpp"
+
 #  include <string>
 #  include <vector>
 #  include <set>
 #  include <list>
 #  include <algorithm>
 
-#  include <iostream>
-
-
-namespace detail {
-  auto child_ctx(auto const & ctx, auto const & child) {
-    return ctx + "::" + child ;
-  }
-}
 
 std::vector<std::string> get_identifiers (member const & m, std::string const & ctx) ;
 std::vector<std::string> get_identifiers (pod const & p, std::string const & ctx) ;
@@ -148,7 +143,6 @@ namespace detail {
       return first_size == second_size && first_size != 0 && second_size != 0 ;
     }) != end ;
   }
-
 }
 
 
@@ -227,17 +221,16 @@ bool check_types_exist (thodd const & tdd) {
 /// CHECK IDENTIFIERS EXIST ///
 /// /////////////////////// ///
 
+
 bool check_identifiers_exist (expression const & exp, std::string const & ctx, auto const & identifiers) ;
 bool check_identifiers_exist (function_call const & fcall, std::string const & ctx, auto const & identifiers) ;
 bool check_identifiers_exist (identifier const & id, std::string const & ctx, auto const & identifiers) ;
-bool check_identifiers_exist (identifiers const & id, std::string const & ctx, auto const & identifiers) ; // TODO
 bool check_identifiers_exist (lambda const & lam, std::string const & ctx, auto const & identifiers) ;
 bool check_identifiers_exist (parameter const & p, std::string const & ctx, auto const & identifiers) ;
 bool check_identifiers_exist (const_instruction const & c, std::string ctx, auto const & identifiers) ;
 bool check_identifiers_exist (return_instruction const & r, std::string ctx, auto const & identifiers) ;
 bool check_identifiers_exist (function const & f, std::string ctx, auto const & identifiers) ;
 bool check_identifiers_exist (thodd const & tdd) ;
-
 
 
  
@@ -338,9 +331,33 @@ bool check_types_not_duplicate (thodd const & tdd) {
 
 bool check_identifiers_not_duplicate (thodd const & tdd) {
   auto && tdd_identifiers = get_identifiers (tdd) ;
-  for (auto && item : tdd_identifiers) std::cout << item << std::endl  ;
   std::multiset<std::string> identifiers {tdd_identifiers.begin(), tdd_identifiers.end()} ;
   return std::adjacent_find(identifiers.begin(), identifiers.end()) == identifiers.end() ;
+}
+
+
+/// /////////////////////////////// ///
+/// CHECK IDENTIFIERS ACCESS EXISTS ///
+/// /////////////////////////////// ///
+
+using access_by_context_t = std::map<std::string, std::vector<std::string>> ;
+
+access_by_context_t get_access (member const & m, std::string const & ctx) ;
+access_by_context_t get_access (pod const & p, std::string const & ctx) ;
+access_by_context_t get_access (expression const & exp, std::string const & ctx) ;
+access_by_context_t get_access (function_call const & fcall, std::string const & ctx) ;
+access_by_context_t get_access (lambda const & lam, std::string const & ctx) ;
+access_by_context_t get_access (parameter const & p, std::string const & ctx) ;
+access_by_context_t get_access (const_instruction const & c, std::string ctx) ;
+access_by_context_t get_access (return_instruction const & r, std::string ctx) ;
+access_by_context_t get_access (function const & f, std::string ctx) ;
+access_by_context_t get_access (thodd const & tdd) ;
+
+bool check_access_exists (thodd const & tdd) {
+  type_by_identifier_t && registry = types_registry(tdd) ;
+  //access_by_context_t && all_access = get_access(tdd) ;
+
+
 }
 
 #endif

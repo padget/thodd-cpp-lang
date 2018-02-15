@@ -121,14 +121,14 @@ auto next_identifier (auto begin, auto end) -> decltype(begin) {
   return std::next(begin) ;
 }
 
-bool has_identifiers (auto begin, auto end) {
+bool has_access (auto begin, auto end) {
   auto cursor = begin ;
   bool has_point_again = false ;
-  size_t nb_identifiers = 0u ;
+  size_t nb_members = 0u ;
 
   while (has_identifier(cursor, end)) {
     cursor = next_identifier(cursor, end) ;
-    ++ nb_identifiers ;
+    ++ nb_members ;
 
     if (has_point_again = has_point(cursor, end)) 
       cursor = next_point(cursor, end) ;
@@ -136,12 +136,10 @@ bool has_identifiers (auto begin, auto end) {
       break ;
   }
 
-  return nb_identifiers >= 2 && !has_point_again && cursor != begin ;
+  return nb_members >= 1 && !has_point_again && cursor != begin ;
 }
 
-
-
-auto next_identifiers (auto begin, auto end) -> decltype(begin) {
+auto next_access (auto begin, auto end) -> decltype(begin) {
   auto cursor = begin ;
 
   while (has_identifier(cursor, end)) {
@@ -284,7 +282,7 @@ auto next_lambda (auto begin, auto end) -> decltype(begin) {
 bool has_expression (auto begin, auto end) {
   return has_function_call (begin, end) || 
     has_lambda(begin, end) ||
-    has_identifiers(begin, end) ||
+    has_access(begin, end) ||
     has_identifier(begin, end) ||
     has_number(begin, end) ;
 }
@@ -292,7 +290,7 @@ bool has_expression (auto begin, auto end) {
 auto next_expression (auto begin, auto end) -> decltype(begin) {
   if (has_function_call(begin, end)) return next_function_call(begin, end) ;
   if (has_lambda(begin, end)) return next_lambda(begin, end) ;
-  if (has_identifiers(begin, end)) return next_identifiers(begin, end) ;
+  if (has_access(begin, end)) return next_access(begin, end) ;
   if (has_identifier(begin, end)) return next_identifier(begin, end) ;
   if (has_number(begin, end)) return next_number(begin, end) ;
   return begin ;

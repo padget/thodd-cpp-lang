@@ -5,7 +5,7 @@
 #  include <string>
 
 #  include "structure.hpp"
-#  include "check_identifiers.hpp"
+#  include "child_ctx.hpp"
 #  include "extract_element.hpp"
 
 
@@ -20,6 +20,8 @@ type_by_identifier_t type_by_identifier (function const & f, std::string const &
 type_by_identifier_t type_by_identifier (member const & m, std::string const & ctx) ;
 type_by_identifier_t type_by_identifier (pod const & p, std::string const & ctx) ;
 type_by_identifier_t type_by_identifier (thodd const & tdd, std::string const & ctx) ;
+
+type_by_identifier_t types_registry (thodd const & tdd) ;
 
 
 
@@ -100,13 +102,19 @@ type_by_identifier_t type_by_identifier (pod const & p, std::string const & ctx)
   return tbi ;
 }
 
-type_by_identifier_t type_by_identifier (thodd const & tdd) {
+type_by_identifier_t types_registry (thodd const & tdd) {
   type_by_identifier_t tbi ;
 
   for (pod const & p : tdd.pods) {
     auto && p_tbi = type_by_identifier(p, "") ;
     tbi.insert(p_tbi.begin(), p_tbi.end()) ;
-  } 
+  }
+
+  return tbi ; 
+}
+
+type_by_identifier_t type_by_identifier (thodd const & tdd) {
+  type_by_identifier_t tbi = types_registry(tdd) ;
 
   for (function const & f : tdd.functions) {
     auto && f_tbi = type_by_identifier(f, "") ;
@@ -115,5 +123,7 @@ type_by_identifier_t type_by_identifier (thodd const & tdd) {
 
   return tbi ;
 }
+
+
 
 #endif

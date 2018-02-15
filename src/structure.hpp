@@ -8,7 +8,7 @@
 
 struct expression {
   enum class type_ {
-     identifier, identifiers, number, string, lambda, function_call, unknown
+     identifier, access, number, string, lambda, function_call, unknown
   } ;
 
   type_ type ;
@@ -19,8 +19,9 @@ struct identifier {
   std::string data ;
 } ;
 
-struct identifiers {
-  std::vector<identifier> idents ;
+struct access {
+  identifier ident ;
+  std::vector<identifier> members ;
 } ;
 
 struct number {

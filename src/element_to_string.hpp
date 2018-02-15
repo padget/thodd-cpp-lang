@@ -21,10 +21,10 @@ std::string to_string (identifier const & el) {
   return el.data ;
 }
 
-std::string to_string (identifiers const & el) {
-  std::string res ;
+std::string to_string (access const & el) {
+  std::string res = to_string(el.ident) + "." ;
 
-  for (auto && ident : el.idents)
+  for (auto && ident : el.members)
     res += to_string (ident) + "." ;
 
   res.erase(std::next(res.begin(), res.size() - 1), res.end()) ;
@@ -65,7 +65,7 @@ std::string to_string (expression const & el) {
   switch (el.type) {
     case expression::type_::function_call : return to_string(extract_function_call(el.data.begin(), el.data.end())) ; 
     case expression::type_::lambda : return to_string(extract_lambda(el.data.begin(), el.data.end())) ;
-    case expression::type_::identifiers : return to_string(extract_identifiers(el.data.begin(), el.data.end())) ; 
+    case expression::type_::access : return to_string(extract_access(el.data.begin(), el.data.end())) ; 
     case expression::type_::identifier : return to_string(extract_identifier(el.data.begin(), el.data.end())) ; 
     case expression::type_::number : return to_string(extract_number(el.data.begin(), el.data.end())) ;
     case expression::type_::string : return to_string(extract_string(el.data.begin(), el.data.end())) ;

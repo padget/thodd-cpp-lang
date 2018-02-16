@@ -342,22 +342,93 @@ bool check_identifiers_not_duplicate (thodd const & tdd) {
 
 using access_by_context_t = std::map<std::string, std::vector<std::string>> ;
 
-access_by_context_t get_access (member const & m, std::string const & ctx) ;
-access_by_context_t get_access (pod const & p, std::string const & ctx) ;
-access_by_context_t get_access (expression const & exp, std::string const & ctx) ;
-access_by_context_t get_access (function_call const & fcall, std::string const & ctx) ;
-access_by_context_t get_access (lambda const & lam, std::string const & ctx) ;
-access_by_context_t get_access (parameter const & p, std::string const & ctx) ;
-access_by_context_t get_access (const_instruction const & c, std::string ctx) ;
-access_by_context_t get_access (return_instruction const & r, std::string ctx) ;
-access_by_context_t get_access (function const & f, std::string ctx) ;
-access_by_context_t get_access (thodd const & tdd) ;
+access_by_context_t get_accesses (access const & acc, std::string const & ctx) ;
+access_by_context_t get_accesses (function_call const & fcall, std::string const & ctx) ;
+access_by_context_t get_accesses (lambda const & lam, std::string const & ctx) ;
+access_by_context_t get_accesses (expression const & exp, std::string const & ctx) ;
+access_by_context_t get_accesses (const_instruction const & c, std::string ctx) ;
+access_by_context_t get_accesses (return_instruction const & r, std::string ctx) ;
+access_by_context_t get_accesses (function const & f, std::string ctx) ;
+access_by_context_t get_accesses (thodd const & tdd) ;
+
+
+
+access_by_context_t get_accesses (access const & acc, std::string const & ctx) {
+  return {{acc.ident, acc.members}} ;
+}
+
+access_by_context_t get_accesses (function_call const & fcall, std::string const & ctx) {
+  access_by_context_t accesses ;
+
+  for (expression const & arg : function_call.args) {
+    auto && arg_accesses = get_accesses(arg, ctx) ;
+    accesses.insert(arg_accesses.begin(), arg_accesses.end()) ;
+  }
+
+  return accesses ;
+}
+
+access_by_context_t get_accesses (lambda const & lam, std::string const & ctx) {
+  access_by_context_t accesses ; 
+
+  for (const_instruction const & c : lambda.consts) {
+    auto && c_accesses = get_accesses(c, ctx) ;
+    accesses.insert(c_accesses.begin(), c_accesses.end()) ;
+  }
+
+  auto && return_accesses = get_accesses(lambda.return_) ;
+  accesses.insert(return_accesses.begin(), return_accesses()) ;
+
+  return accesses ;
+}
+
+access_by_context_t get_accesses (expression const & exp, std::string const & ctx) {
+  if (has_function_call(begin, end)) return get_accesses(extract_function_call(begin, end), ctx) ;
+  else if (has_lambda(begin, end)) return get_accesses(extract_lambda(begin, end), ctx) ;
+  else if (has_acces(begin, end)) return get_accesses(extract_access(begin, end), ctx) ;
+  else return {} ;
+}
+
+access_by_context_t get_accesses (const_instruction const & c, std::string ctx) {
+  return get_accesses(c.value, ctx) ;
+}
+
+access_by_context_t get_accesses (return_instruction const & r, std::string ctx) {
+  return get_accesses(r.expr, ctx) ;
+}
+
+access_by_context_t get_accesses (function const & f, std::string ctx) {
+  access_by_context_t accesses ; 
+
+  for (const_instruction const & c : lambda.consts) {
+    auto && c_accesses = get_accesses(c, ctx) ;
+    accesses.insert(c_accesses.begin(), c_accesses.end()) ;
+  }
+
+  auto && return_accesses = get_accesses(lambda.return_) ;
+  accesses.insert(return_accesses.begin(), return_accesses.end()) ;
+
+  return accesses ;
+}
+
+access_by_context_t get_accesses (thodd const & tdd) {
+  access_by_context_t accesses ;
+
+  for (function const & f : tdd.functions) {
+    auto && f_accesses = get_accesses(f, "") ;
+    accesses.insert(f_accesses.begin(), f_accesses.end()) ;
+  }
+
+  return accesses ;
+}
+
+
+
+
 
 bool check_access_exists (thodd const & tdd) {
   type_by_identifier_t && registry = types_registry(tdd) ;
   //access_by_context_t && all_access = get_access(tdd) ;
-
-
 }
 
 #endif

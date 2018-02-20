@@ -25,10 +25,6 @@ auto search_for_impure_rx (auto begin, auto end) -> std::tuple<decltype(begin), 
   return search_for(begin, end, "impure", lexem::type_::impure_kw ) ;
 }
 
-auto search_for_lambda_rx (auto begin, auto end) -> std::tuple<decltype(begin), lexem::type_> {
-  return search_for(begin, end, "lambda", lexem::type_::lambda_kw) ;
-}
-
 auto search_for_pod_rx (auto begin, auto end) -> std::tuple<decltype(begin), lexem::type_> {
   return search_for(begin, end, "pod", lexem::type_::pod_kw) ;
 }
@@ -128,7 +124,6 @@ thodd_rxs (auto) {
   return std::make_tuple (
     [] (auto begin, auto end) { return search_for_pure_rx(begin, end) ;}, 
     [] (auto begin, auto end) { return search_for_impure_rx(begin, end) ;}, 
-    [] (auto begin, auto end) { return search_for_lambda_rx(begin, end) ;}, 
     [] (auto begin, auto end) { return search_for_pod_rx(begin, end) ;}, 
     [] (auto begin, auto end) { return search_for_return_rx(begin, end) ;}, 
     [] (auto begin, auto end) { return search_for_identifier_rx(begin, end) ;}, 

@@ -8,7 +8,7 @@
 
 struct expression {
   enum class type_ {
-     identifier, access, number, string, lambda, function_call, unknown
+     identifier, access, number, string, function_call, unknown
   } ;
 
   type_ type ;
@@ -50,15 +50,6 @@ struct const_instruction {
 
 struct return_instruction {
   expression expr ;
-} ;
-
-
-struct lambda {
-  identifier name ;
-  identifier type ;
-  std::vector<parameter> parameters ;
-  std::vector<const_instruction> consts ;
-  return_instruction return_ ;
 } ;
 
 struct function {

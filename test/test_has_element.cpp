@@ -67,30 +67,13 @@ int main() {
           thd::identifier, thd::lbracket, thd::identifier, thd::comma, thd::number, thd::rbracket,
         thd::rbracket}) ;
 
-      std::vector<lexem> const lxs_lambda = make_lexems({
-        thd::lambda_kw, thd::lbracket, 
-          thd::identifier, thd::colon, thd::identifier, thd::comma,
-          thd::identifier, thd::colon, thd::identifier, thd::comma,
-          thd::identifier, thd::colon, thd::identifier, 
-        thd::rbracket, 
-          thd::colon, thd::identifier, 
-          thd::lbrace, 
-            thd::identifier, thd::colon, thd::identifier, thd::number, thd::semi_colon,
-            thd::identifier, thd::colon, thd::identifier, thd::number, thd::semi_colon,
-            thd::identifier, thd::colon, thd::identifier, thd::number, thd::semi_colon,
-            thd::return_kw, thd::identifier, thd::semi_colon,
-          thd::rbrace
-      }) ;
-
       describe("has_expression", 
         it("should detect a identifier", 
           expect(has_expression(lxs_identifier.begin(), lxs_identifier.end()), be_true())),
         it("should detect a number", 
           expect(has_expression(lxs_number.begin(), lxs_number.end()), be_true())),
         it("should detect a function call", 
-          expect(has_expression(lxs_fcall.begin(), lxs_fcall.end()), be_true())),
-        it("should detect a lambda", 
-          expect(has_expression(lxs_lambda.begin(), lxs_lambda.end()), be_true()))) ;
+          expect(has_expression(lxs_fcall.begin(), lxs_fcall.end()), be_true()))) ;
     }, 
     [] {
       std::vector<lexem> const lxs = make_lexems({thd::lbrace}) ;
@@ -115,14 +98,6 @@ int main() {
       describe("has_return_kw", 
         it("should detect a return_kw", expect(has_return_kw(lxs.begin(), lxs.end()), be_true())),
         it("shouldn't detect a return_kw", expect(has_return_kw(lxs2.begin(), lxs2.end()), be_false()))) ;
-    }, 
-    [] {
-      std::vector<lexem> const lxs = make_lexems({thd::lambda_kw}) ;
-      std::vector<lexem> const lxs2 = make_lexems({thd::alias}) ;
-
-      describe("has_lambda_kw", 
-        it("should detect a lambda_kw", expect(has_lambda_kw(lxs.begin(), lxs.end()), be_true())),
-        it("shouldn't detect a lambda_kw", expect(has_lambda_kw(lxs2.begin(), lxs2.end()), be_false()))) ;
     }, 
     [] {
       std::vector<lexem> const lxs = make_lexems({thd::colon}) ;
@@ -208,47 +183,7 @@ int main() {
       describe("has_parameter", 
         it("should detect a parameter", expect(has_parameter(lxs.begin(), lxs.end()), be_true())),
         it("shouldn't detect a parameter", expect(has_parameter(lxs2.begin(), lxs2.end()), be_false()))) ;
-    }, 
-    [] {
-      std::vector<lexem> const lxs_lambda_empty = make_lexems({
-        thd::lambda_kw, thd::lbracket, thd::rbracket, 
-          thd::colon, thd::identifier, 
-          thd::lbrace, 
-            thd::return_kw, thd::identifier, thd::semi_colon,
-          thd::rbrace}) ;
-
-      std::vector<lexem> const lxs_lambda_params = make_lexems({
-        thd::lambda_kw, thd::lbracket, 
-          thd::identifier, thd::colon, thd::identifier, thd::comma,
-          thd::identifier, thd::colon, thd::identifier, thd::comma,
-          thd::identifier, thd::colon, thd::identifier, 
-        thd::rbracket, thd::colon, thd::identifier, 
-        thd::lbrace, 
-          thd::return_kw, thd::identifier, thd::semi_colon,
-        thd::rbrace}) ;
-
-      std::vector<lexem> const lxs_lambda_full = make_lexems({
-        thd::lambda_kw, thd::lbracket, 
-          thd::identifier, thd::colon, thd::identifier, thd::comma,
-          thd::identifier, thd::colon, thd::identifier, thd::comma,
-          thd::identifier, thd::colon, thd::identifier, 
-        thd::rbracket, 
-          thd::colon, thd::identifier, 
-          thd::lbrace, 
-            thd::identifier, thd::colon, thd::identifier, thd::number, thd::semi_colon,
-            thd::identifier, thd::colon, thd::identifier, thd::number, thd::semi_colon,
-            thd::identifier, thd::colon, thd::identifier, thd::number, thd::semi_colon,
-            thd::return_kw, thd::identifier, thd::semi_colon,
-          thd::rbrace}) ;
-
-      describe("has_lambda", 
-        it("should detect a lambda_expression with no parameter", 
-           expect(has_lambda(lxs_lambda_empty.begin(), lxs_lambda_empty.end()), be_true())),
-        it("should detect a lambda_expression with parameter", 
-           expect(has_lambda(lxs_lambda_params.begin(), lxs_lambda_params.end()), be_true())),
-        it("should detect a lambda_expression with parameters and const expression", 
-           expect(has_lambda(lxs_lambda_full.begin(), lxs_lambda_full.end()), be_true()))) ;
-    }, 
+    },
     [] {
       std::vector<lexem> const lxs = make_lexems({thd::identifier, thd::colon, thd::identifier, thd::number, thd::semi_colon}) ;
       std::vector<lexem> const lxs2 = make_lexems({thd::identifier, thd::identifier, thd::number, thd::semi_colon}) ;
@@ -328,11 +263,6 @@ test_result test_next_return_kw () {
   return make_result(next_return_kw(lxs.begin(), lxs.end()) == lxs.end(), "test_next_return_kw") ;
 }
 
-test_result test_next_lambda_kw () {
-  std::vector<lexem> lxs = make_lexems({thd::lambda_kw}) ;
-  return make_result(next_lambda_kw(lxs.begin(), lxs.end()) == lxs.end(), "test_next_lambda_kw") ;
-}
-
 test_result test_next_colon () {
   std::vector<lexem> lxs = make_lexems({thd::colon}) ;
   return make_result(next_colon(lxs.begin(), lxs.end()) == lxs.end(), "test_next_colon") ;
@@ -389,47 +319,6 @@ test_result test_next_parameter () {
   return make_result(next_parameter(lxs.begin(), lxs.end()) == lxs.end(), "test_next_parameter") ;
 }
 
-test_result test_next_lambda_expression () {
-  std::vector<lexem> lxs = make_lexems({
-    thd::lambda_kw, thd::lbracket, thd::rbracket, 
-      thd::colon, thd::identifier, 
-      thd::lbrace, 
-        thd::return_kw, thd::identifier, thd::semi_colon,
-      thd::rbrace}) ;
-  return make_result(next_lambda(lxs.begin(), lxs.end()) == lxs.end(), "test_next_lambda_expression") ;
-}
-
-test_result test_next_lambda_expression_with_parameters () {
-  std::vector<lexem> lxs = make_lexems({
-    thd::lambda_kw, thd::lbracket, 
-      thd::identifier, thd::colon, thd::identifier, thd::comma,
-      thd::identifier, thd::colon, thd::identifier, thd::comma,
-      thd::identifier, thd::colon, thd::identifier, 
-    thd::rbracket, 
-      thd::colon, thd::identifier, 
-      thd::lbrace, 
-        thd::return_kw, thd::identifier, thd::semi_colon,
-      thd::rbrace}) ;
-  return make_result(next_lambda(lxs.begin(), lxs.end()) == lxs.end(), "test_next_lambda_expression_with_parameters") ;
-}
-
-test_result test_next_lambda_expression_with_parameters_and_const_instructions () {
-  std::vector<lexem> lxs = make_lexems({
-    thd::lambda_kw, thd::lbracket, 
-      thd::identifier, thd::colon, thd::identifier, thd::comma,
-      thd::identifier, thd::colon, thd::identifier, thd::comma,
-      thd::identifier, thd::colon, thd::identifier, 
-    thd::rbracket, 
-      thd::colon, thd::identifier, 
-      thd::lbrace, 
-        thd::identifier, thd::colon, thd::identifier, thd::number, thd::semi_colon,
-        thd::identifier, thd::colon, thd::identifier, thd::number, thd::semi_colon,
-        thd::identifier, thd::colon, thd::identifier, thd::number, thd::semi_colon,
-        thd::return_kw, thd::identifier, thd::semi_colon,
-      thd::rbrace}) ;
-  return make_result(next_lambda(lxs.begin(), lxs.end()) == lxs.end(), "test_next_lambda_expression_with_parameters_and_const_instructions") ;
-}
-
 test_result test_next_const_instruction () {
   std::vector<lexem> lxs = make_lexems({thd::identifier, thd::colon, thd::identifier, thd::number, thd::semi_colon}) ;
   return make_result(next_const_instruction(lxs.begin(), lxs.end()) == lxs.end(), "test_next_const_instruction") ;
@@ -458,23 +347,6 @@ test_result test_next_expression_function_call () {
       thd::identifier, thd::lbracket, thd::identifier, thd::comma, thd::number, thd::rbracket,
     thd::rbracket}) ;
   return make_result(next_expression(lxs.begin(), lxs.end()) == lxs.end(), "test_next_expression_function_call") ;
-}
-
-test_result test_next_expression_lambda () {
-  std::vector<lexem> lxs = make_lexems({
-    thd::lambda_kw, thd::lbracket, 
-      thd::identifier, thd::colon, thd::identifier, thd::comma,
-      thd::identifier, thd::colon, thd::identifier, thd::comma,
-      thd::identifier, thd::colon, thd::identifier, 
-    thd::rbracket, 
-      thd::colon, thd::identifier, 
-      thd::lbrace, 
-        thd::identifier, thd::colon, thd::identifier, thd::number, thd::semi_colon,
-        thd::identifier, thd::colon, thd::identifier, thd::number, thd::semi_colon,
-        thd::identifier, thd::colon, thd::identifier, thd::number, thd::semi_colon,
-        thd::return_kw, thd::identifier, thd::semi_colon,
-      thd::rbrace}) ;
-  return make_result(next_expression(lxs.begin(), lxs.end()) == lxs.end(), "test_next_expression_lambda") ;
 }
 
 test_result test_next_pod_member () {

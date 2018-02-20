@@ -57,14 +57,6 @@ auto next_return_kw (auto begin, auto end) -> decltype(begin) {
   return std::next(begin) ;
 }
 
-bool has_lambda_kw (auto begin, auto end) {
-  return has_next(begin, end, {lexem::type_::lambda_kw}) ;
-}
-
-auto next_lambda_kw (auto begin, auto end) -> decltype(begin) {
-  return std::next(begin) ;
-}
-
 bool has_colon (auto begin, auto end) {
   return has_next(begin, end, {lexem::type_::colon}) ;
 }
@@ -207,81 +199,8 @@ auto next_parameter (auto begin, auto end) -> decltype(begin) {
   return next_identifier(next_colon(next_identifier(begin, end), end), end) ;
 } 
 
-bool has_lambda (auto begin, auto end) {
-  auto cursor = begin ;
-
-  if (!has_lambda_kw(cursor, end)) 
-    return false ;
-  
-  cursor = next_lambda_kw(cursor, end) ;
-  
-  if (!has_lbracket(cursor, end))
-    return false ;
-
-  cursor = next_lbracket(cursor, end) ;
-  bool has_comma_again = false ;
-
-  while (has_parameter(cursor, end)) {
-    cursor = next_parameter(cursor, end) ;
-
-    if (has_comma_again = has_comma(cursor, end))
-      cursor = next_comma(cursor, end) ;
-    else break ;
-  }
-
-  if (has_comma_again) 
-    return false ;
-
-  if (!has_rbracket(cursor, end))
-    return false ;
-  
-  cursor = next_rbracket(cursor, end) ;
-  
-  if (!has_colon(cursor, end) || !has_identifier(next_colon(cursor, end), end))
-    return false ;
-
-  cursor = next_identifier(next_colon(cursor, end), end) ;  
-
-  if (!has_lbrace(cursor, end))
-    return false ;
-
-  cursor = next_lbrace(cursor, end) ;
-  
-  while (has_const_instruction(cursor, end))
-    cursor = next_const_instruction(cursor, end) ;
-
-  if (!has_return_instruction(cursor, end)) 
-    return false ; 
-
-  cursor = next_return_instruction(cursor, end) ;
-
-  if (!has_rbrace(cursor, end))
-    return false ;
-  
-  return true ;
-}
-
-auto next_lambda (auto begin, auto end) -> decltype(begin) {
-  auto cursor = begin ;
-  cursor = next_lbracket(next_lambda_kw(cursor, end), end) ;
-  
-  while (has_parameter(cursor, end))
-    if (!has_comma(cursor = next_parameter(cursor, end), end)) break ;
-    else cursor = next_comma(cursor, end) ;
-
-  cursor = next_lbrace(next_identifier(next_colon(next_rbracket(cursor, end), end), end), end) ;
-
-  while (has_const_instruction(cursor, end))
-    cursor = next_const_instruction(cursor, end) ;
-
-  cursor = next_return_instruction(cursor, end) ;
-
-  return next_rbrace(cursor, end) ;
-}
-
 bool has_expression (auto begin, auto end) {
   return has_function_call (begin, end) || 
-    has_lambda(begin, end) ||
     has_access(begin, end) ||
     has_identifier(begin, end) ||
     has_number(begin, end) ;
@@ -289,7 +208,6 @@ bool has_expression (auto begin, auto end) {
 
 auto next_expression (auto begin, auto end) -> decltype(begin) {
   if (has_function_call(begin, end)) return next_function_call(begin, end) ;
-  if (has_lambda(begin, end)) return next_lambda(begin, end) ;
   if (has_access(begin, end)) return next_access(begin, end) ;
   if (has_identifier(begin, end)) return next_identifier(begin, end) ;
   if (has_number(begin, end)) return next_number(begin, end) ;

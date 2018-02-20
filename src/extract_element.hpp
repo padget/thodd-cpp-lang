@@ -68,45 +68,10 @@ parameter extract_parameter (auto begin, auto end) {
     extract_identifier(next_colon(next_identifier(begin, end), end), end)} ; 
 }
 
-lambda extract_lambda (auto begin, auto end) {
-  auto cursor = begin ;
-  cursor = next_lbracket(next_lambda_kw(cursor, end), end) ;
-  std::vector<parameter> parameters ;
-
-  while (has_parameter(cursor, end)) {
-    parameters.push_back(extract_parameter(cursor, end)) ;
-    cursor = next_parameter(cursor, end) ;
-
-    if (has_comma(cursor, end)) 
-      cursor = next_comma(cursor, end) ;
-    else break ;
-  }
-
-  cursor = next_colon(next_rbracket(cursor, end), end) ;
-
-  auto && type = extract_identifier(cursor, end) ;
-  cursor = next_identifier(cursor, end) ;
-  cursor = next_lbrace(cursor, end) ;
-
-  std::vector<const_instruction> consts ;
-
-  while (has_const_instruction(cursor, end)) {
-    consts.push_back(extract_const_instruction(cursor, end)) ;
-    cursor = next_const_instruction(cursor, end) ;
-  }
-
-  auto && return_ = extract_return_instruction(cursor, end) ;
-  
-  return
-  lambda{identifier{next_id()}, type, parameters, consts, return_} ;
-}
-
 // TODO faire un tu pour tester le type des expressions
 expression extract_expression (auto begin, auto end) {
   if (has_function_call(begin, end))
     return expression{expression::type_::function_call, std::vector<lexem>(begin, next_function_call(begin, end))} ;
-  else if (has_lambda(begin, end))
-    return expression{expression::type_::lambda, std::vector<lexem>(begin, next_lambda(begin, end))} ;
   else if (has_number(begin, end))
     return expression{expression::type_::number, std::vector<lexem>(begin, next_number(begin, end))} ;
   else if (has_access(begin, end))

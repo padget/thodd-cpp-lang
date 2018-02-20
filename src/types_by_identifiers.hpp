@@ -12,7 +12,6 @@
 using type_by_identifier_t = std::map<std::string, std::string> ;
 
 type_by_identifier_t type_by_identifier (function_call const & fcall, std::string const & ctx) ;
-type_by_identifier_t type_by_identifier (lambda const & l, std::string const & ctx) ;
 type_by_identifier_t type_by_identifier (expression const & exp, std::string const & ctx) ;
 type_by_identifier_t type_by_identifier (const_instruction const & c, std::string const & ctx) ;
 type_by_identifier_t type_by_identifier (return_instruction const & r, std::string const & ctx) ;
@@ -36,28 +35,8 @@ type_by_identifier_t type_by_identifier (function_call const & fcall, std::strin
   return tbi ;
 }
 
-type_by_identifier_t type_by_identifier (lambda const & l, std::string const & ctx) {
-  std::string local_ctx = detail::child_ctx(ctx, l.name.data) ;
-  type_by_identifier_t tbi {{local_ctx, l.type.data}} ;
-
-  for (parameter const & p : l.parameters)
-    tbi.insert({detail::child_ctx(local_ctx, p.name.data) , p.type.data}) ;
-
-  for (const_instruction const & c : l.consts) {
-    auto && c_tbi = type_by_identifier(c, local_ctx) ;
-    tbi.insert(c_tbi.begin(), c_tbi.end()) ;
-  }
-
-  auto && return_tbi = type_by_identifier(l.return_, local_ctx) ;
-  tbi.insert(return_tbi.begin(), return_tbi.end()) ;
-
-  return tbi ;
-}
-
 type_by_identifier_t type_by_identifier (expression const & exp, std::string const & ctx) {
   switch (exp.type) {
-    case expression::type_::lambda : 
-      return type_by_identifier(extract_lambda(exp.data.begin(), exp.data.end()), ctx) ;
     case expression::type_::function_call : 
       return type_by_identifier(extract_function_call(exp.data.begin(), exp.data.end()), ctx) ;
     default : return {} ;

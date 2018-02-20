@@ -15,8 +15,7 @@ struct lexem {
     lsbracket, rsbracket,
     colon, semi_colon, 
     point, comma, ignored, 
-    pure_kw, impure_kw, pod_kw,
-    lambda_kw, error,
+    pure_kw, impure_kw, pod_kw, error,
     weak, strengh, alias, 
     switch_kw, case_kw, return_kw, 
     iterate_kw, iterate_if_kw
@@ -34,7 +33,6 @@ struct lexem {
 
 auto search_for_pure_rx (auto begin, auto end) -> std::tuple<decltype(begin), lexem::type_> ; // x t
 auto search_for_impure_rx (auto begin, auto end) -> std::tuple<decltype(begin), lexem::type_> ; // x t
-auto search_for_lambda_rx (auto begin, auto end) -> std::tuple<decltype(begin), lexem::type_> ; // x t
 auto search_for_pod_rx (auto begin, auto end) -> std::tuple<decltype(begin), lexem::type_> ; // x t
 auto search_for_return_rx (auto begin, auto end) -> std::tuple<decltype(begin), lexem::type_> ; // x t
 auto search_for_identifier_rx (auto begin, auto end) -> std::tuple<decltype(begin), lexem::type_> ; // x t
@@ -85,9 +83,6 @@ auto next_point (auto begin, auto end) -> decltype(begin) ; // x
 bool has_pod_kw (auto begin, auto end) ; // x t
 auto next_pod_kw (auto begin, auto end) -> decltype(begin) ; // x t
 
-bool has_lambda_kw (auto begin, auto end) ; // x t
-auto next_lambda_kw (auto begin, auto end) -> decltype(begin) ; // x t 
-
 bool has_semi_colon (auto begin, auto end) ; // x t
 auto next_semi_colon (auto begin, auto end) -> decltype(begin) ; // x t
 
@@ -105,9 +100,6 @@ auto next_function_call (auto begin, auto end) -> decltype(begin) ; // x t
 
 bool has_parameter (auto begin, auto end) ; // x t
 auto next_parameter (auto begin, auto end) -> decltype(begin) ; // x t
-
-bool has_lambda (auto begin, auto end) ; // x t
-auto next_lambda (auto begin, auto end) -> decltype(begin) ; // x t
 
 bool has_expression (auto begin, auto end) ; // x t
 auto next_expression (auto begin, auto end) -> decltype(begin) ; // x t
@@ -137,7 +129,6 @@ bool has_thodd (auto begin, auto end) ; // x t
 struct expression ;
 struct number ; 
 struct identifier ;
-struct lambda ;
 struct string ;
 struct function_call ;
 struct parameter ;
@@ -155,7 +146,6 @@ identifier extract_identifier (auto begin, auto end) ; // x t
 number extract_number (auto begin, auto end) ; // x t
 function_call extract_function_call (auto begin, auto end) ; // x
 parameter extract_parameter (auto begin, auto end) ; // x
-lambda extract_lambda (auto begin, auto end) ; // x
 expression extract_expression (auto begin, auto end) ; // x
 const_instruction extract_const_instruction (auto begin, auto end) ; // x
 return_instruction extract_return_instruction (auto begin, auto end) ; // x

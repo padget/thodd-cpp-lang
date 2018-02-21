@@ -294,7 +294,7 @@ bool check_identifiers_not_duplicate (thodd const & tdd) {
 /// /////////////////////////////// ///
 
 
-/*using access_by_context_t = std::map<std::string, std::vector<std::string>> ;
+using access_by_context_t = std::map<std::string, std::vector<std::string>> ;
 
 access_by_context_t get_accesses (access const & acc, std::string const & ctx) ;
 access_by_context_t get_accesses (function_call const & fcall, std::string const & ctx) ;
@@ -312,13 +312,13 @@ access_by_context_t get_accesses (access const & acc, std::string const & ctx) {
 
   for (auto && mb : acc.members)  members_str.push_back(mb.data) ;
 
-  return {{acc.ident.data, acc.members}} ;
+  return {{acc.ident.data, members_str}} ;
 }
 
 access_by_context_t get_accesses (function_call const & fcall, std::string const & ctx) {
   access_by_context_t accesses ;
 
-  for (expression const & arg : function_call.args) {
+  for (expression const & arg : fcall.args) {
     auto && arg_accesses = get_accesses(arg, ctx) ;
     accesses.insert(arg_accesses.begin(), arg_accesses.end()) ;
   }
@@ -327,8 +327,8 @@ access_by_context_t get_accesses (function_call const & fcall, std::string const
 }
 
 access_by_context_t get_accesses (expression const & exp, std::string const & ctx) {
-  if (has_function_call(begin, end)) return get_accesses(extract_function_call(begin, end), ctx) ;
-  else if (has_acces(begin, end)) return get_accesses(extract_access(begin, end), ctx) ;
+  if (has_function_call(exp.data.begin(), exp.data.end())) return get_accesses(extract_function_call(exp.data.begin(), exp.data.end()), ctx) ;
+  else if (has_access(exp.data.begin(), exp.data.end())) return get_accesses(extract_access(exp.data.begin(), exp.data.end()), ctx) ;
   else return {} ;
 }
 
@@ -348,7 +348,7 @@ access_by_context_t get_accesses (function const & f, std::string ctx) {
     accesses.insert(c_accesses.begin(), c_accesses.end()) ;
   }
 
-  auto && return_accesses = get_accesses(f.return_) ;
+  auto && return_accesses = get_accesses(f.return_, ctx) ;
   accesses.insert(return_accesses.begin(), return_accesses.end()) ;
 
   return accesses ;
@@ -364,7 +364,7 @@ access_by_context_t get_accesses (thodd const & tdd) {
 
   return accesses ;
 }
-*/
+
 
 
 

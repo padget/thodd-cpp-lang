@@ -74,9 +74,10 @@ type_by_identifier_t type_by_identifier (function const & f, std::string const &
 
 type_by_identifier_t type_by_identifier (pod const & p, std::string const & ctx) {
   type_by_identifier_t tbi ;
+  auto local_ctx = detail::child_ctx(ctx, p.name.data) ;
 
   for (member const & m : p.members) 
-    tbi.insert({detail::child_ctx(ctx, m.name.data) , m.type.data}) ;
+    tbi.insert({detail::child_ctx(local_ctx, m.name.data) , m.type.data}) ;
 
   return tbi ;
 }

@@ -3,7 +3,6 @@
 
 #  include "structure.hpp"
 #  include "has_element.hpp"
-
 #  include <sstream>
 
 std::string next_id () {
@@ -24,7 +23,7 @@ identifier extract_identifier (auto begin, auto end) {
 access extract_access (auto begin, auto end) {
   auto cursor = begin ;  
   auto && ident = extract_identifier(cursor, end) ;
-  cursor = next_identifier(cursor, end) ;
+  cursor = next_point(next_identifier(cursor, end), end) ;
   std::vector<identifier> members ;
 
   while (has_identifier(cursor, end)) {

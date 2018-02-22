@@ -294,7 +294,7 @@ bool check_identifiers_not_duplicate (thodd const & tdd) {
 /// /////////////////////////////// ///
 
 
-using access_by_context_t = std::map<std::string, std::vector<std::string>> ;
+using access_by_context_t = std::map<std::string, access> ;
 
 access_by_context_t get_accesses (access const & acc, std::string const & ctx) ;
 access_by_context_t get_accesses (function_call const & fcall, std::string const & ctx) ;
@@ -306,13 +306,12 @@ access_by_context_t get_accesses (thodd const & tdd) ;
 
 
 
+
+#include <iostream>
+
 access_by_context_t get_accesses (access const & acc, std::string const & ctx) {
   access_by_context_t accesses ;
-  std::vector<std::string> members_str ;
-
-  for (auto && mb : acc.members)  members_str.push_back(mb.data) ;
-
-  return {{detail::child_ctx(ctx, acc.ident.data), members_str}} ;
+  return {{detail::child_ctx(ctx, acc.ident.data), acc}} ;
 }
 
 access_by_context_t get_accesses (function_call const & fcall, std::string const & ctx) {
@@ -340,12 +339,10 @@ access_by_context_t get_accesses (return_instruction const & r, std::string ctx)
   return get_accesses(r.expr, ctx) ;
 }
 
-#include <iostream>
 access_by_context_t get_accesses (function const & f, std::string ctx) {
   access_by_context_t accesses ; 
   auto local_ctx = detail::child_ctx(ctx, f.name.data) ;
-  std::cout << "localctx " << local_ctx << std::endl ;
-
+ 
   for (const_instruction const & c : f.consts) {
     auto && c_accesses = get_accesses(c, local_ctx) ;
     accesses.insert(c_accesses.begin(), c_accesses.end()) ;
@@ -369,14 +366,23 @@ access_by_context_t get_accesses (thodd const & tdd) {
 }
 
 
+std::string 
+vec2str (std::vector<auto> const & vec) {
+  std::string str ("[");
 
+  for (std::string const & s : vec) 
+    str += s + ", " ;
+
+  return str + "]" ; 
+}
 
 bool check_access_exists (thodd const & tdd) {
-  type_by_identifier_t && registry = types_registry(tdd) ;
+  type_by_identifier_t && registry = type_by_identifier(tdd) ;
   access_by_context_t && all_accesses = get_accesses(tdd) ;
 
-  for (auto && item : all_accesses)
-    std::cout << item.first << std::endl ;
+  for (auto const & acc_by_ctx : all_accesses) {
+    
+  }
   
   return true ;
 }

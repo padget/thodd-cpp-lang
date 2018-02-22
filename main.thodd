@@ -9,3 +9,27 @@ add (a: strings, b: int) : string {
   return a.data ;
 } 
 
+add (a: strings, b: int) : string {
+  return a.data ;
+} 
+
+add (a: strings, b: int) : string {
+  return a.data ;
+} 
+
+add (a: strings, b: int) : string {
+  return a.data ;
+} 
+
+add (a: strings, b: int) : string {
+  return a.data ;
+} 
+
+add (a: strings, b: int) : string {
+  return a.data ;
+} 
+
+add (a: strings, b: int) : string {
+  return a.data ;
+} 
+

@@ -312,7 +312,7 @@ access_by_context_t get_accesses (access const & acc, std::string const & ctx) {
 
   for (auto && mb : acc.members)  members_str.push_back(mb.data) ;
 
-  return {{acc.ident.data, members_str}} ;
+  return {{detail::child_ctx(ctx, acc.ident.data), members_str}} ;
 }
 
 access_by_context_t get_accesses (function_call const & fcall, std::string const & ctx) {
@@ -340,15 +340,18 @@ access_by_context_t get_accesses (return_instruction const & r, std::string ctx)
   return get_accesses(r.expr, ctx) ;
 }
 
+#include <iostream>
 access_by_context_t get_accesses (function const & f, std::string ctx) {
   access_by_context_t accesses ; 
+  auto local_ctx = detail::child_ctx(ctx, f.name.data) ;
+  std::cout << "localctx " << local_ctx << std::endl ;
 
   for (const_instruction const & c : f.consts) {
-    auto && c_accesses = get_accesses(c, ctx) ;
+    auto && c_accesses = get_accesses(c, local_ctx) ;
     accesses.insert(c_accesses.begin(), c_accesses.end()) ;
   }
 
-  auto && return_accesses = get_accesses(f.return_, ctx) ;
+  auto && return_accesses = get_accesses(f.return_, local_ctx) ;
   accesses.insert(return_accesses.begin(), return_accesses.end()) ;
 
   return accesses ;
@@ -368,10 +371,14 @@ access_by_context_t get_accesses (thodd const & tdd) {
 
 
 
-
 bool check_access_exists (thodd const & tdd) {
   type_by_identifier_t && registry = types_registry(tdd) ;
-  //access_by_context_t && all_access = get_access(tdd) ;
+  access_by_context_t && all_accesses = get_accesses(tdd) ;
+
+  for (auto && item : all_accesses)
+    std::cout << item.first << std::endl ;
+  
+  return true ;
 }
 
 #endif

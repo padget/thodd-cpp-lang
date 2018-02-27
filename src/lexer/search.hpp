@@ -2,9 +2,6 @@
 #  define __thodd_lexer_search_hpp__
 
 namespace thodd::lexer {
-  /**
-   * Returns a tuple of (iterator last, lexem::type_ type)
-   */
   auto search_for(auto cursor, auto end, std::string_view searched, lexem::type_ type) {
     auto && is_start_with = start_with(cursor, end, searched.begin(), searched.end()) ;
     
@@ -13,23 +10,7 @@ namespace thodd::lexer {
       is_start_with ? type : lexem::type_::error) ;
   }
 
-  auto search_for_pure_rx (auto begin, auto end) -> std::tuple<decltype(begin), lexem::type_> {
-    return search_for(begin, end, "pure", lexem::type_::pure_kw) ;
-  }
-
-  auto search_for_impure_rx (auto begin, auto end) -> std::tuple<decltype(begin), lexem::type_> {
-    return search_for(begin, end, "impure", lexem::type_::impure_kw ) ;
-  }
-
-  auto search_for_pod_rx (auto begin, auto end) -> std::tuple<decltype(begin), lexem::type_> {
-    return search_for(begin, end, "pod", lexem::type_::pod_kw) ;
-  }
-
-  auto search_for_return_rx (auto begin, auto end) -> std::tuple<decltype(begin), lexem::type_> {
-    return search_for(begin, end, "return", lexem::type_::return_kw) ;
-  }
-
-  auto search_for_identifier_rx (auto begin, auto end) -> std::tuple<decltype(begin), lexem::type_> {
+  auto search_for_identifier_rx (auto begin, auto end) {
     auto cursor = begin ;
     
     while (('a' <= *cursor && *cursor <= 'z') || *cursor == '_')
@@ -38,51 +19,8 @@ namespace thodd::lexer {
     return std::make_tuple(cursor, cursor != begin ? lexem::type_::identifier : lexem::type_::error) ;
   }
 
-  auto search_for_lbracket_rx (auto begin, auto end) -> std::tuple<decltype(begin), lexem::type_> {
-    return search_for(begin, end, "(", lexem::type_::lbracket) ;
-  }
 
-  auto search_for_rbracket_rx (auto begin, auto end) -> std::tuple<decltype(begin), lexem::type_> {
-    return search_for(begin, end, ")", lexem::type_::rbracket) ;
-  }
-
-  auto search_for_lbrace_rx (auto begin, auto end) -> std::tuple<decltype(begin), lexem::type_> {
-    return search_for(begin, end, "{", lexem::type_::lbrace) ;
-  }
-
-  auto search_for_rbrace_rx (auto begin, auto end) -> std::tuple<decltype(begin), lexem::type_> {
-    return search_for(begin, end, "}", lexem::type_::rbrace) ;
-  }
-
-  auto search_for_colon_rx (auto begin, auto end) -> std::tuple<decltype(begin), lexem::type_> {
-    return search_for(begin, end, ":", lexem::type_::colon) ;
-  }
-
-  auto search_for_semi_colon_rx (auto begin, auto end) -> std::tuple<decltype(begin), lexem::type_> {
-    return search_for(begin, end, ";", lexem::type_::semi_colon) ;
-  }
-
-  auto search_for_comma_rx (auto begin, auto end) -> std::tuple<decltype(begin), lexem::type_> {
-    return search_for(begin, end, ",", lexem::type_::comma) ;
-  }
-
-  auto search_for_point_rx (auto begin, auto end) -> std::tuple<decltype(begin), lexem::type_> {
-    return search_for(begin, end, ".", lexem::type_::point) ;
-  }
-
-  auto search_for_alias_rx (auto begin, auto end) -> std::tuple<decltype(begin), lexem::type_> {
-    return search_for(begin, end, "#", lexem::type_::alias) ;
-  }
-
-  auto search_for_strengh_rx (auto begin, auto end) -> std::tuple<decltype(begin), lexem::type_> {
-    return search_for(begin, end, "[@]", lexem::type_::strengh) ;
-  }
-
-  auto search_for_weak_rx (auto begin, auto end) -> std::tuple<decltype(begin), lexem::type_> {
-    return search_for(begin, end, "@", lexem::type_::weak) ;
-  }
-
-  auto search_for_number_rx (auto begin, auto end) -> std::tuple<decltype(begin), lexem::type_> {
+  auto search_for_number_rx (auto begin, auto end) {
     auto cursor = begin ;
     
     while (('0' <= *cursor && *cursor <= '9'))
@@ -105,7 +43,7 @@ namespace thodd::lexer {
     return std::make_tuple(cursor, cursor != begin ? lexem::type_::number : lexem::type_::error) ;
   }
 
-  auto search_for_ignored_rx (auto begin, auto end) -> std::tuple<decltype(begin), lexem::type_> {
+  auto search_for_ignored_rx (auto begin, auto end) {
     auto cursor = begin ;
     
     while (*cursor == ' ' || *cursor == '\t' || *cursor == '\n')
@@ -114,27 +52,39 @@ namespace thodd::lexer {
     return std::make_tuple(cursor, lexem::type_::ignored) ;
   }
 
-
-  auto
-  thodd_rxs (auto) {
+  auto thodd_keywords_rxs (auto) {
     return std::make_tuple (
-      [] (auto begin, auto end) { return search_for_pure_rx(begin, end) ;}, 
-      [] (auto begin, auto end) { return search_for_impure_rx(begin, end) ;}, 
-      [] (auto begin, auto end) { return search_for_pod_rx(begin, end) ;}, 
-      [] (auto begin, auto end) { return search_for_return_rx(begin, end) ;}, 
-      [] (auto begin, auto end) { return search_for_identifier_rx(begin, end) ;}, 
-      [] (auto begin, auto end) { return search_for_lbracket_rx(begin, end) ;}, 
-      [] (auto begin, auto end) { return search_for_rbracket_rx(begin, end) ;}, 
-      [] (auto begin, auto end) { return search_for_lbrace_rx(begin, end) ;},
-      [] (auto begin, auto end) { return search_for_rbrace_rx(begin, end) ;}, 
-      [] (auto begin, auto end) { return search_for_point_rx(begin, end) ;}, 
-      [] (auto begin, auto end) { return search_for_colon_rx(begin, end) ;}, 
-      [] (auto begin, auto end) { return search_for_semi_colon_rx(begin, end) ;},
-      [] (auto begin, auto end) { return search_for_comma_rx(begin, end) ;}, 
-      [] (auto begin, auto end) { return search_for_alias_rx(begin, end) ;}, 
-      [] (auto begin, auto end) { return search_for_strengh_rx(begin, end) ;}, 
-      [] (auto begin, auto end) { return search_for_number_rx(begin, end) ;}, 
-      [] (auto begin, auto end) { return search_for_ignored_rx(begin, end) ;} );
+      [] (auto b, auto e) { return search_for(b, e, "pod",       lexem::type_::pod_kw) ;},  
+      [] (auto b, auto e) { return search_for(b, e, "flow",      lexem::type_::flow_kw) ;}, 
+      [] (auto b, auto e) { return search_for(b, e, "reader",    lexem::type_::reader_kw) ;}, 
+      [] (auto b, auto e) { return search_for(b, e, "listener",  lexem::type_::listener_kw) ;}, 
+      [] (auto b, auto e) { return search_for(b, e, "processor", lexem::type_::processor_kw) ;}, 
+      [] (auto b, auto e) { return search_for(b, e, "builder",   lexem::type_::builder_kw) ;}, 
+      [] (auto b, auto e) { return search_for(b, e, "writer",    lexem::type_::writer_kw) ;}, 
+      [] (auto b, auto e) { return search_for(b, e, "main",      lexem::type_::main_kw) ;}, 
+      [] (auto b, auto e) { return search_for(b, e, "return",    lexem::type_::return_kw) ;}) ;
+  }
+
+  auto thodd_simple_rxs (auto) {
+    return std::make_tuple(
+      [] (auto b, auto e) { return search_for_identifier_rx(b, e) ;}, 
+      [] (auto b, auto e) { return search_for_number_rx(b, e) ;}, 
+      [] (auto b, auto e) { return search_for_ignored_rx(b, e) ;},
+      [] (auto b, auto e) { return search_for(b, e, "(", lexem::type_::lbracket) ;}, 
+      [] (auto b, auto e) { return search_for(b, e, ")", lexem::type_::rbracket) ;}, 
+      [] (auto b, auto e) { return search_for(b, e, "{", lexem::type_::lbrace) ;},
+      [] (auto b, auto e) { return search_for(b, e, "}", lexem::type_::rbrace) ;}, 
+      [] (auto b, auto e) { return search_for(b, e, ".", lexem::type_::point) ;}, 
+      [] (auto b, auto e) { return search_for(b, e, ":", lexem::type_::colon) ;}, 
+      [] (auto b, auto e) { return search_for(b, e, ";", lexem::type_::semi_colon) ;},
+      [] (auto b, auto e) { return search_for(b, e, ",", lexem::type_::comma) ;}) ;
+  }
+
+  auto thodd_rxs (auto) {
+    auto && keywords_rxs = thodd_keywords_rxs(0) ;
+    auto && simple_rxs = thodd_simple_rxs(0) ;
+
+    return std::tuple_cat(keywords_rxs, simple_rxs) ;
   } 
 
 }

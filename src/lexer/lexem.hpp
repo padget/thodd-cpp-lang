@@ -7,17 +7,18 @@ namespace tdd::lexer {
 
   struct lexem {
     enum class type_ : int {
+      // Characters
       identifier, 
       number, string, 
       lbrace, rbrace, 
       lbracket, rbracket,
       lsbracket, rsbracket,
       colon, semi_colon, 
-      point, comma, ignored, 
-      pure_kw, impure_kw, pod_kw, error,
-      weak, strengh, alias, 
-      switch_kw, case_kw, return_kw, 
-      iterate_kw, iterate_if_kw
+      point, comma, ignored, error,
+      // Keywords
+      flow_kw, reader_kw, writer_kw, 
+      processor_kw, builder_kw, listener_kw, 
+      pod_kw, return_kw, main_kw
     } ;
 
     type_ type ;

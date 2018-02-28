@@ -43,6 +43,22 @@ namespace thodd::lexer {
     return std::make_tuple(cursor, cursor != begin ? lexem::type_::number : lexem::type_::error) ;
   }
 
+  auto search_for_string_rx (auto begin, auto end) {
+    auto cursor = begin ;
+    
+    if (*cursor != '"') 
+      return std::make_tuple(begin, lexem::type_::error) ;
+
+    cursor = std::next(cursor) ;
+
+    while (cursor != end && *cursor != '"') {
+      cursor = std::next (cursor) ;
+      // TODO To end.
+    }
+
+    return std::make_tuple(cursor, cursor != begin ? lexem::type_::string : lexem::type_::error) ;
+  }
+
   auto search_for_ignored_rx (auto begin, auto end) {
     auto cursor = begin ;
     
@@ -68,7 +84,8 @@ namespace thodd::lexer {
   auto thodd_simple_rxs (auto) {
     return std::make_tuple(
       [] (auto b, auto e) { return search_for_identifier_rx(b, e) ;}, 
-      [] (auto b, auto e) { return search_for_number_rx(b, e) ;}, 
+      [] (auto b, auto e) { return search_for_number_rx(b, e) ;},
+      [] (auto b, auto e) { return search_for_string_rx(b, e) ;}, 
       [] (auto b, auto e) { return search_for_ignored_rx(b, e) ;},
       [] (auto b, auto e) { return search_for(b, e, "(", lexem::type_::lbracket) ;}, 
       [] (auto b, auto e) { return search_for(b, e, ")", lexem::type_::rbracket) ;}, 

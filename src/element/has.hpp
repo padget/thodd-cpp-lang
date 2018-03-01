@@ -113,29 +113,19 @@ namespace thodd::element {
 
   std::tuple<bool, auto> has_expression (auto begin, auto end) {
     auto && fcall = has_function_call(begin, end) ; 
-    
-    if (std::get<has_idx>(fcall)) 
-      return fcall ;
-    
+    if (std::get<has_idx>(fcall)) return fcall ;
+
     auto && acces = has_access(begin, end) ; 
-    
-    if (std::get<has_idx>(acces)) 
-      return acces ;
+    if (std::get<has_idx>(acces)) return acces ;
     
     auto && ident = has_identifier(begin, end) ;
-    
-    if (std::get<has_idx>(ident)) 
-      return ident ;
+    if (std::get<has_idx>(ident)) return ident ;
     
     auto && numbr = has_number(begin, end) ;
-    
-    if (std::get<has_idx>(numbr)) 
-      return numbr ;
+    if (std::get<has_idx>(numbr)) return numbr ;
     
     auto && strin = has_string(begin, end) ;
-    
-    if (std::get<has_idx>(strin)) 
-      return strin ;
+    if (std::get<has_idx>(strin)) return strin ;
     
     return std::make_tuple(false, begin) ;
   } 
@@ -237,11 +227,20 @@ namespace thodd::element {
   }
 
   std::tuple<bool, auto> has_flow (auto begin, auto end) {
-
+    flow
+    auto && has = true ;
+    return std::make_tuple(has, begin) ;
   }
-  
+
+  std::tuple<bool, auto> has_main_flow (auto begin, auto end) {
+    auto && main_kw = has_main_kw(begin, end) ;
+    auto && flow = has_flow(std::get<cursor_idx>(main_kw), end) ;
+    auto && has = std::get<has_idx>(main_kw) &&   
+                  std::get<has_idx>(flow) ;
+    return std::make_tuple(has, has ? std::get<cursor_idx>(flow) : begin) ;
+  }
+
   std::tuple<bool, auto> has_thodd (auto begin, auto end) {
-    
   }
 
 

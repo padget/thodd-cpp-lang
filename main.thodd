@@ -1,11 +1,6 @@
 
-pod strings {
-  data : string ;
-  next : strings ;
-}
 
 
-add (a: strings, b: int) : string {
-  return a.data ;
-} 
-
+main flow helloworld: 
+  reader read_name(): string ;
+  processor read_read

@@ -1,6 +1,7 @@
 #ifndef __thodd_element_element_hpp__
 #  define __thodd_element_element_hpp__
 
+#  include "../lexer/lexem.hpp"
 #  include <vector>
 #  include <string>
 
@@ -11,7 +12,7 @@ namespace thodd::element {
     } ;
 
     type_ type ;
-    std::vector<lexem> data ;
+    std::vector<thodd::lexer::lexem> data ;
   } ;
 
   struct identifier {

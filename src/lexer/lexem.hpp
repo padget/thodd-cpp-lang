@@ -3,7 +3,7 @@
 
 #  include <string>
 
-namespace tdd::lexer {
+namespace thodd::lexer {
 
   struct lexem {
     enum class type_ : int {

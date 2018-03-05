@@ -26,6 +26,16 @@ namespace thodd::stream {
 
     return sbegin == send ;
   }
+
+  /**
+   * Returns new container based on type of c1 that contains 
+   * items from c1 and c32 
+   */
+  auto concat(auto const & c1, auto const & c2) {
+    auto c3 = c1 ; 
+    std::copy(c2.begin(), c2.end(), std::back_inserter(c3)) ;
+    return c3 ;
+  }
 }
 
 #endif

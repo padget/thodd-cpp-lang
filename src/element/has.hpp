@@ -9,7 +9,7 @@
 
 #  define THODD_HAS_XXX(name, type)                            \
   std::tuple<bool, auto> has_##name (auto begin, auto end) {   \
-    return has_element(begin, end, {lexem::type_::##type}) ;   \
+    return has_element(begin, end, {lexer::lexem::type_::type}) ;   \
   }                                                            \
 
 
@@ -25,8 +25,8 @@ namespace thodd::element {
     }
   }
 
-  std::tuple<bool, auto> has_element (auto begin, auto end, std::vector<lexem::type_> ids) {
-    auto && has = stream::start_with(begin, end, ids.begin(), ids.end(), lexem_type_comparator()) ;
+  std::tuple<bool, auto> has_element (auto begin, auto end, std::vector<lexer::lexem::type_> ids) {
+    auto && has = stream::start_with(begin, end, ids.begin(), ids.end(), detail::lexem_type_comparator()) ;
     return std::make_tuple(has, has ? std::next(begin, ids.size()) : begin) ;
   }
 
@@ -87,7 +87,7 @@ namespace thodd::element {
 
   std::tuple<bool, auto> has_access (auto begin, auto end) {
     auto && name    = has_identifier(begin, end) ;
-    auto && point   = has_point(std::get<cursor_idx>) ;
+    auto && point   = has_point(std::get<cursor_idx>(name)) ;
     auto && members = has_elements(std::get<cursor_idx>(point), end, 
                                    [] (auto begin, auto end) {return has_identifier(begin, end) ;}, 
                                    [] (auto begin, auto end) {return has_point(begin, end) ;});
@@ -196,7 +196,7 @@ namespace thodd::element {
 
   std::tuple<bool, auto> has_listener (auto begin, auto end) {
     auto && listener_kw = has_listener_kw(begin, end) ;
-    auto && func = has_function(std::get<cursor_idx>(listener_kw), end) ;
+    auto && func        = has_function(std::get<cursor_idx>(listener_kw), end) ;
     auto && has = std::get<has_idx>(listener_kw) && 
                   std::get<has_idx>(func) ;
     return std::make_tuple(has, has ? std::get<cursor_idx>(func) : begin) ; 
@@ -204,7 +204,7 @@ namespace thodd::element {
 
   std::tuple<bool, auto> has_processor (auto begin, auto end) {
     auto && processor_kw = has_processor_kw(begin, end) ;
-    auto && func = has_function(std::get<cursor_idx>(processor_kw), end) ;
+    auto && func         = has_function(std::get<cursor_idx>(processor_kw), end) ;
     auto && has = std::get<has_idx>(processor_kw) && 
                   std::get<has_idx>(func) ;
     return std::make_tuple(has, has ? std::get<cursor_idx>(func) : begin) ; 
@@ -212,7 +212,7 @@ namespace thodd::element {
 
   std::tuple<bool, auto> has_builder (auto begin, auto end) {
     auto && builder_kw = has_builder_kw(begin, end) ;
-    auto && func = has_function(std::get<cursor_idx>(builder_kw), end) ;
+    auto && func       = has_function(std::get<cursor_idx>(builder_kw), end) ;
     auto && has = std::get<has_idx>(builder_kw) && 
                   std::get<has_idx>(func) ;
     return std::make_tuple(has, has ? std::get<cursor_idx>(func) : begin) ; 
@@ -220,21 +220,20 @@ namespace thodd::element {
 
   std::tuple<bool, auto> has_writer (auto begin, auto end) {
     auto && writer_kw = has_writer_kw(begin, end) ;
-    auto && func = has_function(std::get<cursor_idx>(writer_kw), end) ;
+    auto && func      = has_function(std::get<cursor_idx>(writer_kw), end) ;
     auto && has = std::get<has_idx>(writer_kw) && 
                   std::get<has_idx>(func) ;
     return std::make_tuple(has, has ? std::get<cursor_idx>(func) : begin) ; 
   }
 
   std::tuple<bool, auto> has_flow (auto begin, auto end) {
-    flow
     auto && has = true ;
     return std::make_tuple(has, begin) ;
   }
 
   std::tuple<bool, auto> has_main_flow (auto begin, auto end) {
     auto && main_kw = has_main_kw(begin, end) ;
-    auto && flow = has_flow(std::get<cursor_idx>(main_kw), end) ;
+    auto && flow    = has_flow(std::get<cursor_idx>(main_kw), end) ;
     auto && has = std::get<has_idx>(main_kw) &&   
                   std::get<has_idx>(flow) ;
     return std::make_tuple(has, has ? std::get<cursor_idx>(flow) : begin) ;

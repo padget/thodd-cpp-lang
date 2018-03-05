@@ -3,15 +3,15 @@ echo ------ tests ------
 
 
 
-echo building jasmine_example.cpp ...
-g++ -c test/jasmine_example.cpp -o jasmine_example.o -std=c++17 -fconcepts -Wno-attributes
+REM echo building jasmine_example.cpp ...
+REM g++ -c test/jasmine_example.cpp -o jasmine_example.o -std=c++17 -fconcepts -Wno-attributes
 
-echo jasmine_example.exe
-g++ -o jasmine_example.exe jasmine_example.o 
+REM echo jasmine_example.exe
+REM g++ -o jasmine_example.exe jasmine_example.o 
 
-echo.
-echo --- jasmine_example.exe ---
-jasmine_example.exe
+REM echo.
+REM echo --- jasmine_example.exe ---
+REM jasmine_example.exe
 
 
 
@@ -82,14 +82,14 @@ echo --- clean build files ---
 rem rm test_regexes.exe
 rem rm test_has_element.exe
 rem rm test_extract_lexems.exe
-rm jasmine_example.exe
+REM rm jasmine_example.exe
 rem rm test_extract_element.exe
 
 
 rem rm test_regexes.o
 rem rm test_has_element.o
 rem rm test_extract_lexems.o
-rm jasmine_example.o
+REM rm jasmine_example.o
 rem rm test_extract_element.o
 rm thodd.o
             

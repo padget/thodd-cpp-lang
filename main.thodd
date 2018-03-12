@@ -1,6 +1,4 @@
-
-
-
-main flow helloworld: 
-  reader read_name(): string ;
-  processor read_read
+writer write(int arg1) : string {
+  string str read_toto() ;
+  return str ;
+}

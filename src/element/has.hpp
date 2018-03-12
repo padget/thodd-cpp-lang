@@ -7,8 +7,11 @@
 #  include "../lexer/lexem.hpp"
 
 
+#  define stringerize(s) #s 
+
 #  define THODD_HAS_XXX(name, type)                            \
   std::tuple<bool, auto> has_##name (auto begin, auto end) {   \
+  std::cout << stringerize(has_##name) << std::endl ; \
     return has_element(begin, end, {lexer::lexem::type_::type}) ;   \
   }                                                            \
 
@@ -63,6 +66,9 @@ namespace thodd::element {
   THODD_HAS_XXX(builder_kw, builder_kw)
   THODD_HAS_XXX(return_kw, return_kw)
 
+
+  std::tuple<bool, auto> has_expression (auto begin, auto end) ;
+
   std::tuple<bool, auto> has_const_instruction(auto begin, auto end) {
     auto && type = has_identifier(begin, end) ;
     auto && name = has_identifier(std::get<cursor_idx>(type), end) ;
@@ -87,7 +93,7 @@ namespace thodd::element {
 
   std::tuple<bool, auto> has_access (auto begin, auto end) {
     auto && name    = has_identifier(begin, end) ;
-    auto && point   = has_point(std::get<cursor_idx>(name)) ;
+    auto && point   = has_point(std::get<cursor_idx>(name), end) ;
     auto && members = has_elements(std::get<cursor_idx>(point), end, 
                                    [] (auto begin, auto end) {return has_identifier(begin, end) ;}, 
                                    [] (auto begin, auto end) {return has_point(begin, end) ;});
@@ -108,7 +114,7 @@ namespace thodd::element {
                   std::get<has_idx>(lbracket) &&
                   std::get<has_idx>(args)     &&
                   std::get<has_idx>(rbracket) ;
-    return std::make_tuple(has, has ? std::get<has_idx>(rbracket) : begin) ;
+    return std::make_tuple(has, has ? std::get<cursor_idx>(rbracket) : begin) ;
   }
 
   std::tuple<bool, auto> has_expression (auto begin, auto end) {
@@ -155,33 +161,33 @@ namespace thodd::element {
     return std::make_tuple(has, has ? std::get<has_idx>(rbrace) : begin) ;
   }
 
-  std::tuple<bool, auto> meter (auto begin, auto end) {
+  std::tuple<bool, auto> has_parameter (auto begin, auto end) {
     auto && type = has_identifier(begin, end) ;
     auto && name = has_identifier(std::get<cursor_idx>(type), end) ;
     auto && has = std::get<has_idx>(type) && 
                   std::get<has_idx>(name) ;
-    return std::make_tuple(has, has ? std::get<has_idx>(name) : begin) ;
+    return std::make_tuple(has, has ? std::get<cursor_idx>(name) : begin) ;
   }
 
   std::tuple<bool, auto> has_function (auto begin, auto end) {
     auto && name     = has_identifier(begin, end) ;
     auto && lbracket = has_lbracket(std::get<cursor_idx>(name), end) ;
-    auto && params   = has_elements(std::get<cursor_idx>(lbracket), end, 
-                                    [] (auto begin, auto end) {return meter(begin, end) ;}, 
-                                    [] (auto begin, auto end) {return has_comma(begin, end) ;}) ;
-    auto && rbracket = has_rbracket(std::get<cursor_idx>(params), end) ;
+    // auto && params   = has_elements(std::get<cursor_idx>(lbracket), end, 
+    //                                 [] (auto begin, auto end) {return has_parameter(begin, end) ;}, 
+    //                                 [] (auto begin, auto end) {return has_comma(begin, end) ;}) ;
+    auto && rbracket = has_rbracket(std::get<cursor_idx>(lbracket), end) ;
     auto && colon    = has_colon(std::get<cursor_idx>(rbracket), end) ;
     auto && lbrace   = has_lbrace(std::get<cursor_idx>(colon), end) ;
-    auto && consts   = has_elements(std::get<cursor_idx>(lbrace), end, 
-                                    [] (auto begin, auto end) {return has_const_instruction(begin, end) ;}) ;
-    auto && return_  = has_return_instruction(std::get<cursor_idx>(consts), end) ;
+    // auto && consts   = has_elements(std::get<cursor_idx>(lbrace), end, 
+    //                                 [] (auto begin, auto end) {return has_const_instruction(begin, end) ;}) ;
+    auto && return_  = has_return_instruction(std::get<cursor_idx>(lbrace), end) ;
     auto && has = std::get<has_idx>(name) &&
                   std::get<has_idx>(lbracket) &&
-                  std::get<has_idx>(params) &&
+                  // std::get<has_idx>(params) &&
                   std::get<has_idx>(rbracket) &&
                   std::get<has_idx>(colon) &&
                   std::get<has_idx>(lbrace) &&
-                  std::get<has_idx>(consts) && 
+                  // std::get<has_idx>(consts) && 
                   std::get<has_idx>(return_) ;
     return std::make_tuple(has, has ? std::get<cursor_idx>(return_) : begin) ;  
   }

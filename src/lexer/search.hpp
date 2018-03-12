@@ -1,9 +1,12 @@
 #ifndef __thodd_lexer_search_hpp__
 #  define __thodd_lexer_search_hpp__
 
+#  include "../stream/utils.hpp"
+
+
 namespace thodd::lexer {
   auto search_for(auto cursor, auto end, std::string_view searched, lexem::type_ type) {
-    auto && is_start_with = start_with(cursor, end, searched.begin(), searched.end()) ;
+    auto && is_start_with = stream::start_with(cursor, end, searched.begin(), searched.end()) ;
     
     return std::make_tuple(
       is_start_with ? std::next(cursor, searched.size()) : cursor, 

@@ -20,9 +20,9 @@ namespace thodd::lexer {
       return begin == cursor ? std::next(begin) : cursor ;
     }
 
-    auto for_each_rx (auto begin, auto end, std::tuple<auto...> const & rxs) {
+    auto for_each_rx (auto begin, auto end, auto const & rxs) {
       std::vector<std::tuple<decltype(begin), lexem::type_>> cursors ;
-      std::apply([&] (auto && ... rx) {(cursors.push_back(rx(begin, end)), ...) ;}, rxs_tuple) ;
+      std::apply([&] (auto && ... rx) {(cursors.push_back(rx(begin, end)), ...) ;}, rxs) ;
       return cursors ; 
     }
 
@@ -32,7 +32,7 @@ namespace thodd::lexer {
   }
 
   std::vector<lexem> const
-  extract_lexems (auto begin, auto end, auto rxs_tuple) {
+  extract_lexems (auto begin, auto end, auto const & rxs) {
     std::vector<lexem> lexems ;
 
     while (std::not_equal_to{}(begin, end)) {
@@ -50,7 +50,7 @@ namespace thodd::lexer {
   std::vector<lexem>
   filter_lexems (auto begin, auto end) {
     std::vector<lexem> filtered ; 
-    std::copy_if(begin, end, std::back_inserter(filtered), detail::is_not_ignored) ;
+    std::copy_if(begin, end, std::back_inserter(filtered), [] (lexem const & lx) {return detail::is_not_ignored(lx) ;}) ;
     return filtered ;
   }
 

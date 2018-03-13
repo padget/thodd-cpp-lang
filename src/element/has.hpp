@@ -15,6 +15,9 @@
     return has_element(begin, end, {lexer::lexem::type_::type}) ;   \
   }                                                            \
 
+#  define THODD_LAMBDA_IT(name) \
+[] (auto begin, auto end) {return name(begin, end) ;} \
+
 
 namespace thodd::element {
   constexpr auto has_idx = 0u ;
@@ -27,8 +30,8 @@ namespace thodd::element {
       } ; 
     }
     
-    std::tuple<bool, auto> if_has (auto const & res, auto end, auto && has_predicate) {
-      return std::get<has_idx>(res) ? 
+   auto if_has (auto const & res, auto end, auto && has_predicate) {
+      return std::get<has_idx>(res) ?
         has_predicate(std::get<cursor_idx>(res), end) 
       : res ;
     }
@@ -77,9 +80,9 @@ namespace thodd::element {
 
   std::tuple<bool, auto> has_const_instruction(auto begin, auto end) {
     auto && type = has_identifier(begin, end) ;
-    auto && name = has_identifier(std::get<cursor_idx>(type), end) ;
-    auto && expr = has_expression(std::get<cursor_idx>(name), end) ;
-    auto && scol = has_semi_colon(std::get<cursor_idx>(expr), end) ;
+    auto && name = detail::if_has(type, end, THODD_LAMBDA_IT(has_identifier)) ;
+    auto && expr = detail::if_has(name, end, THODD_LAMBDA_IT(has_expression)) ;
+    auto && scol = detail::if_has(expr, end, THODD_LAMBDA_IT(has_semi_colon)) ;
     auto && has = std::get<has_idx>(type) && 
                   std::get<has_idx>(name) && 
                   std::get<has_idx>(expr) &&
@@ -89,8 +92,8 @@ namespace thodd::element {
 
   std::tuple<bool, auto> has_return_instruction(auto begin, auto end) {
     auto && return_ = has_return_kw(begin, end) ;
-    auto && expr    = has_expression(std::get<cursor_idx>(return_), end) ;
-    auto && scol    = has_semi_colon(std::get<cursor_idx>(expr), end) ;
+    auto && expr    = detail::if_has(return_, end, THODD_LAMBDA_IT(has_expression)) ;
+    auto && scol    = detail::if_has(expr, end, THODD_LAMBDA_IT(has_semi_colon)) ;
     auto && has = std::get<has_idx>(return_) && 
                   std::get<has_idx>(expr)    &&
                   std::get<has_idx>(scol) ;
@@ -99,7 +102,7 @@ namespace thodd::element {
 
   std::tuple<bool, auto> has_access (auto begin, auto end) {
     auto && name    = has_identifier(begin, end) ;
-    auto && point   = has_point(std::get<cursor_idx>(name), end) ;
+    auto && point   = detail::if_has(name, end, THODD_LAMBDA_IT(has_point)) ;
     auto && members = has_elements(std::get<cursor_idx>(point), end, 
                                    [] (auto begin, auto end) {return has_identifier(begin, end) ;}, 
                                    [] (auto begin, auto end) {return has_point(begin, end) ;});
@@ -111,11 +114,11 @@ namespace thodd::element {
 
   std::tuple<bool, auto> has_function_call (auto begin, auto end) {
     auto && name     = has_identifier(begin, end) ;
-    auto && lbracket = has_lbracket(std::get<cursor_idx>(name), end) ;
-    auto && args     = has_elements(std::get<cursor_idx>(lbracket), end, 
+    auto && lbracket = detail::if_has(name, end, THODD_LAMBDA_IT(has_lbracket)) ;has_lbracket(std::get<cursor_idx>(name), end) ;
+    auto && args     = std::get<has_idx>(lbracket) ? has_elements(std::get<cursor_idx>(lbracket), end, 
                                     [] (auto begin, auto end) {return has_expression(begin, end) ;}, 
-                                    [] (auto begin, auto end) {return has_comma(begin, end) ;}) ;
-    auto && rbracket = has_rbracket(std::get<cursor_idx>(args), end) ;
+                                    [] (auto begin, auto end) {return has_comma(begin, end) ;}) : lbracket ;
+    auto && rbracket = detail::if_has(name, end, THODD_LAMBDA_IT(has_rbracket)) ;has_rbracket(std::get<cursor_idx>(args), end) ;
     auto && has = std::get<has_idx>(name)     &&
                   std::get<has_idx>(lbracket) &&
                   std::get<has_idx>(args)     &&
@@ -144,8 +147,8 @@ namespace thodd::element {
 
   std::tuple<bool, auto> has_member (auto begin, auto end) {
     auto && type = has_identifier(begin, end) ;
-    auto && name = has_identifier(std::get<cursor_idx>(type), end) ;
-    auto && scol = has_semi_colon(std::get<cursor_idx>(name), end) ;
+    auto && name = detail::if_has(type, end, THODD_LAMBDA_IT(has_identifier)) ;
+    auto && scol = detail::if_has(name, end, THODD_LAMBDA_IT(has_semi_colon)) ;
     auto && has = std::get<has_idx>(type) &&
                   std::get<has_idx>(name) &&
                   std::get<has_idx>(scol) ;
@@ -154,11 +157,11 @@ namespace thodd::element {
 
   std::tuple<bool, auto> has_pod (auto begin, auto end) {
     auto && pod_kw  = has_pod_kw(begin, end) ;
-    auto && name    = has_identifier(std::get<cursor_idx>(pod_kw), end) ;
-    auto && lbrace  = has_lbrace(std::get<cursor_idx>(name), end) ;
+    auto && name    = detail::if_has(pod_kw, end, THODD_LAMBDA_IT(has_identifier)) ;
+    auto && lbrace  = detail::if_has(name, end, THODD_LAMBDA_IT(has_lbrace)) ;
     auto && members = has_elements(std::get<cursor_idx>(lbrace), end, 
                                    [] (auto begin, auto end) {return has_member(begin, end) ;}) ;
-    auto && rbrace  = has_rbrace(std::get<cursor_idx>(members), end) ;
+    auto && rbrace  = detail::if_has(members, end, THODD_LAMBDA_IT(has_rbrace)) ;
     auto && has = std::get<has_idx>(pod_kw) && 
                   std::get<has_idx>(name) && 
                   std::get<has_idx>(lbrace) && 
@@ -169,7 +172,7 @@ namespace thodd::element {
 
   std::tuple<bool, auto> has_parameter (auto begin, auto end) {
     auto && type = has_identifier(begin, end) ;
-    auto && name = has_identifier(std::get<cursor_idx>(type), end) ;
+    auto && name = detail::if_has(type, end, THODD_LAMBDA_IT(has_identifier)) ;
     auto && has = std::get<has_idx>(type) && 
                   std::get<has_idx>(name) ;
     return std::make_tuple(has, has ? std::get<cursor_idx>(name) : begin) ;
@@ -177,30 +180,30 @@ namespace thodd::element {
 
   std::tuple<bool, auto> has_function (auto begin, auto end) {
     auto && name     = has_identifier(begin, end) ;
-    auto && lbracket = has_lbracket(std::get<cursor_idx>(name), end) ;
-    // auto && params   = has_elements(std::get<cursor_idx>(lbracket), end, 
-    //                                 [] (auto begin, auto end) {return has_parameter(begin, end) ;}, 
-    //                                 [] (auto begin, auto end) {return has_comma(begin, end) ;}) ;
-    auto && rbracket = has_rbracket(std::get<cursor_idx>(lbracket), end) ;
-    auto && colon    = has_colon(std::get<cursor_idx>(rbracket), end) ;
-    auto && lbrace   = has_lbrace(std::get<cursor_idx>(colon), end) ;
-    // auto && consts   = has_elements(std::get<cursor_idx>(lbrace), end, 
-    //                                 [] (auto begin, auto end) {return has_const_instruction(begin, end) ;}) ;
-    auto && return_  = has_return_instruction(std::get<cursor_idx>(lbrace), end) ;
+    auto && lbracket = detail::if_has(name, end, THODD_LAMBDA_IT(has_lbracket)) ;
+    auto && params   = has_elements(std::get<cursor_idx>(lbracket), end, 
+                                    [] (auto begin, auto end) {return has_parameter(begin, end) ;}, 
+                                    [] (auto begin, auto end) {return has_comma(begin, end) ;}) ;
+    auto && rbracket = detail::if_has(params, end, THODD_LAMBDA_IT(has_rbracket)) ;
+    auto && colon    = detail::if_has(rbracket, end, THODD_LAMBDA_IT(has_colon)) ;
+    auto && lbrace   = detail::if_has(colon, end, THODD_LAMBDA_IT(has_lbrace)) ;
+    auto && consts   = has_elements(std::get<cursor_idx>(lbrace), end, 
+                                    [] (auto begin, auto end) {return has_const_instruction(begin, end) ;}) ;
+    auto && return_  = detail::if_has(consts, end, THODD_LAMBDA_IT(has_return_instruction)) ;
     auto && has = std::get<has_idx>(name) &&
                   std::get<has_idx>(lbracket) &&
-                  // std::get<has_idx>(params) &&
+                  std::get<has_idx>(params) &&
                   std::get<has_idx>(rbracket) &&
                   std::get<has_idx>(colon) &&
                   std::get<has_idx>(lbrace) &&
-                  // std::get<has_idx>(consts) && 
+                  std::get<has_idx>(consts) && 
                   std::get<has_idx>(return_) ;
     return std::make_tuple(has, has ? std::get<cursor_idx>(return_) : begin) ;  
   }
 
   std::tuple<bool, auto> has_reader (auto begin, auto end) {
     auto && reader_kw = has_reader_kw(begin, end) ;
-    auto && func = has_function(std::get<cursor_idx>(reader_kw), end) ;
+    auto && func = detail::if_has(reader_kw, end, THODD_LAMBDA_IT(has_function)) ;
     auto && has = std::get<has_idx>(reader_kw) && 
                   std::get<has_idx>(func) ;
     return std::make_tuple(has, has ? std::get<cursor_idx>(func) : begin) ; 
@@ -208,7 +211,7 @@ namespace thodd::element {
 
   std::tuple<bool, auto> has_listener (auto begin, auto end) {
     auto && listener_kw = has_listener_kw(begin, end) ;
-    auto && func        = has_function(std::get<cursor_idx>(listener_kw), end) ;
+    auto && func        = detail::if_has(listener_kw, end, THODD_LAMBDA_IT(has_function)) ;
     auto && has = std::get<has_idx>(listener_kw) && 
                   std::get<has_idx>(func) ;
     return std::make_tuple(has, has ? std::get<cursor_idx>(func) : begin) ; 
@@ -216,7 +219,7 @@ namespace thodd::element {
 
   std::tuple<bool, auto> has_processor (auto begin, auto end) {
     auto && processor_kw = has_processor_kw(begin, end) ;
-    auto && func         = has_function(std::get<cursor_idx>(processor_kw), end) ;
+    auto && func         = detail::if_has(processor_kw, end, THODD_LAMBDA_IT(has_function)) ;
     auto && has = std::get<has_idx>(processor_kw) && 
                   std::get<has_idx>(func) ;
     return std::make_tuple(has, has ? std::get<cursor_idx>(func) : begin) ; 
@@ -224,7 +227,7 @@ namespace thodd::element {
 
   std::tuple<bool, auto> has_builder (auto begin, auto end) {
     auto && builder_kw = has_builder_kw(begin, end) ;
-    auto && func       = has_function(std::get<cursor_idx>(builder_kw), end) ;
+    auto && func       = detail::if_has(builder_kw, end, THODD_LAMBDA_IT(has_function)) ;
     auto && has = std::get<has_idx>(builder_kw) && 
                   std::get<has_idx>(func) ;
     return std::make_tuple(has, has ? std::get<cursor_idx>(func) : begin) ; 
@@ -232,7 +235,7 @@ namespace thodd::element {
 
   std::tuple<bool, auto> has_writer (auto begin, auto end) {
     auto && writer_kw = has_writer_kw(begin, end) ;
-    auto && func      = has_function(std::get<cursor_idx>(writer_kw), end) ;
+    auto && func      = detail::if_has(writer_kw, end, THODD_LAMBDA_IT(has_function)) ;
     auto && has = std::get<has_idx>(writer_kw) && 
                   std::get<has_idx>(func) ;
     return std::make_tuple(has, has ? std::get<cursor_idx>(func) : begin) ; 
@@ -245,7 +248,7 @@ namespace thodd::element {
 
   std::tuple<bool, auto> has_main_flow (auto begin, auto end) {
     auto && main_kw = has_main_kw(begin, end) ;
-    auto && flow    = has_flow(std::get<cursor_idx>(main_kw), end) ;
+    auto && flow    = detail::if_has(main_kw, end, THODD_LAMBDA_IT(has_flow)) ;
     auto && has = std::get<has_idx>(main_kw) &&   
                   std::get<has_idx>(flow) ;
     return std::make_tuple(has, has ? std::get<cursor_idx>(flow) : begin) ;

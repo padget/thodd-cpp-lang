@@ -26,6 +26,12 @@ namespace thodd::element {
         return lexem.type == type ;
       } ; 
     }
+    
+    std::tuple<bool, auto> if_has (auto const & res, auto end, auto && has_predicate) {
+      return std::get<has_idx>(res) ? 
+        has_predicate(std::get<cursor_idx>(res), end) 
+      : res ;
+    }
   }
 
   std::tuple<bool, auto> has_element (auto begin, auto end, std::vector<lexer::lexem::type_> ids) {
@@ -35,7 +41,7 @@ namespace thodd::element {
 
   std::tuple<bool, auto> has_elements (auto begin, auto end, auto rx, auto rx_sep) {
     auto && rx_res = rx(begin, end) ;
-    auto && rx_sep_res = rx_sep(std::get<cursor_idx>(rx_res), end) ;
+    auto && rx_sep_res = detail::if_has(rx_res, end, rx_sep) ;
     auto && has = std::get<has_idx>(rx_res) && std::get<has_idx>(rx_sep_res) ; 
     return has ? has_elements(std::get<cursor_idx>(rx_sep_res), end, rx, rx_sep) : rx_res ;
   }

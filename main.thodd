@@ -1,4 +1,3 @@
-writer write(int arg1) : string {
-  string str read_toto() ;
-  return str ;
+writer write() : string {
+  return arg1 ;
 }

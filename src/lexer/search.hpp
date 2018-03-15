@@ -16,8 +16,20 @@ namespace thodd::lexer {
   auto search_for_identifier_rx (auto begin, auto end) {
     auto cursor = begin ;
     
-    while (('a' <= *cursor && *cursor <= 'z') || *cursor == '_')
+    constexpr auto is_letter = [] (auto const & cursor) {
+      return ('a' <= *cursor && *cursor <= 'z') || *cursor == '_' ;
+    } ;
+
+    constexpr auto is_digit = [] (auto  const & cursor) {
+      return ('0' <= *cursor && *cursor <= '9') ;
+    } ;
+
+    if (is_letter(cursor)) {
       cursor = std::next(cursor) ;
+
+      while (is_letter(cursor) || is_digit(cursor))
+        cursor = std::next(cursor) ;
+    }
 
     return std::make_tuple(cursor, cursor != begin ? lexem::type_::identifier : lexem::type_::error) ;
   }

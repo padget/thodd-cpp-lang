@@ -199,6 +199,16 @@ namespace thodd::element {
 
   template<has_type type_c>
   std::tuple<bool, auto> has_function (auto begin, auto end) {
+    auto && explorer = explore(one(has_identifier<type_c>),
+                               one(has_lbracket<type_c>), 
+                               many(has_parameter<type_c>, has_comma<type_c>), 
+                               one(has_rbracket<type_c>), 
+                               one(has_colon<type_c>), 
+                               one(has_identifier<type_c>), 
+                               one(has_lbrace<type_c>), 
+                               many(has_const_instruction<type_c>), 
+                               one(has_return_instruction<type_c>));
+    return explorer(begin, end) ;
     auto && name     = has_identifier<type_c>(begin, end) ;
     auto && lbracket = detail::if_has(name, end, THODD_LAMBDA_IT(has_lbracket<type_c>)) ;
     auto && params   = detail::has_elements(lbracket, end, THODD_LAMBDA_IT(has_parameter<type_c>), THODD_LAMBDA_IT(has_comma<type_c>)) ;

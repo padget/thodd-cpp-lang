@@ -35,7 +35,7 @@ int main () {
     std::cout << (int) lx.type << ',' ;
     std::cout << std::endl ;
 
-  auto const & has_writer = element::has_return_instruction<element::has_type::no_errors>(filtered.begin(), filtered.end()) ;
+  auto const & has_writer = element::has_writer<element::has_type::no_errors>(filtered.begin(), filtered.end()) ;
   std::cout << "has_writer" << std::boolalpha << std::get<element::has_idx>(has_writer) << std::endl ; 
 
 

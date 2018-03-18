@@ -13,7 +13,7 @@
 template<has_type type_c>                                                \
 auto has_##name (auto begin, auto end) {                                 \
   auto && res = detail::has_element(begin, end, {lexer::lexem::type_::type}) ;   \
-  return detail::make_has_res<type_c>(std::get<has_idx>(res), res, begin) ;      \
+  return detail::make_has_res<type_c>(res, begin) ;      \
 }                                                                        \
 
 #  define THODD_LAMBDA_IT(name)                       \
@@ -49,7 +49,9 @@ namespace thodd::element {
     }
 
     template<has_type type_c> 
-    auto make_has_res (bool has, auto const & last_res, auto begin) -> std::tuple<bool, auto> {    
+    auto make_has_res (auto const & last_res, auto begin) -> std::tuple<bool, auto> {   
+      auto && has = std::get<has_idx>(last_res) ;
+
       if constexpr (type_c == has_type::no_errors)                           
         return std::make_tuple(has, has ? std::get<cursor_idx>(last_res) : begin) ;
       else if constexpr (type_c == has_type::with_errors)                    
@@ -76,6 +78,34 @@ namespace thodd::element {
         : make_positive_has_response(std::get<cursor_idx>(rx_res))  ;
     }
   }
+
+  inline init(auto cursor) {
+    return detail::make_positive_has_response(cursor) ;
+  }
+
+  inline auto one(auto func)  {
+    return [func] (auto const & pred, auto e) {return detail::if_has(pred, e, func) ;} ;
+  }
+
+  inline auto many(auto func) {
+    return [func] (auto const & pred, auto e) {return detail::has_elements(pred, e, func) ;} ; 
+  }
+
+  inline auto many(auto func, auto sep) {
+    return [func, sep] (auto const & pred, auto e) {return detail::has_elements(pred, e, func, sep) ;} ; 
+  }
+
+  auto explore (auto first, auto ... next) {
+    return [first, next...] (auto const & pred, auto end) {
+      auto && res = first(pred, end) ;
+
+      if constexpr (sizeof...(next) > 0)
+        return explore(next...)(res, end) ;
+      else 
+        return res ; 
+    } ;
+  }
+
 
   THODD_HAS_XXX(lbracket, lbracket)
   THODD_HAS_XXX(rbracket, rbracket)
@@ -108,7 +138,7 @@ namespace thodd::element {
     auto && expr = detail::if_has(name, end, THODD_LAMBDA_IT(has_expression<type_c>)) ;
     auto && scol = detail::if_has(expr, end, THODD_LAMBDA_IT(has_semi_colon<type_c>)) ;
     auto && has  = detail::has_all(type, name , expr, scol) ;
-    return detail::make_has_res<type_c>(has, scol, begin) ;
+    return detail::make_has_res<type_c>( scol, begin) ;
   }
 
   template<has_type type_c>
@@ -117,7 +147,7 @@ namespace thodd::element {
     auto && expr    = detail::if_has(return_, end, THODD_LAMBDA_IT(has_expression<type_c>)) ;
     auto && scol    = detail::if_has(expr, end, THODD_LAMBDA_IT(has_semi_colon<type_c>)) ;
     auto && has     = detail::has_all(return_, expr, scol) ;
-    return detail::make_has_res<type_c>(has, scol, begin) ;
+    return detail::make_has_res<type_c>(scol, begin) ;
   }
 
   template<has_type type_c>
@@ -125,8 +155,7 @@ namespace thodd::element {
     auto && name    = has_identifier<type_c>(begin, end) ;
     auto && point   = detail::if_has(name, end, THODD_LAMBDA_IT(has_point<type_c>)) ;
     auto && members = detail::has_elements(point, end, THODD_LAMBDA_IT(has_identifier<type_c>), THODD_LAMBDA_IT(has_point<type_c>)) ;
-    auto && has     = detail::has_all(name, point, members) ;
-    return detail::make_has_res<type_c>(has, members, begin) ;
+    return detail::make_has_res<type_c>(members, begin) ;
   }
 
   template<has_type type_c>
@@ -135,8 +164,7 @@ namespace thodd::element {
     auto && lbracket = detail::if_has(name, end, THODD_LAMBDA_IT(has_lbracket<type_c>)) ;
     auto && args     = detail::has_elements(lbracket, end, THODD_LAMBDA_IT(has_expression<type_c>), THODD_LAMBDA_IT(has_comma<type_c>)) ;
     auto && rbracket = detail::if_has(name, end, THODD_LAMBDA_IT(has_rbracket<type_c>)) ;
-    auto && has      = detail::has_all(name, lbracket, args, rbracket) ;
-    return detail::make_has_res<type_c>(has, rbracket, begin) ;
+    return detail::make_has_res<type_c>(rbracket, begin) ;
   }
 
   template<has_type type_c>
@@ -166,7 +194,7 @@ namespace thodd::element {
        return strin ;
     }
 
-    return detail::make_has_res<type_c>(false, strin, begin) ;
+    return detail::make_has_res<type_c>(strin, begin) ;
   } 
 
   template<has_type type_c>
@@ -174,8 +202,7 @@ namespace thodd::element {
     auto && type = has_identifier<type_c>(begin, end) ;
     auto && name = detail::if_has(type, end, THODD_LAMBDA_IT(has_identifier<type_c>)) ;
     auto && scol = detail::if_has(name, end, THODD_LAMBDA_IT(has_semi_colon<type_c>)) ;
-    auto && has  = detail::has_all(type, name, scol) ;
-    return detail::make_has_res<type_c>(has, scol, begin) ;
+    return detail::make_has_res<type_c>(scol, begin) ;
   }
 
   template<has_type type_c>
@@ -185,49 +212,40 @@ namespace thodd::element {
     auto && lbrace  = detail::if_has(name, end, THODD_LAMBDA_IT(has_lbrace<type_c>)) ;
     auto && members = detail::has_elements(lbrace, end, THODD_LAMBDA_IT(has_member<type_c>)) ;
     auto && rbrace  = detail::if_has(members, end, THODD_LAMBDA_IT(has_rbrace<type_c>)) ;
-    auto && has     = detail::has_all(pod_kw, name, lbrace, members, rbrace) ;
-    return detail::make_has_res<type_c>(has, rbrace, begin) ;  
+    return detail::make_has_res<type_c>(rbrace, begin) ;  
   }
 
   template<has_type type_c>
   std::tuple<bool, auto> has_parameter (auto begin, auto end) {
     auto && type = has_identifier<type_c>(begin, end) ;
     auto && name = detail::if_has(type, end, THODD_LAMBDA_IT(has_identifier<type_c>)) ;
-    auto && has  = detail::has_all(type, name) ;
-    return detail::make_has_res<type_c>(has, name, begin) ;
+    return detail::make_has_res<type_c>(name, begin) ;
   }
 
   template<has_type type_c>
   std::tuple<bool, auto> has_function (auto begin, auto end) {
-    auto && explorer = explore(one(has_identifier<type_c>),
-                               one(has_lbracket<type_c>), 
-                               many(has_parameter<type_c>, has_comma<type_c>), 
-                               one(has_rbracket<type_c>), 
-                               one(has_colon<type_c>), 
-                               one(has_identifier<type_c>), 
-                               one(has_lbrace<type_c>), 
-                               many(has_const_instruction<type_c>), 
-                               one(has_return_instruction<type_c>));
-    return explorer(begin, end) ;
-    auto && name     = has_identifier<type_c>(begin, end) ;
-    auto && lbracket = detail::if_has(name, end, THODD_LAMBDA_IT(has_lbracket<type_c>)) ;
-    auto && params   = detail::has_elements(lbracket, end, THODD_LAMBDA_IT(has_parameter<type_c>), THODD_LAMBDA_IT(has_comma<type_c>)) ;
-    auto && rbracket = detail::if_has(params, end, THODD_LAMBDA_IT(has_rbracket<type_c>)) ;
-    auto && colon    = detail::if_has(rbracket, end, THODD_LAMBDA_IT(has_colon<type_c>)) ;
-    auto && type     = detail::if_has(colon, end, THODD_LAMBDA_IT(has_identifier<type_c>)) ;
-    auto && lbrace   = detail::if_has(type, end, THODD_LAMBDA_IT(has_lbrace<type_c>)) ;
-    auto && consts   = detail::has_elements(lbrace, end, THODD_LAMBDA_IT(has_const_instruction<type_c>)) ;
-    auto && return_  = detail::if_has(consts, end, THODD_LAMBDA_IT(has_return_instruction<type_c>)) ;
-    auto && has      = detail::has_all(name, lbracket, params, rbracket, colon, type, lbrace, consts, return_) ;
-    return detail::make_has_res<type_c>(has, return_, begin) ;  
+    auto && explorer = 
+      explore(one(THODD_LAMBDA_IT(has_identifier<type_c>)),
+              one(THODD_LAMBDA_IT(has_lbracket<type_c>)), 
+              many(THODD_LAMBDA_IT(has_parameter<type_c>), THODD_LAMBDA_IT(has_comma<type_c>)), 
+              one(THODD_LAMBDA_IT(has_rbracket<type_c>)), 
+              one(THODD_LAMBDA_IT(has_colon<type_c>)), 
+              one(THODD_LAMBDA_IT(has_identifier<type_c>)), 
+              one(THODD_LAMBDA_IT(has_lbrace<type_c>)), 
+              many(THODD_LAMBDA_IT(has_const_instruction<type_c>)), 
+              one(THODD_LAMBDA_IT(has_return_instruction<type_c>)));
+    auto && res = explorer(init(begin), end) ;
+    
+    return detail::make_has_res<type_c>(res, begin) ;  
   }
 
   template<has_type type_c>
   std::tuple<bool, auto> has_reader (auto begin, auto end) {
-    auto && reader_kw = has_reader_kw<type_c>(begin, end) ;
-    auto && func      = detail::if_has(reader_kw, end, THODD_LAMBDA_IT(has_function<type_c>)) ;
-    auto && has       = detail::has_all(reader_kw, func) ;
-    return detail::make_has_res<type_c>(has, func, begin) ; 
+    explore(one(THODD_LAMBDA_IT(has_reader_kw<type_c>)), 
+            one(THODD_LAMBDA_IT(has_function<type_c>)));
+    return detail::make_has_res<type_c>( 
+      explore(one(THODD_LAMBDA_IT(has_reader_kw<type_c>)), 
+              one(THODD_LAMBDA_IT(has_function<type_c>)))(begin, end), begin) ; 
   }
 
   template<has_type type_c>
@@ -235,7 +253,7 @@ namespace thodd::element {
     auto && listener_kw = has_listener_kw<type_c>(begin, end) ;
     auto && func        = detail::if_has(listener_kw, end, THODD_LAMBDA_IT(has_function<type_c>)) ;
     auto && has         = detail::has_all(listener_kw, func) ;
-    return detail::make_has_res<type_c>(has, func, begin) ; 
+    return detail::make_has_res<type_c>(func, begin) ; 
   }
 
   template<has_type type_c>
@@ -243,7 +261,7 @@ namespace thodd::element {
     auto && processor_kw = has_processor_kw<type_c>(begin, end) ;
     auto && func         = detail::if_has(processor_kw, end, THODD_LAMBDA_IT(has_function<type_c>)) ;
     auto && has          = detail::has_all(processor_kw, func) ;
-    return detail::make_has_res<type_c>(has, func, begin) ; 
+    return detail::make_has_res<type_c>(func, begin) ; 
   }
 
   template<has_type type_c>
@@ -251,7 +269,7 @@ namespace thodd::element {
     auto && builder_kw = has_builder_kw<type_c>(begin, end) ;
     auto && func       = detail::if_has(builder_kw, end, THODD_LAMBDA_IT(has_function<type_c>)) ;
     auto && has        = detail::has_all(builder_kw, func) ;
-    return detail::make_has_res<type_c>(has, func, begin) ;  
+    return detail::make_has_res<type_c>(func, begin) ;  
   }
 
   template<has_type type_c>
@@ -259,13 +277,13 @@ namespace thodd::element {
     auto && writer_kw = has_writer_kw<type_c>(begin, end) ;
     auto && func      = detail::if_has(writer_kw, end, THODD_LAMBDA_IT(has_function<type_c>)) ;
     auto && has       = detail::has_all(writer_kw, func) ;
-    return detail::make_has_res<type_c>(has, func, begin) ;  
+    return detail::make_has_res<type_c>(func, begin) ;  
   }
 
   template<has_type type_c>
   std::tuple<bool, auto> has_flow (auto begin, auto end) {
     auto && has = true ;
-    return detail::make_has_res<type_c>(has,  begin) ; 
+    //return detail::make_has_res<type_c>(begin) ; 
   }
 
   template<has_type type_c>
@@ -273,7 +291,7 @@ namespace thodd::element {
     auto && main_kw = has_main_kw<type_c>(begin, end) ;
     auto && flow    = detail::if_has(main_kw, end, THODD_LAMBDA_IT(has_flow<type_c>)) ;
     auto && has     = detail::has_all(main_kw, flow) ;
-    return detail::make_has_res<type_c>(has, flow, begin) ; 
+    return detail::make_has_res(flow, begin) ; 
   }
 
   template<has_type type_c>

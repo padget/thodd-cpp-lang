@@ -29,7 +29,13 @@ namespace thodd::lexer {
     bool is_not_ignored (auto const & lx) {
       return lx.type != lexem::type_::ignored ;
     }
+
+    bool is_not_new_line (auto const & lx) {
+      return lx.type != lexem::type_::new_line ;
+    }
   }
+
+
 
   std::vector<lexem> const
   extract_lexems (auto begin, auto end, auto const & rxs) {
@@ -47,14 +53,32 @@ namespace thodd::lexer {
     return lexems ;
   }
 
-  std::vector<lexem>
+  std::vector<lexem> const 
+  add_line_location (auto begin, auto end) {
+    std::vector<lexem> located ;
+    size_t line = 1u ;
+    std::transform(begin, end, std::back_inserter(located), [&line] (lexem const & lx) {
+      lexem copy = lx ;
+      if (copy.type == lexem::type_::new_line) 
+         ++line ;
+      copy.line = line ;
+      return copy ;
+    }) ;
+
+    return located ;
+  }
+
+
+  std::vector<lexem> const 
   filter_lexems (auto begin, auto end) {
     std::vector<lexem> filtered ; 
-    std::copy_if(begin, end, std::back_inserter(filtered), [] (lexem const & lx) {return detail::is_not_ignored(lx) ;}) ;
+    std::copy_if(begin, end, std::back_inserter(filtered), [] (lexem const & lx) {
+      return detail::is_not_ignored(lx) && detail::is_not_new_line(lx) ;
+    }) ;
     return filtered ;
   }
 
-  std::vector<lexem>
+  std::vector<lexem> const
   copy_lexems (auto begin, auto end) {
     std::vector<lexem> lexems ;
     std::copy (begin, end, std::back_inserter(lexems)) ;

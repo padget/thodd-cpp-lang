@@ -23,20 +23,22 @@ namespace thodd::lexer {
       comma, // 12
       ignored, // 13
       error,// 14
+      new_line, // 15
       // Keywords
-      flow_kw, // 15
-      reader_kw, // 16
-      writer_kw, // 17
-      processor_kw, // 18
-      builder_kw, // 19
-      listener_kw, // 20
-      pod_kw, // 21
-      return_kw, // 22
-      main_kw// 23
+      flow_kw, // 16
+      reader_kw, // 17
+      writer_kw, // 18
+      processor_kw, // 19
+      builder_kw, // 20
+      listener_kw, // 21
+      pod_kw, // 22
+      return_kw, // 23
+      main_kw// 24
     } ;
 
     type_ type ;
     std::string data ;
+    size_t line ;
   } ;
 
 }

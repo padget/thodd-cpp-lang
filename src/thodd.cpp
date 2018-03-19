@@ -28,11 +28,12 @@ int main () {
 
   std::string const && to_analyse = from_file("main.thodd") ;
   
-  std::vector<lexer::lexem> const && lexems   = lexer::extract_lexems(to_analyse.begin(), to_analyse.end(), lexer::thodd_rxs(0)) ;
-  std::vector<lexer::lexem> const && filtered = lexer::filter_lexems(lexems.begin(), lexems.end()) ;
+  auto && lexems   = lexer::extract_lexems(to_analyse.begin(), to_analyse.end(), lexer::thodd_rxs(0)) ;
+  auto && located  = lexer::add_line_location(lexems.begin(), lexems.end()) ;
+  auto && filtered = lexer::filter_lexems(located.begin(), located.end()) ;
   
   for (auto const & lx : filtered)
-    std::cout << (int) lx.type << ',' ;
+    std::cout << (int) lx.type << "(at: l." << lx.line << "), ";
     std::cout << std::endl ;
 
   auto const & has_writer = element::has_writer(filtered.begin(), filtered.end()) ;

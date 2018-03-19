@@ -77,11 +77,13 @@ namespace thodd::lexer {
   auto search_for_ignored_rx (auto begin, auto end) {
     auto cursor = begin ;
     
-    while (*cursor == ' ' || *cursor == '\t' || *cursor == '\n')
+    while (*cursor == ' ' || *cursor == '\t')
       cursor = std::next(cursor) ;
 
     return std::make_tuple(cursor, lexem::type_::ignored) ;
   }
+
+
 
   auto thodd_keywords_rxs (auto) {
     return std::make_tuple (
@@ -102,6 +104,7 @@ namespace thodd::lexer {
       [] (auto b, auto e) { return search_for_number_rx(b, e) ;},
       [] (auto b, auto e) { return search_for_string_rx(b, e) ;}, 
       [] (auto b, auto e) { return search_for_ignored_rx(b, e) ;},
+      [] (auto b, auto e) { return search_for(b, e, "\n", lexem::type_::new_line) ;},
       [] (auto b, auto e) { return search_for(b, e, "(", lexem::type_::lbracket) ;}, 
       [] (auto b, auto e) { return search_for(b, e, ")", lexem::type_::rbracket) ;}, 
       [] (auto b, auto e) { return search_for(b, e, "{", lexem::type_::lbrace) ;},

@@ -67,7 +67,7 @@ rem test_extract_element.exe
 
 
 echo building thodd.cpp ...
-g++ -c src/thodd.cpp -o thodd.o -std=c++17 -fconcepts -Wno-attributes
+g++ -c src/thodd.cpp -o thodd.o -std=c++17 -fconcepts -Wno-attributes -fno-diagnostics-show-caret -fno-diagnostics-color -ftemplate-backtrace-limit=0 2> compile.log
 
 echo thodd.exe
 g++ -o thodd.exe thodd.o 

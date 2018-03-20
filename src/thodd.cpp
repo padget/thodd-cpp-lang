@@ -4,6 +4,7 @@
 #include <string_view>
 #include <string>
 #include <vector>
+#include <list>
 
 #include "from_file.hpp"
 #include "lexer/lexem.hpp"
@@ -41,5 +42,25 @@ int main () {
 
 
   println("fin test thodd") ;
+
+  struct person {
+    int age ;
+  } ;
+
+
+  container::list<person> ps ;
+  ps = container::push(ps, person{10}) ;
+  ps = container::push(ps, person{12}) ;
+
+  auto && ages = container::map(ps, [] (person const & p) {return p.age ;}) ;
+  auto && sum  = container::reduce(ages, 0, [] (int const & sum, int const & age) {return sum + age ;}) ;
+
+  std::cout << sum << std::endl ; 
+    
+
+
+  char c ;
+  std::cin >> c ;
+
   return EXIT_SUCCESS ;
 }

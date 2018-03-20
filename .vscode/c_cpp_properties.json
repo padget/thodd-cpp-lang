@@ -49,25 +49,31 @@
                 "C:/MinGW/include/c++/7.2.0",
                 "C:/MinGW/include/c++/7.2.0/x86_64-w64-mingw32",
                 "C:/MinGW/include/c++/7.2.0/x86_64-w64-mingw32/bits",
+                "C:/MinGW/include/c++/7.2.0/x86_64-w64-mingw32/ext",
                 "C:/MinGW/include/c++/7.2.0/tr1", 
                 "C:/MinGW/include/c++/7.2.0/bits"
             ],
             "defines": [
                 "_DEBUG",
-                "UNICODE"
+                "UNICODE",
+                "__GNUC__=7",
+                "_MSC_EXTENSIONS",
+                "__cdecl=__attribute__((__cdecl__))",
+                "std=c++17"
             ],
             "intelliSenseMode": "msvc-x64",
             "browse": {
                 "path": [
                     "${workspaceRoot}/src",
                     "C:/MinGW/include/c++/7.2.0",
-                    "C:/MinGW/include/c++/7.2.0/x86_64-w64-mingw32",
+                    "C:/MinGW/include/c++/7.2.0/x86_64-w64-mingw32", 
                     "C:/MinGW/include/c++/7.2.0/x86_64-w64-mingw32/bits",
+                    "C:/MinGW/include/c++/7.2.0/x86_64-w64-mingw32/ext",
                     "C:/MinGW/include/c++/7.2.0/tr1", 
                     "C:/MinGW/include/c++/7.2.0/bits"
                 ],
-                "limitSymbolsToIncludedHeaders": false,
-                "databaseFilename": ""
+                "limitSymbolsToIncludedHeaders": true,
+                "databaseFilename": "" 
             }
         }
     ],

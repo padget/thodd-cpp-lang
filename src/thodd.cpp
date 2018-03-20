@@ -23,30 +23,29 @@ void print(std::string_view str, auto && printer) {
   printer(str) ;
 }
 
-
 int main () {
   println("début test thodd") ;
 
   std::string const && to_analyse = from_file("main.thodd") ;
   
   auto && lexems   = lexer::extract_lexems(to_analyse.begin(), to_analyse.end(), lexer::thodd_rxs(0)) ;
-  auto && located  = lexer::add_line_location(lexems.begin(), lexems.end()) ;
-  auto && filtered = lexer::filter_lexems(located.begin(), located.end()) ;
+  auto && located  = lexer::add_line_location(lexems) ;
+  auto && filtered = lexer::filter_lexems(located) ;
   
-  for (auto const & lx : filtered)
+  container::for_each(filtered, [] (auto const & lx){
     std::cout << (int) lx.type << "(at: l." << lx.line << "), ";
-    std::cout << std::endl ;
-
-  auto const & has_writer = element::has_writer(filtered.begin(), filtered.end()) ;
+  }) ; 
+  std::cout << std::endl ;
+    
+  auto const & has_writer = element::has_writer(container::begin(filtered), container::end(filtered)) ;
   std::cout << "has_writer" << std::boolalpha << std::get<element::has_idx>(has_writer) << std::endl ; 
 
 
   println("fin test thodd") ;
 
-  struct person {
-    int age ;
-  } ;
 
+
+  struct person {int age ;} ;
 
   container::list<person> ps ;
   ps = container::push(ps, person{10}) ;
@@ -56,11 +55,6 @@ int main () {
   auto && sum  = container::reduce(ages, 0, [] (int const & sum, int const & age) {return sum + age ;}) ;
 
   std::cout << sum << std::endl ; 
-    
-
-
-  char c ;
-  std::cin >> c ;
 
   return EXIT_SUCCESS ;
 }

@@ -62,7 +62,7 @@ namespace thodd::element {
 
     inline auto has_element (auto begin, auto end, std::vector<lexer::lexem::type_> ids) -> decltype(auto) {
       auto && has = stream::start_with(begin, end, ids.begin(), ids.end(), detail::lexem_type_comparator()) ;
-      return std::make_tuple(has, has ? std::next(begin, ids.size()) : begin) ;
+      return std::make_tuple(has, has ? container::next(begin, ids.size()) : begin) ;
     }
 
     inline auto has_elements (auto const & res, auto end, auto rx, auto rx_sep) -> decltype(rx(end, end)) {

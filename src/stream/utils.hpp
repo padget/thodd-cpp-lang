@@ -67,10 +67,32 @@ namespace container {
 
   template <typename type_t>
   struct list {
-    std::ptr<node<type_t>> first ;
-    std::ptr<node<type_t>> last ; 
+    using iterator = std::ptr<node<type_t>> ;
+    iterator first ;
+    iterator last ; 
     size_t size{0u} ; 
   } ;
+
+  template <typename type_t>
+  auto begin (list<type_t> const & l) {
+    return l.first ;
+  }
+
+  template <typename type_t>
+  auto end (list<type_t> const &) {
+    return typename list<type_t>::iterator{} ;
+  }
+
+  template <typename type_t>
+  auto size(list<type_t> const & l) {
+    return l.size ;
+  }
+
+  template <typename type_t>
+  auto next (std::ptr<node<type_t>> it, size_t pas = 1u) {
+    while (pas-- > 0) it = it ? it->next : it ;
+    return it ;
+  }
 
   template <typename type_t>
   list<type_t> const push (list<type_t> const & l, type_t const & item) {
@@ -87,22 +109,22 @@ namespace container {
 
   template <typename type_t>
   void for_each (list<type_t> const & l, auto func) {
-    auto cursor = l.first ;
+    auto cursor = begin(l) ;
 
-    while (cursor) {
+    while (cursor != end(l)) {
       func(cursor->data) ;
-      cursor = cursor->next ;
+      cursor = next(cursor) ;
     }
   }
 
   template <typename type_t>
-  list<type_t> const filter (list<type_t> const & l, auto predicate) {
+  auto const filter (list<type_t> const & l, auto predicate) {
     list<type_t> ln ;
-    auto cursor = l.first ;
+    auto cursor = begin(l) ;
 
-    while (cursor) {
+    while (cursor != end(l)) {
       ln = predicate(cursor->data) ? push(ln, cursor->data) : ln ;
-      cursor = cursor->next ;
+      cursor = next(cursor) ;
     }
 
     return ln ;
@@ -111,27 +133,36 @@ namespace container {
   template <typename type_t>
   auto map (list<type_t> const & l, auto mapper) -> list<decltype(mapper(l.first->data))> {
     list<decltype(mapper(l.first->data))> ln ;
-    auto cursor = l.first ;
+    auto cursor = begin(l) ;
 
-    while (cursor) {
+    while (cursor != end(l)) {
       ln = push(ln, mapper(cursor->data)) ;
-      cursor = cursor->next ;
+      cursor = next(cursor) ;
     }
 
     return ln ;
   }
 
   template <typename type_t>
-  auto reduce(list<type_t> const & l, auto const & init, auto reducer) {
+  auto reduce (list<type_t> const & l, auto const & init, auto reducer) {
     auto acc = init ;
-    auto cursor = l.first ;
+    auto cursor = begin(l) ;
 
-    while (cursor) {
+    while (cursor != end(l)) {
       acc = reducer(acc, cursor->data) ;
-      cursor = cursor->next ;
+      cursor = next(cursor) ;
     }
 
     return acc ;
+  }
+
+  template <typename type_t, typename type2_t>
+  auto start_with(list<type_t> const & l, list<type2_t> const & l2) {
+    while (begin != end && sbegin != send && comparator(*begin, *sbegin)) {
+      ++ begin ; ++ sbegin ;   
+    }
+
+    return sbegin == send ;
   }
 }
 

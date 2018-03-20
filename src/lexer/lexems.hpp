@@ -5,6 +5,7 @@
 #  include <tuple>
 #  include <algorithm>
 
+#  include "../stream/utils.hpp"
 #  include "lexem.hpp"
 
 namespace thodd::lexer {
@@ -37,52 +38,37 @@ namespace thodd::lexer {
 
 
 
-  std::vector<lexem> const
+  container::list<lexem> const
   extract_lexems (auto begin, auto end, auto const & rxs) {
-    std::vector<lexem> lexems ;
+    container::list<lexem> lexems ;
 
     while (std::not_equal_to{}(begin, end)) {
       auto && cursors     = detail::for_each_rx (begin, end, rxs) ;
       auto && max         = std::max_element (cursors.cbegin(), cursors.cend(), detail::cursor_less_comparator(begin)) ;
       auto && next_cursor = detail::next_if_is_begin(begin, std::get<0>(*max)) ;
 
-      lexems.push_back(lexem{std::get<1>(*max), std::string(begin, next_cursor)}) ;    
+      lexems = container::push(lexems, lexem{std::get<1>(*max), std::string(begin, next_cursor)}) ;    
       begin = next_cursor ;
     } 
 
     return lexems ;
   }
 
-  std::vector<lexem> const 
-  add_line_location (auto begin, auto end) {
-    std::vector<lexem> located ;
+  container::list<lexem> const 
+  add_line_location (container::list<lexem> const & lxs) {
     size_t line = 1u ;
-    std::transform(begin, end, std::back_inserter(located), [&line] (lexem const & lx) {
-      lexem copy = lx ;
-      if (copy.type == lexem::type_::new_line) 
-         ++line ;
-      copy.line = line ;
-      return copy ;
+    return container::map(lxs, [&line] (lexem const & lx) {
+      if (lx.type == lexem::type_::new_line) ++line ;
+      return lexem{lx.type, lx.data, line} ;
     }) ;
-
-    return located ;
   }
 
 
-  std::vector<lexem> const 
-  filter_lexems (auto begin, auto end) {
-    std::vector<lexem> filtered ; 
-    std::copy_if(begin, end, std::back_inserter(filtered), [] (lexem const & lx) {
+  container::list<lexem> const 
+  filter_lexems (container::list<lexem> const lxs) {
+    return container::filter(lxs, [] (lexem const & lx) {
       return detail::is_not_ignored(lx) && detail::is_not_new_line(lx) ;
     }) ;
-    return filtered ;
-  }
-
-  std::vector<lexem> const
-  copy_lexems (auto begin, auto end) {
-    std::vector<lexem> lexems ;
-    std::copy (begin, end, std::back_inserter(lexems)) ;
-    return lexems ;
   }
 }
 

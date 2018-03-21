@@ -11,7 +11,7 @@
 
 #  define THODD_HAS_XXX(name, type)                                              \
 auto has_##name (auto begin, auto end) {                                         \
-  auto && res = detail::has_element(begin, end, {lexer::lexem::type_::type}) ;   \
+  auto && res = detail::has_element(begin, end, lexer::lexem::type_::type) ;     \
   return detail::make_has_res(res, begin) ;                                      \
 }                                                                                \
 
@@ -28,13 +28,7 @@ namespace thodd::element {
     with_errors, no_errors
   } ;
 
-  namespace detail {
-    auto lexem_type_comparator () { 
-      return [] (auto const & lexem, auto const & type) {
-        return lexem.type == type ;
-      } ; 
-    }
-    
+  namespace detail {    
     inline bool has_all (auto const & ... has_res) {
       return (... && std::get<has_idx>(has_res)) ;
     }
@@ -60,9 +54,9 @@ namespace thodd::element {
       return std::make_tuple(has, has ? std::get<cursor_idx>(last_res) : begin) ;
     }
 
-    inline auto has_element (auto begin, auto end, std::vector<lexer::lexem::type_> ids) -> decltype(auto) {
-      auto && has = stream::start_with(begin, end, ids.begin(), ids.end(), detail::lexem_type_comparator()) ;
-      return std::make_tuple(has, has ? container::next(begin, ids.size()) : begin) ;
+    inline auto has_element (auto begin, auto end, lexer::lexem::type_ id) -> decltype(auto) {
+      auto && has = begin != end && container::get(begin).type == id ;
+      return std::make_tuple(has, has ? container::next(begin) : begin) ;
     }
 
     inline auto has_elements (auto const & res, auto end, auto rx, auto rx_sep) -> decltype(rx(end, end)) {

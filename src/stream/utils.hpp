@@ -74,24 +74,27 @@ namespace container {
   } ;
 
   template <typename type_t>
-  auto begin (list<type_t> const & l) {
+  typename list<type_t>::iterator begin (list<type_t> const & l) {
     return l.first ;
   }
 
   template <typename type_t>
-  auto end (list<type_t> const &) {
-    return typename list<type_t>::iterator{} ;
+  typename list<type_t>::iterator end (list<type_t> const &) {
+    return {} ;
   }
 
-  template <typename type_t>
-  auto size(list<type_t> const & l) {
+  size_t size(list<auto> const & l) {
     return l.size ;
   }
 
   template <typename type_t>
-  auto next (std::ptr<node<type_t>> it, size_t pas = 1u) {
-    while (pas-- > 0) it = it ? it->next : it ;
-    return it ;
+  auto next (std::ptr<node<type_t>> it) {
+    return it ? it->next : it ;
+  }
+
+  template <typename type_t>
+  type_t const & get (std::ptr<node<type_t>> it) {
+    return it->data ;
   }
 
   template <typename type_t>
@@ -107,62 +110,59 @@ namespace container {
     }
   }
 
-  template <typename type_t>
-  void for_each (list<type_t> const & l, auto func) {
-    auto cursor = begin(l) ;
+  template <typename container_t>
+  void for_each (container_t const & l, auto func) {
+    auto cursor    = begin(l) ;
+    auto const limit = end(l) ;
 
-    while (cursor != end(l)) {
-      func(cursor->data) ;
+    while (cursor != limit) {
+      func(get(cursor)) ;
       cursor = next(cursor) ;
     }
   }
 
-  template <typename type_t>
-  auto const filter (list<type_t> const & l, auto predicate) {
-    list<type_t> ln ;
-    auto cursor = begin(l) ;
+  template <typename container_t>
+  auto const filter (container_t const & l, auto predicate) {
+    container_t ln ;
+    auto cursor    = begin(l) ;
+    auto const limit = end(l) ;
 
-    while (cursor != end(l)) {
-      ln = predicate(cursor->data) ? push(ln, cursor->data) : ln ;
-      cursor = next(cursor) ;
-    }
-
-    return ln ;
-  }
-
-  template <typename type_t>
-  auto map (list<type_t> const & l, auto mapper) -> list<decltype(mapper(l.first->data))> {
-    list<decltype(mapper(l.first->data))> ln ;
-    auto cursor = begin(l) ;
-
-    while (cursor != end(l)) {
-      ln = push(ln, mapper(cursor->data)) ;
+    while (cursor != limit) {
+      ln     = predicate(get(cursor)) ? push(ln, get(cursor)) : ln ;
       cursor = next(cursor) ;
     }
 
     return ln ;
   }
 
-  template <typename type_t>
-  auto reduce (list<type_t> const & l, auto const & init, auto reducer) {
-    auto acc = init ;
-    auto cursor = begin(l) ;
+  template <template <typename...> typename container_t, 
+            typename type_t, 
+            typename ... other_t>
+  auto map (container_t<type_t, other_t...> const & l, auto mapper) {
+    container_t<decltype(mapper(get(begin(l))))> ln ;
+    auto cursor    = begin(l) ;
+    auto const limit = end(l) ;
 
-    while (cursor != end(l)) {
-      acc = reducer(acc, cursor->data) ;
+    while (cursor != limit) {
+      ln     = push(ln, mapper(get(cursor))) ;
+      cursor = next(cursor) ;
+    }
+
+    return ln ;
+  }
+
+  template <typename container_t>
+  auto reduce (container_t const & l, auto const & init, auto reducer) {
+    auto acc       = init ;
+    auto cursor    = begin(l) ;
+    auto const limit = end(l) ;
+
+    while (cursor != limit) {
+      acc    = reducer(acc, get(cursor)) ;
       cursor = next(cursor) ;
     }
 
     return acc ;
-  }
-
-  template <typename type_t, typename type2_t>
-  auto start_with(list<type_t> const & l, list<type2_t> const & l2) {
-    while (begin != end && sbegin != send && comparator(*begin, *sbegin)) {
-      ++ begin ; ++ sbegin ;   
-    }
-
-    return sbegin == send ;
   }
 }
 

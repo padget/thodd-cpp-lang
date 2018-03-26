@@ -10,9 +10,8 @@
 
 namespace thodd::element {
 
-  template <
-    typename ext_t, 
-    typename it_t>
+  template <typename ext_t, 
+            typename it_t>
   struct extracted {
     std::optional<ext_t> opt ;
     it_t it ;

@@ -3,17 +3,6 @@
 
 namespace thodd::stream {
 
-  /**
-   * Returns true if the first stream starts with 
-   * the sequence of the second stream by comparator
-   */
-  bool start_with (auto begin, auto end, auto sbegin, auto send, auto comparator) {
-    while (begin != end && sbegin != send && comparator(*begin, *sbegin)) {
-      ++ begin ; ++ sbegin ;   
-    }
-
-    return sbegin == send ;
-  }
 
   /**
    * Returns true if the first stream starts with 
@@ -36,11 +25,6 @@ namespace thodd::stream {
     std::copy(c2.begin(), c2.end(), std::back_inserter(c3)) ;
     return c3 ;
   }
-
-
-
-
-
 }
 
 

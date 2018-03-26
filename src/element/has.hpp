@@ -228,6 +228,7 @@ namespace thodd::element {
                    one(THODD_LAMBDA_IT(has_function))) (init(begin), end) ;
   }
 
+  // TODO define has_flow function
   std::tuple<bool, auto> has_flow (auto begin, auto end) {
     return explore(one(THODD_LAMBDA_IT(has_flow_kw))) (init(begin), end) ;
   }
@@ -237,6 +238,7 @@ namespace thodd::element {
                    one(THODD_LAMBDA_IT(has_flow))) (init(begin), end) ;
   }
 
+  // TODO define has_thodd function
   std::tuple<bool, auto> has_thodd (auto begin, auto end) {
   }
 }

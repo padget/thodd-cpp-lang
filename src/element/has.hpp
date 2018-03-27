@@ -132,7 +132,6 @@ namespace thodd::element {
   THODD_HAS_XXX(return_kw, return_kw)
   THODD_HAS_XXX(flow_kw, flow_kw)
 
-
   auto has_expression (auto begin, auto end) -> decltype(detail::make_positive_has_response(begin)) ;
 
   std::tuple<bool, auto> has_const_instruction(auto begin, auto end) {
